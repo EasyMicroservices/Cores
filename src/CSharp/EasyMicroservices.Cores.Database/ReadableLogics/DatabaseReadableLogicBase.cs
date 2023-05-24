@@ -2,7 +2,9 @@
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using ServiceContracts;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,6 +60,44 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
             var result = await easyReadableQueryable.FirstOrDefaultAsync(x => x.Id.Equals(id), cancellationToken);
             if (result == null)
                 return (FailedReasonType.NotFound, $"Item by id {id} not found!");
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TEntity>> GetBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var result = await easyReadableQueryable.FirstOrDefaultAsync(predicate, cancellationToken);
+            if (result == null)
+                return (FailedReasonType.NotFound, $"Item by predicate not found!");
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TContract>> GetBy<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+            where TEntity : class
+            where TContract : class
+        {
+            var entityResult = await GetBy(easyReadableQueryable, predicate, cancellationToken);
+            if (entityResult == null)
+                return entityResult.ToContract<TContract>();
+            var result = _mapperProvider.Map<TContract>(entityResult.Result);
+            ValidateMappedResult(ref result);
             return result;
         }
 
