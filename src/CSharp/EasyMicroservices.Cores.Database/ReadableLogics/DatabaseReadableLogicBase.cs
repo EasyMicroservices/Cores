@@ -8,18 +8,32 @@ using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.ReadableLogics
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class DatabaseReadableLogicBase
     {
         IMapperProvider _mapperProvider;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mapperProvider"></param>
         public DatabaseReadableLogicBase(IMapperProvider mapperProvider)
         {
             _mapperProvider = mapperProvider;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public DatabaseReadableLogicBase()
         {
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <exception cref="System.NullReferenceException"></exception>
         protected virtual void ValidateMappedResult<T>(ref T value)
             where T : class
         {
@@ -33,6 +47,7 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         /// get an item by an id
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TId"></typeparam>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -50,6 +65,8 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         /// get an item by an id
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
@@ -73,6 +90,8 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         /// <summary>
         /// get all items
         /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected async Task<MessageContract<List<TEntity>>> GetAll<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, CancellationToken cancellationToken = default)
@@ -84,6 +103,9 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         /// <summary>
         /// get all items mapped
         /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected async Task<MessageContract<List<TContract>>> GetAll<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, CancellationToken cancellationToken = default)
