@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.1" />
+    <PackageReference Include="EasyMicroservices.Mapper" Version="0.0.0.1" />
+    <PackageReference Include="EasyMicroservices.ServiceContracts" Version="0.0.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logics\" />
+    <Folder Include="WritableLogics\" />
+  </ItemGroup>
+
+</Project>
