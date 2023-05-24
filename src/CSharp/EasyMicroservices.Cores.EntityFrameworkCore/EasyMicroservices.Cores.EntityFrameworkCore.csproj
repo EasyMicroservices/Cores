@@ -1,7 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+    <Authors>EasyMicroservices</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.0.0.1</Version>
+    <Description>ef core of database.</Description>
+    <Copyright>EasyMicroservices@gmail.com</Copyright>
+    <PackageTags>core,cores,base,database,ef,efcore</PackageTags>
+    <PackageProjectUrl>https://github.com/EasyMicroservices/Cores</PackageProjectUrl>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Database.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
