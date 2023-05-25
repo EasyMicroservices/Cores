@@ -15,7 +15,7 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public class LongIdDatabaseLogicBase<TEntity> : DatabaseLogicBase, IReadableLogic<TEntity, long>, IWritableLogic<TEntity,long>
+    public class LongIdDatabaseLogicBase<TEntity> : DatabaseLogicBase, IReadableLogic<TEntity, long>, IWritableLogic<TEntity, long>
         where TEntity : class, IIdSchema<long>
     {
         readonly IEasyReadableQueryableAsync<TEntity> _easyReadableQueryable;
