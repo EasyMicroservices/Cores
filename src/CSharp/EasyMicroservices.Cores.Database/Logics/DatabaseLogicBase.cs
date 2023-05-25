@@ -8,26 +8,29 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EasyMicroservices.Cores.Database.ReadableLogics
+namespace EasyMicroservices.Cores.Database.Logics
 {
     /// <summary>
     /// 
     /// </summary>
-    public class DatabaseReadableLogicBase
+    public class DatabaseLogicBase : IDisposable
+#if (!NETSTANDARD2_0 && !NET45)
+        , IAsyncDisposable
+#endif
     {
         IMapperProvider _mapperProvider;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mapperProvider"></param>
-        public DatabaseReadableLogicBase(IMapperProvider mapperProvider)
+        public DatabaseLogicBase(IMapperProvider mapperProvider)
         {
             _mapperProvider = mapperProvider;
         }
         /// <summary>
         /// 
         /// </summary>
-        public DatabaseReadableLogicBase()
+        public DatabaseLogicBase()
         {
         }
         /// <summary>
@@ -35,12 +38,12 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="value"></param>
-        /// <exception cref="System.NullReferenceException"></exception>
+        /// <exception cref="NullReferenceException"></exception>
         protected virtual void ValidateMappedResult<T>(ref T value)
             where T : class
         {
             if (value == default(T))
-                throw new System.NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
+                throw new NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
         }
 
         #region Get one
@@ -125,7 +128,7 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
 
         #endregion
 
-        #region get list
+        #region Get list
 
         /// <summary>
         /// get all items
@@ -161,5 +164,43 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         }
 
         #endregion
+
+        #region Update
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="entity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TEntity>> Update<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var result = await easyWritableQueryable.Update(entity, cancellationToken);
+            return result.Entity;
+        }
+
+        #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void Dispose()
+        {
+
+        }
+
+#if (!NETSTANDARD2_0 && !NET45)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual ValueTask DisposeAsync()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+#endif
     }
 }

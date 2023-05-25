@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.2</Version>
+    <Version>0.0.0.3</Version>
     <Description>core of database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database</PackageTags>
@@ -16,13 +16,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.1" />
+    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.2" />
     <PackageReference Include="EasyMicroservices.Mapper" Version="0.0.0.1" />
     <PackageReference Include="EasyMicroservices.ServiceContracts" Version="0.0.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Logics\" />
+    <Folder Include="ReadableLogics\" />
     <Folder Include="WritableLogics\" />
   </ItemGroup>
 
