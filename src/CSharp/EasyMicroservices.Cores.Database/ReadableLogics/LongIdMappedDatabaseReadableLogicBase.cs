@@ -2,7 +2,9 @@
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using ServiceContracts;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,7 +15,7 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TContract"></typeparam>
-    public class LongIdMappedDatabaseReadableLogicBase<TEntity, TContract> : DatabaseReadableLogicBase, IReadableLogic<TContract, long>
+    public class LongIdMappedDatabaseReadableLogicBase<TEntity, TContract> : DatabaseReadableLogicBase, IContractReadableLogic<TEntity, TContract, long>
         where TEntity : class, IIdSchema<long>
         where TContract : class
     {
@@ -47,6 +49,17 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         public async Task<MessageContract<TContract>> GetById(long id, CancellationToken cancellationToken = default)
         {
             return await GetById<TEntity, TContract, long>(_easyReadableQueryable, id, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TContract>> GetBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await GetBy<TEntity, TContract>(_easyReadableQueryable, predicate, cancellationToken);
         }
     }
 }
