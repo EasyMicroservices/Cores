@@ -10,9 +10,9 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="TSchema"></typeparam>
+    /// <typeparam name="TResultSchema"></typeparam>
     /// <typeparam name="TId"></typeparam>
-    public interface IReadableLogic<TSchema, TId>
+    public interface IReadableLogic<TResultSchema, TId>
     {
         /// <summary>
         /// 
@@ -20,13 +20,13 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TSchema>> GetById(TId id, CancellationToken cancellationToken = default);
+        Task<MessageContract<TResultSchema>> GetById(TId id, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<List<TSchema>>> GetAll(CancellationToken cancellationToken = default);
+        Task<MessageContract<List<TResultSchema>>> GetAll(CancellationToken cancellationToken = default);
     }
     /// <summary>
     /// 

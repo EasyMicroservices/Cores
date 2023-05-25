@@ -8,14 +8,14 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EasyMicroservices.Cores.Database.ReadableLogics
+namespace EasyMicroservices.Cores.Database.Logics
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TContract"></typeparam>
-    public class LongIdMappedDatabaseReadableLogicBase<TEntity, TContract> : DatabaseReadableLogicBase, IContractReadableLogic<TEntity, TContract, long>
+    public class LongIdMappedDatabaseLogicBase<TEntity, TContract> : DatabaseLogicBase, IContractReadableLogic<TEntity, TContract, long>
         where TEntity : class, IIdSchema<long>
         where TContract : class
     {
@@ -25,7 +25,7 @@ namespace EasyMicroservices.Cores.Database.ReadableLogics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public LongIdMappedDatabaseReadableLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
+        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
         {
             _easyReadableQueryable = easyReadableQueryable;
         }
