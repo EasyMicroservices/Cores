@@ -15,8 +15,11 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TId"></typeparam>
-    public class DatabaseLogicBase<TEntity, TId> : DatabaseLogicInfrastructure
+    /// <typeparam name="TRequestContract"></typeparam>
+    /// <typeparam name="TResponseContract"></typeparam>
+    public class DatabaseMappedLogicBase<TEntity, TId, TRequestContract, TResponseContract> : DatabaseLogicInfrastructure, IContractLogic<TEntity, TRequestContract, TResponseContract, TId>
         where TEntity : class, IIdSchema<TId>
+        where TResponseContract : class
     {
         readonly IEasyReadableQueryableAsync<TEntity> _easyReadableQueryable;
         readonly IEasyWritableQueryableAsync<TEntity> _easyWriteableQueryable;
@@ -25,7 +28,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public DatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
+        public DatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
         {
             _easyReadableQueryable = easyReadableQueryable;
         }
@@ -35,7 +38,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public DatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
+        public DatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
         }
@@ -46,10 +49,21 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public DatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
+        public DatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(mapperProvider)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
             _easyReadableQueryable = easyReadableQueryable;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<List<TResponseContract>>> GetAll(CancellationToken cancellationToken = default)
+        {
+            return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, cancellationToken);
         }
 
         /// <summary>
@@ -58,19 +72,9 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetById(TId id, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
         {
-            return await GetById(_easyReadableQueryable, id, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task<MessageContract<List<TEntity>>> GetAll(CancellationToken cancellationToken = default)
-        {
-            return await GetAll(_easyReadableQueryable, cancellationToken);
+            return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, cancellationToken);
         }
 
         /// <summary>
@@ -79,20 +83,22 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return await GetBy(_easyReadableQueryable, predicate, cancellationToken);
+            return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, cancellationToken);
         }
+
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> Update(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TId>> Add(TRequestContract contract, CancellationToken cancellationToken = default)
         {
-            return await Update(_easyWriteableQueryable, entity, cancellationToken);
+            var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
+            return result.Result.Id;
         }
     }
 }
