@@ -28,6 +28,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <returns></returns>
         Task<MessageContract<List<TResultSchema>>> GetAll(CancellationToken cancellationToken = default);
     }
+
     /// <summary>
     /// 
     /// </summary>
