@@ -1,12 +1,6 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
-using ServiceContracts;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Logics
 {
@@ -28,5 +22,25 @@ namespace EasyMicroservices.Cores.Database.Logics
         public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider) : base(easyReadableQueryable, mapperProvider)
         {
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="easyWriteableQueryable"></param>
+        /// <param name="mapperProvider"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(easyWriteableQueryable, mapperProvider)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="easyWriteableQueryable"></param>
+        /// <param name="mapperProvider"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(easyReadableQueryable, easyWriteableQueryable, mapperProvider)
+        {
+        }
+
     }
 }
