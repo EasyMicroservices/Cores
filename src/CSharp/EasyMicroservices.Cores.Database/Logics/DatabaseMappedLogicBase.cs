@@ -4,6 +4,7 @@ using EasyMicroservices.Mapper.Interfaces;
 using ServiceContracts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,29 +64,37 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public async Task<MessageContract<List<TResponseContract>>> GetAll(CancellationToken cancellationToken = default)
         {
-            return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, cancellationToken);
+            return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, null, cancellationToken);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetById(TId id, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
-            return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, cancellationToken);
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
+            if (query != null)
+                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, func, cancellationToken);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="predicate"></param>
+        /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TResponseContract>> GetBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetBy(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
-            return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, cancellationToken);
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
+            if (query != null)
+                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, func, cancellationToken);
         }
 
 
@@ -99,6 +108,42 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
             return result.Result.Id;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<MessageContract<List<TResponseContract>>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
+        {
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
+            if (query != null)
+                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
+        {
+            return GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return _easyWriteableQueryable.SaveChangesAsync(cancellationToken);
         }
     }
 }
