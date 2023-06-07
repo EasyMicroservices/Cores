@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.3" />
+    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.4" />
     <PackageReference Include="EasyMicroservices.Mapper" Version="0.0.0.3" />
     <PackageReference Include="EasyMicroservices.ServiceContracts" Version="0.0.0.2" />
   </ItemGroup>
