@@ -48,7 +48,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpPost]
         public async Task<MessageContract<TId>> Add(TRequestContract request, CancellationToken cancellationToken = default)
         {
-            var result = await  _contractLogic.Add(request, cancellationToken);
+            var result = await _contractLogic.Add(request, cancellationToken);
             await _contractLogic.SaveChangesAsync(cancellationToken);
             return result;
         }

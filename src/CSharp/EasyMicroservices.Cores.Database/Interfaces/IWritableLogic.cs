@@ -17,7 +17,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <returns></returns>
         Task<MessageContract<TEntity>> Update(TEntity entity, CancellationToken cancellationToken = default);
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
