@@ -14,7 +14,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
     /// <typeparam name="TRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]/[action]")]
     public class SimpleQueryServiceController<TEntity, TId, TRequestContract, TResponseContract> : ControllerBase
     {
         private readonly IContractLogic<TEntity, TRequestContract, TResponseContract, TId> _contractLogic;
