@@ -16,9 +16,10 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TId"></typeparam>
-    /// <typeparam name="TRequestContract"></typeparam>
+    /// <typeparam name="TCreateRequestContract"></typeparam>
+    /// <typeparam name="TUpdateRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
-    public class DatabaseMappedLogicBase<TEntity, TId, TRequestContract, TResponseContract> : DatabaseLogicInfrastructure, IContractLogic<TEntity, TRequestContract, TResponseContract, TId>
+    public class DatabaseMappedLogicBase<TEntity, TId, TCreateRequestContract, TUpdateRequestContract, TResponseContract> : DatabaseLogicInfrastructure, IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>
         where TEntity : class, IIdSchema<TId>
         where TResponseContract : class
     {
@@ -104,7 +105,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TId>> Add(TRequestContract contract, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TId>> Add(TCreateRequestContract contract, CancellationToken cancellationToken = default)
         {
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
             return result.Result.Id;
@@ -144,6 +145,38 @@ namespace EasyMicroservices.Cores.Database.Logics
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return _easyWriteableQueryable.SaveChangesAsync(cancellationToken);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract<TResponseContract>> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return HardDeleteBy<TEntity, TResponseContract, TId>(_easyWriteableQueryable, predicate, cancellationToken);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TResponseContract>> Update(TUpdateRequestContract schema, CancellationToken cancellationToken = default)
+        {
+            return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, cancellationToken);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        {
+            return HardDeleteById<TEntity, TResponseContract, TId>(_easyWriteableQueryable, id, cancellationToken);
         }
     }
 }

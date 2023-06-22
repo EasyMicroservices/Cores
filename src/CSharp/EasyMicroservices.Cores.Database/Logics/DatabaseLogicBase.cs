@@ -124,9 +124,31 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> Update(TEntity entity, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TEntity>> Update(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return await Update(_easyWriteableQueryable, entity, cancellationToken);
+            return Update(_easyWriteableQueryable, entity, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TEntity>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        {
+            return HardDeleteById(_easyWriteableQueryable, id, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TEntity>> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return HardDeleteBy(_easyWriteableQueryable, predicate, cancellationToken);
         }
 
         /// <summary>
