@@ -172,7 +172,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entityResult = await GetAll(easyReadableQueryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToContract<List<TContract>>();
-            var result = await _mapperProvider.MapAsync<List<TContract>>(entityResult.Result);
+            var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);
             ValidateMappedResult(ref result);
             return result;
         }
