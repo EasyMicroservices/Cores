@@ -1,7 +1,9 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,14 +21,17 @@ namespace EasyMicroservices.Cores.AspCoreApi
     [Route("api/[controller]/[action]")]
     public class SimpleQueryServiceController<TEntity, TId, TCreateRequestContract, TUpdateRequestContract, TResponseContract> : ControllerBase
     {
-        private readonly IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> _contractLogic;
+        /// <summary>
+        /// 
+        /// </summary>
+        protected IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> ContractLogic { get; private set; }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="contractReadable"></param>
         public SimpleQueryServiceController(IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> contractReadable)
         {
-            _contractLogic = contractReadable;
+            ContractLogic = contractReadable;
         }
 
         /// <summary>
@@ -36,9 +41,9 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet]
-        public Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
         {
-            return _contractLogic.GetById(id, cancellationToken);
+            return ContractLogic.GetById(id, OnGetQuery(q => q), cancellationToken);
         }
 
         /// <summary>
@@ -48,10 +53,10 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<MessageContract<TId>> Add(TCreateRequestContract request, CancellationToken cancellationToken = default)
+        public virtual async Task<MessageContract<TId>> Add(TCreateRequestContract request, CancellationToken cancellationToken = default)
         {
-            var result = await _contractLogic.Add(request, cancellationToken);
-            await _contractLogic.SaveChangesAsync(cancellationToken);
+            var result = await ContractLogic.Add(request, cancellationToken);
+            await ContractLogic.SaveChangesAsync(cancellationToken);
             return result;
         }
 
@@ -62,10 +67,10 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<MessageContract<TResponseContract>> Update(TUpdateRequestContract request, CancellationToken cancellationToken = default)
+        public virtual async Task<MessageContract<TResponseContract>> Update(TUpdateRequestContract request, CancellationToken cancellationToken = default)
         {
-            var result = await _contractLogic.Update(request, cancellationToken);
-            await _contractLogic.SaveChangesAsync(cancellationToken);
+            var result = await ContractLogic.Update(request, cancellationToken);
+            await ContractLogic.SaveChangesAsync(cancellationToken);
             return result;
         }
 
@@ -76,10 +81,10 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        public virtual async Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
         {
-            var result = await _contractLogic.HardDeleteById(id, cancellationToken);
-            await _contractLogic.SaveChangesAsync(cancellationToken);
+            var result = await ContractLogic.HardDeleteById(id, cancellationToken);
+            await ContractLogic.SaveChangesAsync(cancellationToken);
             return result;
         }
 
@@ -89,9 +94,30 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet]
-        public Task<MessageContract<List<TResponseContract>>> GetAll(CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<List<TResponseContract>>> GetAll(CancellationToken cancellationToken = default)
         {
-            return _contractLogic.GetAll(cancellationToken);
+            return ContractLogic.GetAll(OnGetAllQuery(q => q), cancellationToken);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery(Func<IQueryable<TEntity>, IQueryable<TEntity>> query)
+        {
+            return query;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery(Func<IQueryable<TEntity>, IQueryable<TEntity>> query)
+        {
+            return query;
         }
     }
 }
