@@ -1,4 +1,6 @@
 ﻿using ServiceContracts;
+using System;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,15 +9,22 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     /// <summary>
     /// 
     /// </summary>
-    public interface IWritableLogic<TEntity, TId>
+    public interface IWritableLogic<TRequsetSchema, TResultSchema, TId>
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="schema"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TEntity>> Update(TEntity entity, CancellationToken cancellationToken = default);
+        Task<MessageContract<TResultSchema>> Update(TRequsetSchema schema, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract<TResultSchema>> HardDeleteById(TId id, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -23,8 +32,10 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TContract"></typeparam>
+    /// <typeparam name="TCreateContract"></typeparam>
+    /// <typeparam name="TUpdateContract"></typeparam>
     /// <typeparam name="TId"></typeparam>
-    public interface IContractWritableLogic<TEntity, TContract, TId>
+    public interface IContractWritableLogic<TEntity, TCreateContract, TContract, TUpdateContract, TId> : IWritableLogic<TUpdateContract, TContract, TId>
     {
         /// <summary>
         /// 
@@ -32,7 +43,15 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TId>> Add(TContract contract, CancellationToken cancellationToken = default);
+        Task<MessageContract<TId>> Add(TCreateContract contract, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract<TContract>> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>

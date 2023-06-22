@@ -40,9 +40,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="value"></param>
         /// <exception cref="NullReferenceException"></exception>
         protected virtual void ValidateMappedResult<T>(ref T value)
-            where T : class
         {
-            if (value == default(T))
+            if (value == null || value.Equals(default(T)))
                 throw new NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
         }
 
@@ -173,7 +172,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entityResult = await GetAll(easyReadableQueryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToContract<List<TContract>>();
-            var result = await _mapperProvider.MapAsync<List<TContract>>(entityResult.Result);
+            var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);
             ValidateMappedResult(ref result);
             return result;
         }
@@ -196,6 +195,97 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             var result = await easyWritableQueryable.Update(entity, cancellationToken);
             return result.Entity;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TUpdateContract"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="contract"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TContract>> Update<TEntity, TUpdateContract, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TUpdateContract contract, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var entity = await _mapperProvider.MapAsync<TEntity>(contract);
+            ValidateMappedResult(ref entity);
+            var result = await easyWritableQueryable.Update(entity, cancellationToken);
+            var mappedResult = await _mapperProvider.MapAsync<TContract>(result.Entity);
+            ValidateMappedResult(ref mappedResult);
+            return mappedResult;
+        }
+
+        #endregion
+
+        #region Delete
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TEntity>> HardDeleteById<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TId id, CancellationToken cancellationToken = default)
+            where TEntity : class, IIdSchema<TId>
+        {
+            var result = await easyWritableQueryable.RemoveAllAsync(x => x.Id.Equals(id), cancellationToken);
+            return result.Entity;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TContract>> HardDeleteById<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TId id, CancellationToken cancellationToken = default)
+            where TEntity : class, IIdSchema<TId>
+        {
+            var result = await easyWritableQueryable.RemoveAllAsync(x => x.Id.Equals(id), cancellationToken);
+            var mappedResult = await _mapperProvider.MapAsync<TContract>(result.Entity);
+            ValidateMappedResult(ref mappedResult);
+            return mappedResult;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TEntity>> HardDeleteBy<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
+            return result.Entity;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="predicate"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TContract>> HardDeleteBy<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+           where TEntity : class, IIdSchema<TId>
+        {
+            var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
+            var mappedResult = await _mapperProvider.MapAsync<TContract>(result.Entity);
+            ValidateMappedResult(ref mappedResult);
+            return mappedResult;
         }
 
         #endregion
