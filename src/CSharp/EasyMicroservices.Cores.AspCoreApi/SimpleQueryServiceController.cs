@@ -43,7 +43,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpGet]
         public virtual Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
         {
-            return ContractLogic.GetById(id, OnGetQuery(q => q), cancellationToken);
+            return ContractLogic.GetById(id, OnGetQuery, cancellationToken);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpGet]
         public virtual Task<MessageContract<List<TResponseContract>>> GetAll(CancellationToken cancellationToken = default)
         {
-            return ContractLogic.GetAll(OnGetAllQuery(q => q), cancellationToken);
+            return ContractLogic.GetAll(OnGetAllQuery, cancellationToken);
         }
 
 
@@ -105,7 +105,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery(Func<IQueryable<TEntity>, IQueryable<TEntity>> query)
+        protected virtual IQueryable<TEntity> OnGetQuery(IQueryable<TEntity> query)
         {
             return query;
         }
@@ -115,7 +115,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery(Func<IQueryable<TEntity>, IQueryable<TEntity>> query)
+        protected virtual IQueryable<TEntity> OnGetAllQuery(IQueryable<TEntity> query)
         {
             return query;
         }
