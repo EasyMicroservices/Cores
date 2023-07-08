@@ -11,7 +11,7 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// <typeparam name="TCreateRequestContract"></typeparam>
     /// <typeparam name="TUpdateRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
-    public class LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract> : DatabaseMappedLogicBase<TEntity, long, TCreateRequestContract, TUpdateRequestContract, TResponseContract>
+    public class LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract> : IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long>
         where TEntity : class, IIdSchema<long>
         where TResponseContract : class
     {
@@ -20,7 +20,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider) : base(easyReadableQueryable, mapperProvider)
+        /// <param name="uniqueIdentityManager"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyReadableQueryable, mapperProvider, uniqueIdentityManager)
         {
         }
 
@@ -29,7 +30,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public LongIdMappedDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(easyWriteableQueryable, mapperProvider)
+        /// <param name="uniqueIdentityManager"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyWriteableQueryable, mapperProvider, uniqueIdentityManager)
         {
         }
 
@@ -39,7 +41,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="mapperProvider"></param>
-        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider) : base(easyReadableQueryable, easyWriteableQueryable, mapperProvider)
+        /// <param name="uniqueIdentityManager"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyReadableQueryable, easyWriteableQueryable, mapperProvider, uniqueIdentityManager)
         {
         }
 
