@@ -3,11 +3,11 @@
     /// <summary>
     /// 
     /// </summary>
-    public interface IUniqueRecordSchema
+    public interface IUniqueIdentitySchema
     {
         /// <summary>
         /// 
         /// </summary>
-        public string UniqueRecord { get; set; }
+        public string UniqueIdentity { get; set; }
     }
 }
