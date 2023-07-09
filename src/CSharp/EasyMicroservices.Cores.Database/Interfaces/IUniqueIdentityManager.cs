@@ -9,8 +9,9 @@
         /// update unique identity
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
-        bool UpdateUniqueIdentity<TEntity>(TEntity entity);
+        bool UpdateUniqueIdentity<TContext, TEntity>(TEntity entity);
     }
 }
