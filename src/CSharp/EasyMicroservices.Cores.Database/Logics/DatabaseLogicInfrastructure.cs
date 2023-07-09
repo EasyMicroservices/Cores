@@ -18,21 +18,30 @@ namespace EasyMicroservices.Cores.Database.Logics
         , IAsyncDisposable
 #endif
     {
-        IMapperProvider _mapperProvider;
+        /// <summary>
+        /// 
+        /// </summary>
+        internal protected readonly IMapperProvider _mapperProvider;
+        readonly IUniqueIdentityManager _uniqueIdentityManager;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="mapperProvider"></param>
-        public DatabaseLogicInfrastructure(IMapperProvider mapperProvider)
+        /// <param name="uniqueIdentityManager"></param>
+        public DatabaseLogicInfrastructure(IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager)
         {
             _mapperProvider = mapperProvider;
+            _uniqueIdentityManager = uniqueIdentityManager;
         }
+
         /// <summary>
         /// 
         /// </summary>
-        public DatabaseLogicInfrastructure()
+        public DatabaseLogicInfrastructure(IUniqueIdentityManager uniqueIdentityManager)
         {
+            _uniqueIdentityManager = uniqueIdentityManager;
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -274,13 +283,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
-        /// <typeparam name="TId"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TContract>> HardDeleteBy<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-           where TEntity : class, IIdSchema<TId>
+        public async Task<MessageContract<TContract>> HardDeleteBy<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+           where TEntity : class
         {
             var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
             var mappedResult = await _mapperProvider.MapAsync<TContract>(result.Entity);
@@ -304,6 +312,10 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
+            if (_uniqueIdentityManager.UpdateUniqueIdentity(result.Entity))
+            {
+                await Update(easyWritableQueryable, result.Entity, cancellationToken);
+            }
             return result.Entity;
         }
 
@@ -321,8 +333,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             var entity = await _mapperProvider.MapAsync<TEntity>(contract);
             ValidateMappedResult(ref entity);
-            var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
-            return result.Entity;
+            var result = await Add<TEntity>(easyWritableQueryable, entity, cancellationToken);
+            return result;
         }
 
         #endregion

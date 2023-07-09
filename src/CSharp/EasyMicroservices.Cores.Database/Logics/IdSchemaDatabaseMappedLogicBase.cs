@@ -4,7 +4,6 @@ using EasyMicroservices.Mapper.Interfaces;
 using ServiceContracts;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -16,11 +15,12 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TId"></typeparam>
     /// <typeparam name="TCreateRequestContract"></typeparam>
     /// <typeparam name="TUpdateRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
-    public class DatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract> : DatabaseLogicInfrastructure, IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TResponseContract>
-        where TEntity : class
+    public class IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : DatabaseLogicInfrastructure, IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>
+        where TEntity : class, IIdSchema<TId>
         where TResponseContract : class
     {
         readonly IEasyReadableQueryableAsync<TEntity> _easyReadableQueryable;
@@ -31,7 +31,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="mapperProvider"></param>
         /// <param name="uniqueIdentityManager"></param>
-        public DatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
+        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
         {
             _easyReadableQueryable = easyReadableQueryable;
         }
@@ -42,7 +42,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="mapperProvider"></param>
         /// <param name="uniqueIdentityManager"></param>
-        public DatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
+        public IdSchemaDatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
         }
@@ -54,7 +54,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="mapperProvider"></param>
         /// <param name="uniqueIdentityManager"></param>
-        public DatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
+        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
             _easyReadableQueryable = easyReadableQueryable;
@@ -74,13 +74,16 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="contract"></param>
+        /// <param name="id"></param>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<MessageContract<TResponseContract>> GetById(TResponseContract contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetById(TId id, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
-            throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
+            if (query != null)
+                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, func, cancellationToken);
         }
 
         /// <summary>
@@ -105,14 +108,10 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TResponseContract>> Add(TCreateRequestContract contract, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TId>> Add(TCreateRequestContract contract, CancellationToken cancellationToken = default)
         {
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
-            if (!result)
-                return result.ToContract<TResponseContract>();
-            var mapped = await _mapperProvider.MapAsync<TResponseContract>(result.Result);
-            ValidateMappedResult(ref mapped);
-            return mapped;
+            return result.Result.Id;
         }
 
         /// <summary>
@@ -133,12 +132,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="contract"></param>
+        /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetById(TResponseContract contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
         {
-            throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
+            return GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, null, cancellationToken);
         }
 
         /// <summary>
@@ -174,13 +173,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="contract"></param>
+        /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract<TResponseContract>> HardDeleteById(TResponseContract contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
         {
-            throw new Exception("HardDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteById method");
+            return HardDeleteById<TEntity, TResponseContract, TId>(_easyWriteableQueryable, id, cancellationToken);
         }
     }
 }
