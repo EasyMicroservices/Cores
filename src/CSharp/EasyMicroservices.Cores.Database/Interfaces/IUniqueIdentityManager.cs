@@ -1,4 +1,7 @@
-﻿namespace EasyMicroservices.Cores.Database.Interfaces
+﻿using EasyMicroservices.Database.Interfaces;
+using System;
+
+namespace EasyMicroservices.Cores.Database.Interfaces
 {
     /// <summary>
     /// 
@@ -9,9 +12,9 @@
         /// update unique identity
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
+        /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
-        bool UpdateUniqueIdentity<TContext, TEntity>(TEntity entity);
+        bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Database.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,18 +40,18 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
+        /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public bool UpdateUniqueIdentity<TContext, TEntity>(TEntity entity)
+        public bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity)
         {
             if (entity is IUniqueIdentitySchema uniqueIdentitySchema)
             {
                 if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
                     uniqueIdentitySchema.UniqueIdentity = StartUniqueIdentity;
                 var ids = uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty() ? null : DecodeUniqueIdentity(uniqueIdentitySchema.UniqueIdentity);
-                if (TableIds.TryGetValue(GetTableName<TContext, TEntity>(MicroserviceId), out long tableId))
+                if (TableIds.TryGetValue(GetTableName<TEntity>(context.ContextType, MicroserviceId), out long tableId))
                 {
                     if (entity is IIdSchema<long> longIdSchema)
                     {
@@ -130,11 +131,10 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
         /// <returns></returns>
-        public string GetTableName<TContext, TEntity>(long microserviceId)
+        public string GetTableName<TEntity>(Type contextType, long microserviceId)
         {
-            return GetTableName(microserviceId, typeof(TContext).Name, typeof(TEntity).Name);
+            return GetTableName(microserviceId, contextType.Name, typeof(TEntity).Name);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <param name="tableId"></param>
         public void InitializeTables(long microserviceId, string contextName, string tableName, long tableId)
         {
-            TableIds.TryAdd(GetTableName(microserviceId, contextName, tableName), tableId);
+            TableIds[GetTableName(microserviceId, contextName, tableName)] = tableId;
         }
     }
 }
