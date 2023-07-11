@@ -44,6 +44,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="uniqueIdentityManager"></param>
         public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyReadableQueryable, easyWriteableQueryable, mapperProvider, uniqueIdentityManager)
         {
+
         }
 
     }

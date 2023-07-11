@@ -24,7 +24,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TResultSchema>> HardDeleteById(TId id, CancellationToken cancellationToken = default);
+        Task<MessageContract> HardDeleteById(TId id, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TContract>> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+        Task<MessageContract> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>

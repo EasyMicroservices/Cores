@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.5" />
+    <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.2" />
+    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.3" />
+    <PackageReference Include="EasyMicroservices.Tests" Version="0.0.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.8" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EasyMicroservices.Cores.AspCoreApi\EasyMicroservices.Cores.AspCoreApi.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.Contracts\EasyMicroservices.Cores.Contracts.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.Database\EasyMicroservices.Cores.Database.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.EntityFrameworkCore\EasyMicroservices.Cores.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.Services\EasyMicroservices.Cores.Services.csproj" />
+  </ItemGroup>
+
+</Project>

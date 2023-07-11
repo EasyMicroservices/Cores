@@ -157,7 +157,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract<TResponseContract>> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             return HardDeleteBy<TEntity, TResponseContract>(_easyWriteableQueryable, predicate, cancellationToken);
         }
@@ -178,7 +178,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract<TResponseContract>> HardDeleteById(TResponseContract contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteById(TResponseContract contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("HardDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteById method");
         }
