@@ -28,6 +28,15 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="microserviceId"></param>
+        public DefaultUniqueIdentityManager(long microserviceId)
+        {
+            MicroserviceId = microserviceId;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public DefaultUniqueIdentityManager()
         {
 

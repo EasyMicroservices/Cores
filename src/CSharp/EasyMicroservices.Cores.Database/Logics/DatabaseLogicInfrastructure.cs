@@ -315,12 +315,12 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
+            await easyWritableQueryable.SaveChangesAsync();
             if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
             {
-                await easyWritableQueryable.SaveChangesAsync();
                 await Update(easyWritableQueryable, result.Entity, cancellationToken);
+                await easyWritableQueryable.SaveChangesAsync();
             }
-            await easyWritableQueryable.SaveChangesAsync();
             return result.Entity;
         }
 
