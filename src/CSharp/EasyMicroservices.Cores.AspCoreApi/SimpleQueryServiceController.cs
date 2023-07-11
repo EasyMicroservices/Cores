@@ -53,11 +53,9 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual async Task<MessageContract<TId>> Add(TCreateRequestContract request, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TId>> Add(TCreateRequestContract request, CancellationToken cancellationToken = default)
         {
-            var result = await ContractLogic.Add(request, cancellationToken);
-            await ContractLogic.SaveChangesAsync(cancellationToken);
-            return result;
+            return ContractLogic.Add(request, cancellationToken);
         }
 
         /// <summary>
@@ -67,11 +65,9 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual async Task<MessageContract<TResponseContract>> Update(TUpdateRequestContract request, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> Update(TUpdateRequestContract request, CancellationToken cancellationToken = default)
         {
-            var result = await ContractLogic.Update(request, cancellationToken);
-            await ContractLogic.SaveChangesAsync(cancellationToken);
-            return result;
+            return ContractLogic.Update(request, cancellationToken);
         }
 
         /// <summary>
@@ -81,11 +77,9 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual async Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
         {
-            var result = await ContractLogic.HardDeleteById(id, cancellationToken);
-            await ContractLogic.SaveChangesAsync(cancellationToken);
-            return result;
+            return ContractLogic.HardDeleteById(id, cancellationToken);
         }
 
         /// <summary>
