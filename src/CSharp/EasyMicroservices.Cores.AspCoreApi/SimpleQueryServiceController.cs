@@ -77,7 +77,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<MessageContract<TResponseContract>> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract> HardDeleteById(TId id, CancellationToken cancellationToken = default)
         {
             return ContractLogic.HardDeleteById(id, cancellationToken);
         }

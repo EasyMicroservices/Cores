@@ -51,7 +51,7 @@ namespace EasyMicroservices.Cores.Database.Managers
                 if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
                     uniqueIdentitySchema.UniqueIdentity = StartUniqueIdentity;
                 var ids = uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty() ? null : DecodeUniqueIdentity(uniqueIdentitySchema.UniqueIdentity);
-                if (TableIds.TryGetValue(GetTableName<TEntity>(context.ContextType, MicroserviceId), out long tableId))
+                if (TableIds.TryGetValue(GetContextTableName<TEntity>(context.ContextType, MicroserviceId), out long tableId))
                 {
                     if (entity is IIdSchema<long> longIdSchema)
                     {
@@ -132,9 +132,29 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public string GetTableName<TEntity>(Type contextType, long microserviceId)
+        public string GetContextTableName<TEntity>(Type contextType, long microserviceId)
         {
-            return GetTableName(microserviceId, contextType.Name, typeof(TEntity).Name);
+            return GetContextTableName(microserviceId, GetContextName(contextType), typeof(TEntity).Name);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contextType"></param>
+        /// <returns></returns>
+        public string GetContextName(Type contextType)
+        {
+            return contextType.Name;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tableType"></param>
+        /// <returns></returns>
+        public string GetTableName(Type tableType)
+        {
+            return tableType.Name;
         }
 
         /// <summary>
@@ -144,7 +164,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <param name="contextName"></param>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        public string GetTableName(long microserviceId, string contextName, string tableName)
+        public string GetContextTableName(long microserviceId, string contextName, string tableName)
         {
             return $"{microserviceId}_{contextName}_{tableName}";
         }
@@ -158,7 +178,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <param name="tableId"></param>
         public void InitializeTables(long microserviceId, string contextName, string tableName, long tableId)
         {
-            TableIds[GetTableName(microserviceId, contextName, tableName)] = tableId;
+            TableIds[GetContextTableName(microserviceId, contextName, tableName)] = tableId;
         }
     }
 }

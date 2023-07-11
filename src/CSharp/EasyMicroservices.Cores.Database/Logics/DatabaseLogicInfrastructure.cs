@@ -241,12 +241,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> HardDeleteById<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TId id, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> HardDeleteById<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TId id, CancellationToken cancellationToken = default)
             where TEntity : class, IIdSchema<TId>
         {
             var result = await easyWritableQueryable.RemoveAllAsync(x => x.Id.Equals(id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
-            return result.Entity;
+            return true;
         }
 
         /// <summary>
@@ -259,14 +259,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TContract>> HardDeleteById<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TId id, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> HardDeleteById<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TId id, CancellationToken cancellationToken = default)
             where TEntity : class, IIdSchema<TId>
         {
             var result = await easyWritableQueryable.RemoveAllAsync(x => x.Id.Equals(id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
-            var mappedResult = await _mapperProvider.MapAsync<TContract>(result.Entity);
-            ValidateMappedResult(ref mappedResult);
-            return mappedResult;
+            return true;
         }
 
         /// <summary>
@@ -276,12 +274,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> HardDeleteBy<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> HardDeleteBy<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
-            return result.Entity;
+            return true;
         }
 
         /// <summary>
@@ -293,14 +291,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TContract>> HardDeleteBy<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> HardDeleteBy<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
            where TEntity : class
         {
             var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
-            var mappedResult = await _mapperProvider.MapAsync<TContract>(result.Entity);
-            ValidateMappedResult(ref mappedResult);
-            return mappedResult;
+            return true;
         }
 
         #endregion
@@ -321,6 +317,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
             if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
             {
+                await easyWritableQueryable.SaveChangesAsync();
                 await Update(easyWritableQueryable, result.Entity, cancellationToken);
             }
             await easyWritableQueryable.SaveChangesAsync();
