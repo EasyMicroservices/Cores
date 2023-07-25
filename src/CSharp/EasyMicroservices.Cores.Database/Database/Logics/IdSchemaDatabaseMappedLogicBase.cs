@@ -118,6 +118,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract<TEntity>> AddEntity(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            return Add<TEntity>(_easyWriteableQueryable, entity, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

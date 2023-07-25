@@ -44,6 +44,13 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract<TId>> Add(TCreateContract contract, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract<TEntity>> AddEntity(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 
