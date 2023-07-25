@@ -1,5 +1,5 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
-using ServiceContracts;
+using EasyMicroservices.ServiceContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +64,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract<TContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
-        
+
         /// <summary>
         /// 
         /// </summary>

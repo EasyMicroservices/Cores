@@ -1,4 +1,4 @@
-﻿using ServiceContracts;
+﻿using EasyMicroservices.ServiceContracts;
 using System;
 using System.Linq.Expressions;
 using System.Threading;

@@ -1,7 +1,7 @@
 ﻿using EasyMicroservices.Cores.Contracts.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
-using ServiceContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;

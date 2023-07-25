@@ -2,7 +2,7 @@
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
-using ServiceContracts;
+using EasyMicroservices.ServiceContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
