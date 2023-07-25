@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 

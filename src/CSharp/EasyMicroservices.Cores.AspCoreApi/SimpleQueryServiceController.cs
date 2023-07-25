@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Contracts.Requests;
+using EasyMicroservices.Cores.Database.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ServiceContracts;
 using System;
@@ -52,6 +53,18 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [HttpGet]
+        public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetUniqueIdentityRequest request, CancellationToken cancellationToken = default)
+        {
+            return ContractLogic.GetByUniqueIdentity(request, OnGetQuery(), cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost]
         public virtual Task<MessageContract<TId>> Add(TCreateRequestContract request, CancellationToken cancellationToken = default)
         {
@@ -76,7 +89,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpDelete]
         public virtual Task<MessageContract> HardDeleteById(TId id, CancellationToken cancellationToken = default)
         {
             return ContractLogic.HardDeleteById(id, cancellationToken);
@@ -93,6 +106,17 @@ namespace EasyMicroservices.Cores.AspCoreApi
             return ContractLogic.GetAll(OnGetAllQuery(), cancellationToken);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public virtual Task<MessageContract<List<TResponseContract>>> GetAllByUniqueIdentity(GetUniqueIdentityRequest request, CancellationToken cancellationToken = default)
+        {
+            return ContractLogic.GetAllByUniqueIdentity(request, OnGetAllQuery(), cancellationToken);
+        }
 
         /// <summary>
         /// 

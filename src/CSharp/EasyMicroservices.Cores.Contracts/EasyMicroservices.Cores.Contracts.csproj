@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.1</Version>
+    <Version>0.0.0.2</Version>
     <Description>core.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base</PackageTags>
@@ -13,6 +13,12 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Contracts.xml</DocumentationFile>
+    <RootNamespace>EasyMicroservices.Cores</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Contracts\Common\" />
+    <Folder Include="Contracts\Responses\" />
+  </ItemGroup>
 
 </Project>

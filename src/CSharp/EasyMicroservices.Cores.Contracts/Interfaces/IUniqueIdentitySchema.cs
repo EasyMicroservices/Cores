@@ -1,4 +1,4 @@
-﻿namespace EasyMicroservices.Cores.Database.Interfaces
+﻿namespace EasyMicroservices.Cores.Interfaces
 {
     /// <summary>
     /// 

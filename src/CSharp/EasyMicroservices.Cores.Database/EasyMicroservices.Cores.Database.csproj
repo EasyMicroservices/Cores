@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.11</Version>
+    <Version>0.0.0.12</Version>
     <Description>core of database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database</PackageTags>
@@ -13,6 +13,7 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Database.xml</DocumentationFile>
+    <RootNamespace>EasyMicroservices.Cores</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ReadableLogics\" />
-    <Folder Include="WritableLogics\" />
+    <Folder Include="Database\ReadableLogics\" />
+    <Folder Include="Database\WritableLogics\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EasyMicroservices.Cores.Contracts\EasyMicroservices.Cores.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

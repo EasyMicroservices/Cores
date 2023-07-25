@@ -1,4 +1,5 @@
-﻿using ServiceContracts;
+﻿using EasyMicroservices.Cores.Interfaces;
+using ServiceContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,9 +59,26 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract<TContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract<List<TContract>>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract<List<TContract>>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
     }
 }

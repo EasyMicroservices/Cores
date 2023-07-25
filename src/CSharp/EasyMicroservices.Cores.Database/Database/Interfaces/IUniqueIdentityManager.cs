@@ -1,5 +1,4 @@
 ﻿using EasyMicroservices.Database.Interfaces;
-using System;
 
 namespace EasyMicroservices.Cores.Database.Interfaces
 {
@@ -16,5 +15,13 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
         bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="context"></param>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        bool IsUniqueIdentityForThisTable<TEntity>(IContext context, string uniqueIdentity);
     }
 }
