@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -112,13 +113,29 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <param name="segmentCount"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static string CutUniqueIdentityBySegmentCount(string uniqueIdentity, int segmentCount)
+        public static string CutUniqueIdentity(string uniqueIdentity, int segmentCount)
         {
             if (uniqueIdentity.IsNullOrEmpty())
                 throw new Exception($"{nameof(uniqueIdentity)} cannot be null or empty!");
 
             var keys = uniqueIdentity.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
             return string.Join("-", keys.Take(segmentCount));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="uniqueIdentity"></param>
+        /// <param name="segmentCount"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static string CutUniqueIdentityFromEnd(string uniqueIdentity, int segmentCount)
+        {
+            if (uniqueIdentity.IsNullOrEmpty())
+                throw new Exception($"{nameof(uniqueIdentity)} cannot be null or empty!");
+
+            var keys = uniqueIdentity.Split(new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join("-", keys.Take(keys.Length - segmentCount));
         }
 
         /// <summary>
@@ -188,6 +205,23 @@ namespace EasyMicroservices.Cores.Database.Managers
         public void InitializeTables(long microserviceId, string contextName, string tableName, long tableId)
         {
             TableIds[GetContextTableName(microserviceId, contextName, tableName)] = tableId;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="context"></param>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        public bool IsUniqueIdentityForThisTable<TEntity>(IContext context, string uniqueIdentity)
+        {
+            var decodeIds = DecodeUniqueIdentity(uniqueIdentity);
+            if (TableIds.TryGetValue(GetContextTableName(MicroserviceId, GetContextName(context.ContextType), GetTableName(typeof(TEntity))), out long tableId))
+            {
+                return decodeIds.Contains(tableId);
+            }
+            return false;
         }
     }
 }

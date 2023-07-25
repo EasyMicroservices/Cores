@@ -1,4 +1,4 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Interfaces;
 
 namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities
 {

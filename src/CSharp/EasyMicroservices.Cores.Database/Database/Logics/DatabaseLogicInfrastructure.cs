@@ -1,9 +1,11 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using ServiceContracts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,6 +54,16 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             if (value == null || value.Equals(default(T)))
                 throw new NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
+        }
+
+        private IEasyReadableQueryableAsync<TEntity> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity)
+            where TEntity : class
+        {
+            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            if (!_uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
+                uniqueIdentity += "-";
+            queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IUniqueIdentitySchema).UniqueIdentity.StartsWith(uniqueIdentity)));
+            return queryable;
         }
 
         #region Get one
@@ -103,6 +115,26 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TEntity>> GetBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            if (query != null)
+                queryable = query(queryable);
+            var result = await queryable.FirstOrDefaultAsync(cancellationToken);
+            if (result == null)
+                return (FailedReasonType.NotFound, $"Item by predicate not found!");
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="predicate"></param>
@@ -144,6 +176,31 @@ namespace EasyMicroservices.Cores.Database.Logics
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<MessageContract<TContract>> GetByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, CancellationToken cancellationToken = default)
+            where TEntity : class
+            where TContract : class
+        {
+            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity);
+            var entityResult = await GetBy(queryable, query, cancellationToken);
+            if (!entityResult)
+                return entityResult.ToContract<TContract>();
+            var result = await _mapperProvider.MapAsync<TContract>(entityResult.Result);
+            ValidateMappedResult(ref result);
+            return result;
+        }
+
+
         #endregion
 
         #region Get list
@@ -179,6 +236,30 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TContract : class
         {
             var entityResult = await GetAll(easyReadableQueryable, query, cancellationToken);
+            if (!entityResult)
+                return entityResult.ToContract<List<TContract>>();
+            var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);
+            ValidateMappedResult(ref result);
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<MessageContract<List<TContract>>> GetAllByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, CancellationToken cancellationToken = default)
+            where TEntity : class
+            where TContract : class
+        {
+            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity);
+            var entityResult = await GetAll(queryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToContract<List<TContract>>();
             var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);

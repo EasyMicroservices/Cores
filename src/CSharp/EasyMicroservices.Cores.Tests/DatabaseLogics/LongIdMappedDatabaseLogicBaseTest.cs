@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Contracts.Requests;
+using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
@@ -81,6 +82,26 @@ namespace EasyMicroservices.Cores.Tests.Database
             await logic.Update(added);
             var found = await logic.GetById(added.Id);
             Assert.Equal(found.Result.UserName, toUserName);
+        }
+
+        [Theory]
+        [InlineData("Ahmad")]
+        [InlineData("Yasin")]
+        public async Task UniqueIdentityAsync(string userName)
+        {
+            await using var logic = GetContractLogic();
+            var added = await AddAsync(userName);
+            var found = await logic.GetByUniqueIdentity(new GetUniqueIdentityRequest()
+            {
+                UniqueIdentity = added.UniqueIdentity
+            });
+            Assert.Equal(found.Result.UserName, userName);
+
+            var foundAll = await logic.GetAllByUniqueIdentity(new GetUniqueIdentityRequest()
+            {
+                UniqueIdentity = DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(added.UniqueIdentity, 2)
+            });
+            Assert.Contains(foundAll.Result, x =>x.UserName == userName);
         }
 
         [Theory]
