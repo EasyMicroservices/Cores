@@ -9,7 +9,7 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.CompileTimeMapper.Providers;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
-using ServiceContracts;
+using EasyMicroservices.ServiceContracts;
 
 namespace EasyMicroservices.Cores.Tests.Database
 {
@@ -101,7 +101,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             {
                 UniqueIdentity = DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(added.UniqueIdentity, 2)
             });
-            Assert.Contains(foundAll.Result, x =>x.UserName == userName);
+            Assert.Contains(foundAll.Result, x => x.UserName == userName);
         }
 
         [Theory]
