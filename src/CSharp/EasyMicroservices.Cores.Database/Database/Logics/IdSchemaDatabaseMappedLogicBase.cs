@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
@@ -75,16 +76,16 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idRequest"></param>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TResponseContract>> GetById(TId id, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
-            return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, func, cancellationToken);
+            return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, idRequest, func, cancellationToken);
         }
 
         /// <summary>
@@ -145,12 +146,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetById(TId id, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TId> idRequest, CancellationToken cancellationToken = default)
         {
-            return GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, id, null, cancellationToken);
+            return GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, idRequest, null, cancellationToken);
         }
 
         /// <summary>
@@ -183,16 +184,41 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, cancellationToken);
         }
+
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteById(DeleteRequestContract<TId> request, CancellationToken cancellationToken = default)
         {
-            return HardDeleteById<TEntity, TResponseContract, TId>(_easyWriteableQueryable, id, cancellationToken);
+            return HardDeleteById<TEntity, TResponseContract, TId>(_easyWriteableQueryable, request, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="isDelete"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract> SoftDeleteBy(Expression<Func<TEntity, bool>> predicate, bool isDelete, CancellationToken cancellationToken = default)
+        {
+            return SoftDeleteBy(_easyReadableQueryable, _easyWriteableQueryable, predicate, isDelete, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
+        {
+            return SoftDeleteById(_easyReadableQueryable, _easyWriteableQueryable, deleteRequest, null, cancellationToken);
         }
 
         /// <summary>

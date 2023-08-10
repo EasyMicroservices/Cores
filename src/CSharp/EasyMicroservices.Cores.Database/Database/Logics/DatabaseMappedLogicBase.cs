@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
@@ -78,7 +79,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<MessageContract<TResponseContract>> GetById(TResponseContract contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TResponseContract> contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }
@@ -148,7 +149,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetById(TResponseContract contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }
@@ -173,6 +174,19 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return HardDeleteBy<TEntity, TResponseContract>(_easyWriteableQueryable, predicate, cancellationToken);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="isDelete"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract> SoftDeleteBy(Expression<Func<TEntity, bool>> predicate, bool isDelete, CancellationToken cancellationToken = default)
+        {
+            return SoftDeleteBy(_easyReadableQueryable, _easyWriteableQueryable, predicate, isDelete, null, cancellationToken);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -190,7 +204,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract> HardDeleteById(TResponseContract contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteById(DeleteRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("HardDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteById method");
         }
@@ -223,6 +237,17 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
             return base.GetAllByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TResponseContract> deleteRequest, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("SoftDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }
     }
 }

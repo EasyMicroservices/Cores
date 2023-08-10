@@ -58,8 +58,12 @@ namespace EasyMicroservices.Cores.Tests.Database
             var user = await logic.Add(addUser);
             Assert.True(user.IsSuccess);
             Assert.True(user.Result > 0);
-            var foundUser = await logic.GetById(user.Result);
+            var foundUser = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            {
+                Id = user.Result
+            });
             Assert.True(foundUser.IsSuccess);
+            Assert.True(foundUser.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
             Assert.Equal(user.Result, foundUser.Result.Id);
             Assert.Equal(addUser.UserName, foundUser.Result.UserName);
             Assert.NotEmpty(foundUser.Result.UniqueIdentity);
@@ -80,8 +84,12 @@ namespace EasyMicroservices.Cores.Tests.Database
             var added = await AddAsync(userName);
             added.UserName = toUserName;
             await logic.Update(added);
-            var found = await logic.GetById(added.Id);
+            var found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            {
+                Id = added.Id
+            });
             Assert.Equal(found.Result.UserName, toUserName);
+            Assert.NotNull(found.Result.ModificationDateTime);
         }
 
         [Theory]
@@ -91,13 +99,13 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             await using var logic = GetContractLogic();
             var added = await AddAsync(userName);
-            var found = await logic.GetByUniqueIdentity(new GetUniqueIdentityRequest()
+            var found = await logic.GetByUniqueIdentity(new GetUniqueIdentityRequestContract()
             {
                 UniqueIdentity = added.UniqueIdentity
             });
             Assert.Equal(found.Result.UserName, userName);
 
-            var foundAll = await logic.GetAllByUniqueIdentity(new GetUniqueIdentityRequest()
+            var foundAll = await logic.GetAllByUniqueIdentity(new GetUniqueIdentityRequestContract()
             {
                 UniqueIdentity = DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(added.UniqueIdentity, 2)
             });
@@ -110,11 +118,45 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             await using var logic = GetContractLogic();
             var added = await AddAsync(userName);
-            var found = await logic.GetById(added.Id);
+            var found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            {
+                Id = added.Id
+            });
             Assert.Equal(found.Result.Id, added.Id);
-            var deleted = await logic.HardDeleteById(found.Result.Id);
+            var deleted = await logic.HardDeleteById(new Contracts.Requests.DeleteRequestContract<long>()
+            {
+                Id = found.Result.Id
+            });
             Assert.True(deleted);
-            found = await logic.GetById(added.Id);
+            found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            {
+                Id = added.Id
+            });
+            Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+        }
+
+        [Theory]
+        [InlineData("HosseinSoftDelete")]
+        [InlineData("RezaSoftDelete")]
+        public async Task SoftDeleteAsync(string userName)
+        {
+            await using var logic = GetContractLogic();
+            var added = await AddAsync(userName);
+            var found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            {
+                Id = added.Id
+            });
+            Assert.Equal(found.Result.Id, added.Id);
+            var deleted = await logic.SoftDeleteById(new Contracts.Requests.SoftDeleteRequestContract<long>
+            {
+                Id = found.Result.Id,
+                IsDelete = true
+            });
+            Assert.True(deleted);
+            found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            {
+                Id = added.Id
+            });
             Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
         }
     }

@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
@@ -61,27 +62,27 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetById(TId id, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TEntity>> GetById(GetIdRequestContract<TId> idRequest, CancellationToken cancellationToken = default)
         {
-            return await GetById(_easyReadableQueryable, id, null, cancellationToken);
+            return await GetById(_easyReadableQueryable, idRequest, null, cancellationToken);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idRequest"></param>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetById(TId id, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TEntity>> GetById(GetIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
-            return await GetById(_easyReadableQueryable, id, func, cancellationToken);
+            return await GetById(_easyReadableQueryable, idRequest, func, cancellationToken);
         }
 
         /// <summary>
@@ -120,7 +121,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
-            return await GetBy(_easyReadableQueryable, predicate, func, cancellationToken);
+            return await GetBy(_easyReadableQueryable, predicate, func, true, cancellationToken);
         }
 
         /// <summary>
@@ -137,12 +138,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract> HardDeleteById(TId id, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteById(DeleteRequestContract<TId> request, CancellationToken cancellationToken = default)
         {
-            return HardDeleteById(_easyWriteableQueryable, id, cancellationToken);
+            return HardDeleteById(_easyWriteableQueryable, request, cancellationToken);
         }
 
         /// <summary>
@@ -154,6 +155,17 @@ namespace EasyMicroservices.Cores.Database.Logics
         public Task<MessageContract> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             return HardDeleteBy(_easyWriteableQueryable, predicate, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
+        {
+            return SoftDeleteById(_easyReadableQueryable, _easyWriteableQueryable, deleteRequest, null, cancellationToken);
         }
 
         /// <summary>

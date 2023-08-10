@@ -5,7 +5,7 @@ namespace EasyMicroservices.Cores.Contracts.Contracts.Requests
     /// <summary>
     /// 
     /// </summary>
-    public class GetUniqueIdentityRequest : IUniqueIdentitySchema
+    public class GetUniqueIdentityRequestContract : IUniqueIdentitySchema
     {
         /// <summary>
         /// 
