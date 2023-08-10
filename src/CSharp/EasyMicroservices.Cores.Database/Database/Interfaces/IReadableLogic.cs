@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
 using System.Collections.Generic;
@@ -19,10 +20,10 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TResultSchema>> GetById(TId id, CancellationToken cancellationToken = default);
+        Task<MessageContract<TResultSchema>> GetById(GetIdRequestContract<TId> idRequest, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
@@ -51,11 +52,11 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idRequest"></param>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TContract>> GetById(TId id, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        Task<MessageContract<TContract>> GetById(GetIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>

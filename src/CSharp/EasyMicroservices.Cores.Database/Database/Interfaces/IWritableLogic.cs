@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.ServiceContracts;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.ServiceContracts;
 using System;
 using System.Linq.Expressions;
 using System.Threading;
@@ -21,10 +22,17 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract> HardDeleteById(TId id, CancellationToken cancellationToken = default);
+        Task<MessageContract> HardDeleteById(DeleteRequestContract<TId> request, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -59,6 +67,15 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="isDelete"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> SoftDeleteBy(Expression<Func<TEntity, bool>> predicate, bool isDelete, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
