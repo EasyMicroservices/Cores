@@ -17,7 +17,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         {
             base.OnModelCreating(modelBuilder);
 
-            foreach (var entityType in Model.GetEntityTypes())
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 if (typeof(IUniqueIdentitySchema).IsAssignableFrom(entityType.ClrType))
                 {
