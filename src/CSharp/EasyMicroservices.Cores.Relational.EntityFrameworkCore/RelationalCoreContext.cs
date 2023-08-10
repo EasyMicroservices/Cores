@@ -2,7 +2,7 @@
 using EasyMicroservices.Cores.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace EasyMicroservices.Cores.Sql.EntityFrameworkCore
+namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
 {
     /// <summary>
     /// 
