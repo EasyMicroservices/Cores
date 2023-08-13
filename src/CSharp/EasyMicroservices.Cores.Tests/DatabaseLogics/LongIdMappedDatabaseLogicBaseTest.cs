@@ -1,7 +1,9 @@
 ﻿using EasyMicroservices.Cores.Contracts.Contracts.Requests;
+using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Tests.Contracts.Common;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using EasyMicroservices.Database.EntityFrameworkCore.Providers;
@@ -23,6 +25,11 @@ namespace EasyMicroservices.Cores.Tests.Database
         IContractLogic<UserEntity, UserEntity, UserEntity, UserEntity, long> GetContractLogic()
         {
             return new LongIdMappedDatabaseLogicBase<UserEntity, UserEntity, UserEntity, UserEntity>(GetDatabase().GetReadableOf<UserEntity>(), GetDatabase().GetWritableOf<UserEntity>(), GetMapper(), GetUniqueIdentityManager());
+        }
+
+        IContractLogic<UserEntity, UpdateUserContract, UpdateUserContract, UserEntity, long> GetUpdateContractLogic()
+        {
+            return new LongIdMappedDatabaseLogicBase<UserEntity, UpdateUserContract, UpdateUserContract, UserEntity>(GetDatabase().GetReadableOf<UserEntity>(), GetDatabase().GetWritableOf<UserEntity>(), GetMapper(), GetUniqueIdentityManager());
         }
 
         public virtual IDatabase GetDatabase()
@@ -58,7 +65,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             var user = await logic.Add(addUser);
             Assert.True(user.IsSuccess);
             Assert.True(user.Result > 0);
-            var foundUser = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            var foundUser = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = user.Result
             });
@@ -80,16 +87,24 @@ namespace EasyMicroservices.Cores.Tests.Database
         [InlineData("Hassan", "Hassan1")]
         public async Task UpdateAsync(string userName, string toUserName)
         {
-            await using var logic = GetContractLogic();
+            await using var logic = GetUpdateContractLogic();
             var added = await AddAsync(userName);
             added.UserName = toUserName;
-            await logic.Update(added);
-            var found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            await logic.Update(new UpdateUserContract()
+            {
+                Id = added.Id,
+                UniqueIdentity = added.UniqueIdentity,
+                UserName = added.UserName
+            });
+            var found = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = added.Id
             });
-            Assert.Equal(found.Result.UserName, toUserName);
             Assert.NotNull(found.Result.ModificationDateTime);
+            Assert.Equal(found.Result.CreationDateTime, added.CreationDateTime);
+            Assert.True(found.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(found.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.Equal(found.Result.UserName, toUserName);
         }
 
         [Theory]
@@ -118,17 +133,17 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             await using var logic = GetContractLogic();
             var added = await AddAsync(userName);
-            var found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            var found = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = added.Id
             });
             Assert.Equal(found.Result.Id, added.Id);
-            var deleted = await logic.HardDeleteById(new Contracts.Requests.DeleteRequestContract<long>()
+            var deleted = await logic.HardDeleteById(new DeleteRequestContract<long>()
             {
                 Id = found.Result.Id
             });
             Assert.True(deleted);
-            found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            found = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = added.Id
             });
@@ -142,18 +157,18 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             await using var logic = GetContractLogic();
             var added = await AddAsync(userName);
-            var found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            var found = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = added.Id
             });
             Assert.Equal(found.Result.Id, added.Id);
-            var deleted = await logic.SoftDeleteById(new Contracts.Requests.SoftDeleteRequestContract<long>
+            var deleted = await logic.SoftDeleteById(new SoftDeleteRequestContract<long>
             {
                 Id = found.Result.Id,
                 IsDelete = true
             });
             Assert.True(deleted);
-            found = await logic.GetById(new Contracts.Requests.GetIdRequestContract<long>()
+            found = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = added.Id
             });
