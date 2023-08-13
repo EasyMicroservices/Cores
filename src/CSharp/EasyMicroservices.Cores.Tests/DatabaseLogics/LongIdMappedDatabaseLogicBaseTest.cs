@@ -90,12 +90,16 @@ namespace EasyMicroservices.Cores.Tests.Database
             await using var logic = GetUpdateContractLogic();
             var added = await AddAsync(userName);
             added.UserName = toUserName;
-            await logic.Update(new UpdateUserContract()
+            var updateResult = await logic.Update(new UpdateUserContract()
             {
                 Id = added.Id,
                 UniqueIdentity = added.UniqueIdentity,
                 UserName = added.UserName
             });
+            Assert.NotNull(updateResult.Result.ModificationDateTime);
+            Assert.Equal(updateResult.Result.CreationDateTime, added.CreationDateTime);
+            Assert.True(updateResult.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(updateResult.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
             var found = await logic.GetById(new GetIdRequestContract<long>()
             {
                 Id = added.Id
