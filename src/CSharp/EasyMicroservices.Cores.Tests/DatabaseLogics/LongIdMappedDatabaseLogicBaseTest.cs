@@ -1,5 +1,4 @@
-﻿using EasyMicroservices.Cores.Contracts.Contracts.Requests;
-using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
