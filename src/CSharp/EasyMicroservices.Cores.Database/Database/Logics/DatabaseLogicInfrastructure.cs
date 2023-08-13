@@ -320,6 +320,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
             }
             await easyWritableQueryable.SaveChangesAsync();
+            await easyWritableQueryable.Context.Reload(result.Entity, cancellationToken);
             return result.Entity;
         }
 
