@@ -1,5 +1,4 @@
-﻿using EasyMicroservices.Cores.Contracts.Contracts.Requests;
-using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;

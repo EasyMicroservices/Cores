@@ -1,6 +1,6 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
 
-namespace EasyMicroservices.Cores.Contracts.Contracts.Requests
+namespace EasyMicroservices.Cores.Contracts.Requests
 {
     /// <summary>
     /// 
