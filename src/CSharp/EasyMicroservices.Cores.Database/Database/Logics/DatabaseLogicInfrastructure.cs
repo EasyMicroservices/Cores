@@ -298,13 +298,27 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> Update<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TEntity>> Update<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            if (entity is IDateTimeSchema schema)
-                schema.ModificationDateTime = DateTime.Now;
+            return InternalUpdate(easyWritableQueryable, entity, cancellationToken, false, true);
+        }
 
+        private async Task<MessageContract<TEntity>> InternalUpdate<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default, bool doSkipUpdate = true, bool doSkipDelete = true)
+            where TEntity : class
+        {
             var result = await easyWritableQueryable.Update(entity, cancellationToken);
+            if (entity is IDateTimeSchema schema)
+            {
+                easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
+                if (!doSkipUpdate)
+                    schema.ModificationDateTime = DateTime.Now;
+            }
+            if (doSkipDelete && entity is ISoftDeleteSchema)
+            {
+                easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
+                easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
+            }
             await easyWritableQueryable.SaveChangesAsync();
             return result.Entity;
         }
@@ -442,7 +456,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                     softDeleteSchema.DeletedDateTime = DateTime.Now;
                 else
                     softDeleteSchema.DeletedDateTime = null;
-                return await Update(easyWritableQueryable, getResult.Result, cancellationToken);
+                return await InternalUpdate(easyWritableQueryable, getResult.Result, cancellationToken, true, false);
             }
             else
                 return (FailedReasonType.OperationFailed, $"Your entity type {getResult.Result.GetType().FullName} is not inheritance from ISoftDeleteSchema");
@@ -470,7 +484,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             await easyWritableQueryable.SaveChangesAsync();
             if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
             {
-                await Update(easyWritableQueryable, result.Entity, cancellationToken);
+                await InternalUpdate(easyWritableQueryable, result.Entity, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
             }
             return result.Entity;
