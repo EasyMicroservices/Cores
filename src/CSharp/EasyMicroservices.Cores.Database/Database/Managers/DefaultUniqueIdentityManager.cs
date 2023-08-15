@@ -123,6 +123,17 @@ namespace EasyMicroservices.Cores.Database.Managers
         }
 
         /// <summary>
+        /// merge multiple unique identities to one
+        /// </summary>
+        /// <param name="uniqueIdentities"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static string MergeUniqueIdentities(params string[] uniqueIdentities)
+        {
+            return GenerateUniqueIdentity(uniqueIdentities.SelectMany(DecodeUniqueIdentity).ToArray());
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="uniqueIdentity"></param>
