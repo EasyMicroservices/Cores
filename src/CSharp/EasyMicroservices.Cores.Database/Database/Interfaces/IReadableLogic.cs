@@ -29,7 +29,14 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<List<TResultSchema>>> GetAll(CancellationToken cancellationToken = default);
+        Task<ListMessageContract<TResultSchema>> GetAll(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<ListMessageContract<TResultSchema>> Filter(FilterRequestContract filterRequest, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -65,6 +72,14 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract<TContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<ListMessageContract<TContract>> Filter(FilterRequestContract filterRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 
@@ -72,7 +87,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<List<TContract>>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        Task<ListMessageContract<TContract>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
@@ -80,6 +95,6 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<List<TContract>>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        Task<ListMessageContract<TContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
     }
 }

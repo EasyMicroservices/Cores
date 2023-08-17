@@ -5,7 +5,6 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -68,7 +67,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<List<TResponseContract>>> GetAll(CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TResponseContract>> GetAll(CancellationToken cancellationToken = default)
         {
             return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, null, cancellationToken);
         }
@@ -135,12 +134,38 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<MessageContract<List<TResponseContract>>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TResponseContract>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
             return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<ListMessageContract<TResponseContract>> Filter(FilterRequestContract filterRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
+        {
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
+            if (query != null)
+                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            return Filter<TEntity, TResponseContract>(filterRequest, _easyReadableQueryable, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<ListMessageContract<TResponseContract>> Filter(FilterRequestContract filterRequest, CancellationToken cancellationToken = default)
+        {
+            return Filter<TEntity, TResponseContract>(filterRequest, _easyReadableQueryable, null, cancellationToken);
         }
 
         /// <summary>
@@ -229,7 +254,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract<List<TResponseContract>>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
+        public Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)

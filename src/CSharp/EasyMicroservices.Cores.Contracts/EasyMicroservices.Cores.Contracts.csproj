@@ -5,10 +5,10 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.4</Version>
-    <Description>core.</Description>
+    <Version>0.0.0.5</Version>
+    <Description>core contracts.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
-    <PackageTags>core,cores,base</PackageTags>
+    <PackageTags>core,cores,base,contract,contracts,dto,dtos</PackageTags>
     <PackageProjectUrl>https://github.com/EasyMicroservices/Cores</PackageProjectUrl>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
