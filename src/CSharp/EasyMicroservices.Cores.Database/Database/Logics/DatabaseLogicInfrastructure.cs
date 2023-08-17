@@ -5,9 +5,9 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -223,11 +223,78 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// get all items
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="filterRequest"></param>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<MessageContract<List<TEntity>>> GetAll<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+        protected async Task<ListMessageContract<TEntity>> Filter<TEntity>(FilterRequestContract filterRequest, IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            if (query != null)
+                queryable = query(queryable);
+
+            if (filterRequest.Index.HasValue)
+                queryable = queryable.ConvertToReadable(queryable.Skip((int)filterRequest.Index.Value));
+            if (filterRequest.Length.HasValue)
+                queryable = queryable.ConvertToReadable(queryable.Take((int)filterRequest.Length.Value));
+
+            if (filterRequest.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity);
+
+            if (filterRequest.FromCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).CreationDateTime >= filterRequest.FromCreationDateTime));
+            if (filterRequest.ToCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).CreationDateTime <= filterRequest.ToCreationDateTime));
+
+            if (filterRequest.FromModificationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).ModificationDateTime >= filterRequest.FromModificationDateTime));
+            if (filterRequest.ToModificationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).ModificationDateTime <= filterRequest.ToModificationDateTime));
+
+            if (filterRequest.FromDeletedDateTime.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime >= filterRequest.FromDeletedDateTime));
+            if (filterRequest.ToDeletedDateTime.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime <= filterRequest.ToDeletedDateTime));
+
+            if (filterRequest.IsDeleted.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
+
+            return await queryable.ToListAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="filterRequest"></param>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected async Task<ListMessageContract<TContract>> Filter<TEntity, TContract>(FilterRequestContract filterRequest, IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class
+            where TContract : class
+        {
+            var entityResult = await Filter(filterRequest, easyReadableQueryable, query, cancellationToken);
+            if (!entityResult)
+                return entityResult.ToAnotherListContract<TContract>();
+            var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);
+            ValidateMappedResult(ref result);
+            return result;
+        }
+
+        /// <summary>
+        /// get all items
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected async Task<ListMessageContract<TEntity>> GetAll<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
@@ -249,13 +316,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<MessageContract<List<TContract>>> GetAll<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+        protected async Task<ListMessageContract<TContract>> GetAll<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
             where TContract : class
         {
             var entityResult = await GetAll(easyReadableQueryable, query, cancellationToken);
             if (!entityResult)
-                return entityResult.ToContract<List<TContract>>();
+                return entityResult.ToAnotherListContract<TContract>();
             var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);
             ValidateMappedResult(ref result);
             return result;
@@ -272,14 +339,14 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<MessageContract<List<TContract>>> GetAllByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TContract>> GetAllByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, CancellationToken cancellationToken = default)
             where TEntity : class
             where TContract : class
         {
             IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity);
             var entityResult = await GetAll(queryable, query, cancellationToken);
             if (!entityResult)
-                return entityResult.ToContract<List<TContract>>();
+                return entityResult.ToAnotherListContract<TContract>();
             var result = await _mapperProvider.MapToListAsync<TContract>(entityResult.Result);
             ValidateMappedResult(ref result);
             return result;

@@ -90,7 +90,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<List<TEntity>>> GetAll(CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TEntity>> GetAll(CancellationToken cancellationToken = default)
         {
             return await GetAll(_easyReadableQueryable, null, cancellationToken);
         }
@@ -101,12 +101,38 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<List<TEntity>>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TEntity>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
             return await GetAll(_easyReadableQueryable, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<ListMessageContract<TEntity>> Filter(FilterRequestContract filterRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
+        {
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
+            if (query != null)
+                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            return Filter<TEntity>(filterRequest, _easyReadableQueryable, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filterRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<ListMessageContract<TEntity>> Filter(FilterRequestContract filterRequest, CancellationToken cancellationToken = default)
+        {
+            return Filter<TEntity>(filterRequest, _easyReadableQueryable, null, cancellationToken);
         }
 
         /// <summary>

@@ -75,6 +75,11 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.NotEmpty(foundUser.Result.UniqueIdentity);
             var allUsers = await logic.GetAll();
             Assert.Contains(allUsers.Result, x => x.Id == user.Result);
+            var allFilterUsers = await logic.Filter(new FilterRequestContract()
+            {
+                IsDeleted = false
+            });
+            Assert.True(allFilterUsers.Result.All(x => allUsers.Result.Any(i => x.Id == i.Id)));
             var ids = DefaultUniqueIdentityManager.DecodeUniqueIdentity(foundUser.Result.UniqueIdentity);
             Assert.Equal(ids.Last(), foundUser.Result.Id);
             Assert.Equal(TableContextId, ids[^2]);
