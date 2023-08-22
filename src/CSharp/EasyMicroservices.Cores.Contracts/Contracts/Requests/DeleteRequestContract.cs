@@ -14,5 +14,16 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// 
         /// </summary>
         public T Id { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        public static implicit operator DeleteRequestContract<T>(T id)
+        {
+            return new DeleteRequestContract<T>()
+            {
+                Id = id
+            };
+        }
     }
 }

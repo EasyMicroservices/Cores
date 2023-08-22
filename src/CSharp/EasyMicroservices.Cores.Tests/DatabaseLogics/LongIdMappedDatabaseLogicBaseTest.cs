@@ -2,6 +2,8 @@
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
+using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
@@ -11,9 +13,18 @@ using EasyMicroservices.Mapper.CompileTimeMapper.Providers;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.ServiceContracts;
+using Microsoft.EntityFrameworkCore;
 
 namespace EasyMicroservices.Cores.Tests.Database
 {
+    public class DatabaseBuilder : IEntityFrameworkCoreDatabaseBuilder
+    {
+        public void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseInMemoryDatabase("Test DB");
+        }
+    }
+
     public class LongIdMappedDatabaseLogicBaseTest
     {
         public LongIdMappedDatabaseLogicBaseTest()
@@ -33,7 +44,7 @@ namespace EasyMicroservices.Cores.Tests.Database
 
         public virtual IDatabase GetDatabase()
         {
-            return new EntityFrameworkCoreDatabaseProvider(new MyTestContext());
+            return new EntityFrameworkCoreDatabaseProvider(new MyTestContext(new DatabaseBuilder()));
         }
 
         const long TableContextId = 150;
