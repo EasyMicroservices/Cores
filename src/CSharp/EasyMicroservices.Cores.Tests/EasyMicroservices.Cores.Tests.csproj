@@ -25,6 +25,7 @@
     <ProjectReference Include="..\EasyMicroservices.Cores.Contracts\EasyMicroservices.Cores.Contracts.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.Database\EasyMicroservices.Cores.Database.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.EntityFrameworkCore\EasyMicroservices.Cores.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.Relational.EntityFrameworkCore\EasyMicroservices.Cores.Relational.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.Services\EasyMicroservices.Cores.Services.csproj" />
   </ItemGroup>
 
