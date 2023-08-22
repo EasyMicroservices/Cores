@@ -1,14 +1,23 @@
-﻿using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
+﻿using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
+using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
+using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
 {
-    public class MyTestContext : DbContext
+    public class MyTestContext : RelationalCoreContext
     {
+        IEntityFrameworkCoreDatabaseBuilder _builder;
+        public MyTestContext(IEntityFrameworkCoreDatabaseBuilder builder)
+        {
+            _builder = builder;
+        }
+
         public DbSet<UserEntity> Users { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseInMemoryDatabase("MyTestContext");
+            if (_builder != null)
+                _builder.OnConfiguring(optionsBuilder);
             base.OnConfiguring(optionsBuilder);
         }
 
