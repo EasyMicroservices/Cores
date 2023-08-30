@@ -2,8 +2,6 @@
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +17,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
     /// <typeparam name="TResponseContract"></typeparam>
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class SimpleQueryServiceController<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : ReadableQueryServiceController<TEntity,FilterRequestContract,TResponseContract,TId>
+    public class SimpleQueryServiceController<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : ReadableQueryServiceController<TEntity, FilterRequestContract, TResponseContract, TId>
     {
         private readonly IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> writableContractLogic;
         /// <summary>
@@ -27,7 +25,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// 
         /// </summary>
         /// <param name="contractLogic"></param>
-        public SimpleQueryServiceController(IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> contractLogic):base(contractLogic)
+        public SimpleQueryServiceController(IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> contractLogic) : base(contractLogic)
         {
             writableContractLogic = contractLogic;
         }

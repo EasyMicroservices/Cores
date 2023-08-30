@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="EasyMicroservices.Tests" Version="0.0.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

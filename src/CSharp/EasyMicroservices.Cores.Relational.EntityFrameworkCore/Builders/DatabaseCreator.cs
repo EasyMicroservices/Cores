@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
+using EasyMicroservices.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using System;
@@ -56,7 +57,8 @@ CREATE TABLE [dbo].[__EFMigrationsHistory](
                     }
                 }
             }
-            context.Database.Migrate();
+            if (context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+                context.Database.Migrate();
         }
     }
 }
