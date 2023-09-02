@@ -15,9 +15,8 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             _testServer = new TestServer(webBuilder);
         }
 
-        [Theory]
-        [InlineData("/")]
-        public async Task Get_EndpointsReturnSuccessAndCorrectContentType(string url)
+        [Fact]
+        public async Task Get_EndpointsReturnSuccessAndCorrectContentType()
         {
             var client = _testServer.CreateClient();
             var data = await client.GetStringAsync($"api/user/getall");
