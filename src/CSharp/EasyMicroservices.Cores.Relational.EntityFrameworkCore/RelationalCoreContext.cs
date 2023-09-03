@@ -142,7 +142,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         {
             if (type.BaseType == null)
                 return new Type[0];
-            var result =  new List<Type> { type };
+            var result = new List<Type> { type };
             result.AddRange(GetAllBases(type.BaseType));
             return result.ToArray();
         }
