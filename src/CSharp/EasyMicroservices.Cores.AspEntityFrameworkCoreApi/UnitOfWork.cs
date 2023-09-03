@@ -74,6 +74,140 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
+        public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongLogic<TEntity>()
+           where TEntity : class, IIdSchema<long>
+        {
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TEntity, TEntity, TEntity>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TContract, TContract, TContract, long> GetLongContractLogic<TEntity, TContract>()
+           where TContract : class
+           where TEntity : class, IIdSchema<long>
+        {
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TContract, TContract, TContract>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongReadableLogic<TEntity>()
+           where TEntity : class, IIdSchema<long>
+        {
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TEntity, TEntity, TEntity>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TContract, TContract, TContract, long> GetLongReadableContractLogic<TEntity, TContract>()
+           where TContract : class
+           where TEntity : class, IIdSchema<long>
+        {
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TContract, TContract, TContract>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetLogic<TEntity, TId>()
+           where TEntity : class, IIdSchema<TId>
+        {
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TContract, TContract, TContract, TId> GetContractLogic<TEntity, TContract, TId>()
+           where TContract : class
+           where TEntity : class, IIdSchema<TId>
+        {
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetReadableLogic<TEntity, TId>()
+           where TEntity : class, IIdSchema<TId>
+        {
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <returns></returns>
+        public virtual IContractLogic<TEntity, TContract, TContract, TContract, TId> GetReadableContractLogic<TEntity, TContract, TId>()
+           where TContract : class
+           where TEntity : class, IIdSchema<TId>
+        {
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public virtual IEasyQueryableAsync<TEntity> GetQueryableOf<TEntity>()
+             where TEntity : class
+        {
+            return AddDisposable(GetDatabase().GetQueryOf<TEntity>());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public virtual IEasyReadableQueryableAsync<TEntity> GetReadableOf<TEntity>()
+             where TEntity : class
+        {
+            return AddDisposable(GetDatabase().GetReadableOf<TEntity>());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public virtual IEasyWritableQueryableAsync<TEntity> GetWritableOf<TEntity>()
+             where TEntity : class
+        {
+            return AddDisposable(GetDatabase().GetWritableOf<TEntity>());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
         public virtual IEasyReadableQueryableAsync<TEntity> GetReadableQueryable<TEntity>()
             where TEntity : class, IIdSchema<long>
         {
