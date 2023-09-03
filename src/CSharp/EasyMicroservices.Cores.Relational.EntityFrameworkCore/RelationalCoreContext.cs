@@ -138,6 +138,15 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             return entityType.GetProperty(name, BindingFlags.Public | BindingFlags.Instance) != null;
         }
 
+        Type[] GetAllBases(Type type)
+        {
+            if (type.BaseType == null)
+                return new Type[0];
+            var result =  new List<Type> { type };
+            result.AddRange(GetAllBases(type.BaseType));
+            return result.ToArray();
+        }
+
         string[] GetSimplifyPropertyName(string name)
         {
             string entity = "es";

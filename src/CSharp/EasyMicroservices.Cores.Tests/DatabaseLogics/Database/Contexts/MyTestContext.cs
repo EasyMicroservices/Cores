@@ -17,6 +17,8 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
         public DbSet<AddressEntity> Addresses { get; set; }
         public DbSet<CompanyEntity> Companies { get; set; }
         public DbSet<UserCompanyEntity> UserCompanies { get; set; }
+        public DbSet<ProfileEntity> Profiles { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (_builder != null)
