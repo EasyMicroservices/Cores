@@ -14,7 +14,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Relational.EntityFrameworkCore.xml</DocumentationFile>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="EasyMicroservices.Cores.Tests" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
   </ItemGroup>
@@ -22,5 +26,4 @@
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.EntityFrameworkCore\EasyMicroservices.Cores.EntityFrameworkCore.csproj" />
   </ItemGroup>
-
 </Project>
