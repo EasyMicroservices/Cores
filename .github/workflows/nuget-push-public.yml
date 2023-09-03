@@ -21,6 +21,6 @@ jobs:
       - name: Test
         run: dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal
       - name: Create the package
-        run: dotnet pack ./src/CSharp/EasyMicroservices.Cores.sln --output nupkgs
+        run: dotnet pack ./src/CSharp/EasyMicroservices.Cores.sln --output ${{env.NuGetDirectory}}
       - name: Publish the package to NuGet.org
         run: dotnet nuget push ${{env.NuGetDirectory}}/*.nupkg -k ${{secrets.NUGET_KEY}} -s https://api.nuget.org/v3/index.json --skip-duplicate
