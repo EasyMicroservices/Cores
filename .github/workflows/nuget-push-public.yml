@@ -14,6 +14,7 @@ jobs:
             7.0.x
         env:
           DOTNET_INSTALL_DIR: /usr/share/dotnet
+          NUGET_CERT_REVOCATION_MODE: offline
       - name: Restore dependencies
         run: dotnet restore ./src/CSharp/EasyMicroservices.Cores.sln
       - name: Build
