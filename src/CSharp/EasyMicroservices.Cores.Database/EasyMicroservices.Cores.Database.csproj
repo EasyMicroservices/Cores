@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.25</Version>
+    <Version>0.0.0.26</Version>
     <Description>core of database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database</PackageTags>
@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Database\Entities\" />
     <Folder Include="Database\ReadableLogics\" />
     <Folder Include="Database\WritableLogics\" />
   </ItemGroup>

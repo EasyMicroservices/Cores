@@ -1,12 +1,12 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
 using System;
 
-namespace EasyMicroservices.Cores.Database.Entities
+namespace EasyMicroservices.Cores.Database.Schemas
 {
     /// <summary>
     /// 
     /// </summary>
-    public class SoftDeleteEntity : ISoftDeleteSchema
+    public class SoftDeleteSchema : ISoftDeleteSchema
     {
         /// <summary>
         /// 

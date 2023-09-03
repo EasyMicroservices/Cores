@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EasyMicroservices.Cores.Database.Entities
+namespace EasyMicroservices.Cores.Database.Schemas
 {
     /// <summary>
     /// 
     /// </summary>
-    public class FullAbilityEntity : IUniqueIdentitySchema, ISoftDeleteSchema, IDateTimeSchema
+    public class FullAbilitySchema : IUniqueIdentitySchema, ISoftDeleteSchema, IDateTimeSchema
     {
         /// <summary>
         /// 

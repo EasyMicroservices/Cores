@@ -1,12 +1,11 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
 
-namespace EasyMicroservices.Cores.Database.Entities
+namespace EasyMicroservices.Cores.Database.Schemas
 {
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="TId"></typeparam>
-    public class FullAbilityIdEntity<TId> : FullAbilityEntity, IIdSchema<TId>
+    public class IdSchema<TId> : IIdSchema<TId>
     {
         /// <summary>
         /// 
