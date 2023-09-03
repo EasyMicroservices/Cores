@@ -11,5 +11,8 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities
         public DateTime? DeletedDateTime { get; set; }
         public DateTime CreationDateTime { get; set; }
         public DateTime? ModificationDateTime { get; set; }
+        public ICollection<AddressEntity> Addresses { get; set; }
+        public ICollection<UserCompanyEntity> UserCompanies { get; set; }
+        public ICollection<ProfileEntity> Profiles { get; set; }
     }
 }

@@ -14,6 +14,11 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
         }
 
         public DbSet<UserEntity> Users { get; set; }
+        public DbSet<AddressEntity> Addresses { get; set; }
+        public DbSet<CompanyEntity> Companies { get; set; }
+        public DbSet<UserCompanyEntity> UserCompanies { get; set; }
+        public DbSet<ProfileEntity> Profiles { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (_builder != null)
@@ -23,10 +28,16 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserEntity>(e =>
+            var builder = base.AutoModelCreating(modelBuilder);
+            modelBuilder.Entity<UserCompanyEntity>(e =>
             {
-                e.HasKey(x => x.Id);
+                e.HasKey(x => new { x.UserId, x.CompanyId });
             });
+
+            Assert.Equal(@"User-Addresses-UserId
+User-UserCompanies-UserId
+Company-UserCompanies-CompanyId
+", builder.ToString());
         }
     }
 }

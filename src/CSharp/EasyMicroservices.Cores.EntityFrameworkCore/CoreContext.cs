@@ -41,7 +41,8 @@ namespace EasyMicroservices.Cores.EntityFrameworkCore
                 {
                     if (property.PropertyType == typeof(DateTime))
                     {
-                        DateTimeKind dateTimeKind = DateTimeKind.Local;
+                        //Because your server's local times may be different
+                        DateTimeKind dateTimeKind = DateTimeKind.Utc;
                         var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
                            v => v, v => DateTime.SpecifyKind(v, dateTimeKind));
                         modelBuilder.Entity(entityType.ClrType).Property(property.Name).HasConversion(dateTimeConverter);

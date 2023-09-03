@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.12</Version>
+    <Version>0.0.0.13</Version>
     <Description>ef core of Relational database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database,ef,efcore,Relational</PackageTags>
@@ -14,7 +14,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Relational.EntityFrameworkCore.xml</DocumentationFile>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="EasyMicroservices.Cores.Tests" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
   </ItemGroup>
@@ -22,5 +26,4 @@
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.EntityFrameworkCore\EasyMicroservices.Cores.EntityFrameworkCore.csproj" />
   </ItemGroup>
-
 </Project>
