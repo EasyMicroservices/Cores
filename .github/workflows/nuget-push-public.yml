@@ -4,7 +4,7 @@ on: [workflow_dispatch]
 
 jobs:
   build-test-prep-push:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v3
@@ -13,7 +13,6 @@ jobs:
             6.0.x
             7.0.x
         env:
-          DOTNET_INSTALL_DIR: /usr/share/dotnet
           NUGET_CERT_REVOCATION_MODE: offline
       - name: Restore dependencies
         run: dotnet restore ./src/CSharp/EasyMicroservices.Cores.sln
