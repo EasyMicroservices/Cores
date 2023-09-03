@@ -21,4 +21,4 @@ jobs:
       - name: Create the package
         run: dotnet pack ./src/CSharp/EasyMicroservices.Cores.sln --output nupkgs
       - name: Publish the package to NuGet.org
-        run: dotnet nuget push nupkgs\*.nupkg -k ${{secrets.NUGET_KEY}} -s https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push nupkgs/*.nupkg -k ${{secrets.NUGET_KEY}} -s https://api.nuget.org/v3/index.json --skip-duplicate
