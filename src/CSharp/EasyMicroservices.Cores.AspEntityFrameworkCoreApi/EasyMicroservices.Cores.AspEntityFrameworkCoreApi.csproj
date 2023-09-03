@@ -14,6 +14,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.AspEntityFrameworkCoreApi.xml</DocumentationFile>
     <OpenApiGenerateDocumentsOnBuild>false</OpenApiGenerateDocumentsOnBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.AspCoreApi\EasyMicroservices.Cores.AspCoreApi.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.Relational.EntityFrameworkCore\EasyMicroservices.Cores.Relational.EntityFrameworkCore.csproj" />
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

@@ -14,6 +14,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Database.xml</DocumentationFile>
     <RootNamespace>EasyMicroservices.Cores</RootNamespace>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
     <Folder Include="Database\Entities\" />
     <Folder Include="Database\ReadableLogics\" />
     <Folder Include="Database\WritableLogics\" />
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

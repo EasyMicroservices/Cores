@@ -14,11 +14,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Contracts.xml</DocumentationFile>
     <RootNamespace>EasyMicroservices.Cores</RootNamespace>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Contracts\Common\" />
     <Folder Include="Contracts\Responses\" />
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
