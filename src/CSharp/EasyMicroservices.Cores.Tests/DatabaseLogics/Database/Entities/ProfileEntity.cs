@@ -1,8 +1,8 @@
-﻿using EasyMicroservices.Cores.Database.Entities;
+﻿using EasyMicroservices.Cores.Database.Schemas;
 
 namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities
 {
-    public class ProfileEntity : FullAbilityIdEntity<long>
+    public class ProfileEntity : FullAbilityIdSchema<long>
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
