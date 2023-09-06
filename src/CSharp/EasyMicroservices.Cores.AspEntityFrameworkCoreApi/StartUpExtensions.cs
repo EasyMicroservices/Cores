@@ -2,6 +2,7 @@
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using EasyMicroservices.ServiceContracts;
+using EasyMicroservices.ServiceContracts.Exceptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -72,7 +73,11 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 {
                     context.Response.ContentType = MediaTypeNames.Application.Json;
                     context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    var response = (MessageContract)context.Features.Get<IExceptionHandlerFeature>()?.Error;
+                    var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+                    MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
+                    if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase))
+                        response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
+                    response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();
                     var json = JsonSerializer.Serialize(response);
                     await context.Response.WriteAsync(json);
                 });
