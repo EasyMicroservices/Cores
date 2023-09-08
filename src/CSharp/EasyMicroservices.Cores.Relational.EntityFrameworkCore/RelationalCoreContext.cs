@@ -159,7 +159,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             return new string[] { name };
         }
 
-        static Dictionary<string, string> IrregularVerbs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        static readonly Dictionary<string, string> IrregularVerbs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "Man" , "Men" },
             { "Child" , "Children" },
