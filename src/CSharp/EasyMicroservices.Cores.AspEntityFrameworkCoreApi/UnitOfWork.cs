@@ -51,7 +51,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <returns></returns>
         public IDatabase GetDatabase()
         {
-            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(_service.GetService<RelationalCoreContext>()));
+            var context = _service.GetService<RelationalCoreContext>();
+            if (context == null)
+                throw new Exception("RelationalCoreContext is null, please add your context to RelationalCoreContext as Transit or Scope.\r\nExample : services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
+            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
         }
 
         /// <summary>
@@ -223,7 +226,11 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public IDatabase GetDatabase<TContext>()
                 where TContext : RelationalCoreContext
         {
-            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(_service.GetService<TContext>()));
+            var context = _service.GetService<TContext>();
+            if (context == null)
+                throw new Exception("TContext is null, please add your context to Context as Transit or Scope.\r\nExample : services.AddTransient<YourContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
+
+            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
         }
 
         /// <summary>
