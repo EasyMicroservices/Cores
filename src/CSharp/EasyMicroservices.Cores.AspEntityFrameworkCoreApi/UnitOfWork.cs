@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
+﻿using EasyMicroservices.Cores.AspCoreApi.Managers;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
@@ -278,6 +279,18 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             if (UniqueIdentityManager == null)
                 UniqueIdentityManager = new DefaultUniqueIdentityManager(DefaultUniqueIdentity, MicroserviceId);
             return UniqueIdentityManager;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="microserviceName"></param>
+        /// <param name="whiteLableRoute"></param>
+        /// <param name="dbContextTypes"></param>
+        /// <returns></returns>
+        public Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        {
+            return new WhiteLabelManager(_service).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
         }
 
         /// <summary>
