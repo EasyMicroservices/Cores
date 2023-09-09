@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.7" />
     <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.5" />
     <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.2" />
     <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.3" />
@@ -24,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.AspCoreApi\EasyMicroservices.Cores.AspCoreApi.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.AspEntityFrameworkCoreApi\EasyMicroservices.Cores.AspEntityFrameworkCoreApi.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.Contracts\EasyMicroservices.Cores.Contracts.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.Database\EasyMicroservices.Cores.Database.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.EntityFrameworkCore\EasyMicroservices.Cores.EntityFrameworkCore.csproj" />
