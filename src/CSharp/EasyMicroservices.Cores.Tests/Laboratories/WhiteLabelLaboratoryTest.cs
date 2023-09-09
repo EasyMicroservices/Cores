@@ -4,13 +4,14 @@ using System.Text;
 
 namespace EasyMicroservices.Cores.Tests.Laboratories
 {
-    public class WhiteLabelLaboratoryTest
+    public abstract class WhiteLabelLaboratoryTest
     {
-        const int Port = 6041;
+        int Port = 6041;
         string _routeAddress = "";
         public static HttpClient HttpClient { get; set; } = new HttpClient();
-        public WhiteLabelLaboratoryTest()
+        public WhiteLabelLaboratoryTest(int portNumber)
         {
+            Port = portNumber;
             _routeAddress = $"http://localhost:{Port}";
         }
 

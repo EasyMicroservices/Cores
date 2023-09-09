@@ -10,7 +10,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
     public class BasicTests : WhiteLabelLaboratoryTest
     {
         protected TestServer _testServer;
-        public BasicTests()
+        public BasicTests() : base(6041)
         {
             var webBuilder = new WebHostBuilder();
             webBuilder.UseStartup<Startup>();
