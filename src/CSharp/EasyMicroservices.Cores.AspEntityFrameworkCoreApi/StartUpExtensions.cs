@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Mime;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 {
@@ -90,7 +91,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <typeparam name="TContext"></typeparam>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static void Build<TContext>(this IApplicationBuilder app)
+        public static async Task Build<TContext>(this IApplicationBuilder app)
             where TContext : RelationalCoreContext
         {
             app.UseDeveloperExceptionPage();
@@ -107,6 +108,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
+                var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
+                await uow.Initialize("TextExample", "http://localhost:6041", typeof(TContext)).ConfigureAwait(false);
             }
             var build = app.Build();
             app.Run(build);

@@ -149,6 +149,8 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
 
         string[] GetSimplifyPropertyName(string name)
         {
+            if (IrregularVerbs.TryGetValue(name, out string value))
+                return new string[] { value };
             string entity = "es";
             if (name.EndsWith(entity))
                 return GetEndOfCollectionNames(name[..^entity.Length]);
@@ -157,6 +159,39 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             return new string[] { name };
         }
 
+        static readonly Dictionary<string, string> IrregularVerbs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Man" , "Men" },
+            { "Child" , "Children" },
+            { "Parent" , "Children" },
+            { "Tooth" , "Teeth" },
+            { "Foot" , "Feet" },
+            { "Person" , "People" },
+            { "Leaf" , "Leaves" },
+            { "Mouse" , "Mice" },
+            { "Goose" , "Geese" },
+            { "Half" , "Halves" },
+            { "Knife" , "Knives" },
+            { "Wife" , "Wives" },
+            { "Life" , "Lives" },
+            { "Elf" , "Elves" },
+            { "Loaf" , "Loaves" },
+            { "Potato" , "Potatoes" },
+            { "Tomato" , "Tomatoes" },
+            { "Cactus" , "Cacti" },
+            { "Focus" , "Foci" },
+            { "Fungus" , "Fungi" },
+            { "Nucleus" , "Nuclei" },
+            { "Syllabus" , "Syllabuses" },
+            { "Analysis" , "Analyses" },
+            { "Diagnosis" , "Diagnoses" },
+            { "Oasis" , "Oases" },
+            { "Thesis" , "Theses" },
+            { "Crisis" , "Crises" },
+            { "Phenomenon" , "Phenomena" },
+            { "Criterion" , "Criteria" },
+            { "Datum" , "Data" },
+        };
         string[] GetEndOfCollectionNames(string name)
         {
             List<string> names = new List<string>

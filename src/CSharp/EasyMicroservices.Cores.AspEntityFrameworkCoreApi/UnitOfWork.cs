@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
+﻿using EasyMicroservices.Cores.AspCoreApi.Managers;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
@@ -51,7 +52,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <returns></returns>
         public IDatabase GetDatabase()
         {
-            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(_service.GetService<RelationalCoreContext>()));
+            var context = _service.GetService<RelationalCoreContext>();
+            if (context == null)
+                throw new Exception("RelationalCoreContext is null, please add your context to RelationalCoreContext as Transit or Scope.\r\nExample : services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
+            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
         }
 
         /// <summary>
@@ -223,7 +227,11 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public IDatabase GetDatabase<TContext>()
                 where TContext : RelationalCoreContext
         {
-            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(_service.GetService<TContext>()));
+            var context = _service.GetService<TContext>();
+            if (context == null)
+                throw new Exception("TContext is null, please add your context to Context as Transit or Scope.\r\nExample : services.AddTransient<YourContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
+
+            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
         }
 
         /// <summary>
@@ -271,6 +279,18 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             if (UniqueIdentityManager == null)
                 UniqueIdentityManager = new DefaultUniqueIdentityManager(DefaultUniqueIdentity, MicroserviceId);
             return UniqueIdentityManager;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="microserviceName"></param>
+        /// <param name="whiteLableRoute"></param>
+        /// <param name="dbContextTypes"></param>
+        /// <returns></returns>
+        public Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        {
+            return new WhiteLabelManager(_service).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
         }
 
         /// <summary>
