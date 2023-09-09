@@ -4,13 +4,14 @@ using System.Text;
 
 namespace EasyMicroservices.Cores.Tests.Laboratories
 {
-    public class WhiteLabelLaboratoryTest
+    public abstract class WhiteLabelLaboratoryTest
     {
-        const int Port = 6041;
+        int Port = 6041;
         string _routeAddress = "";
         public static HttpClient HttpClient { get; set; } = new HttpClient();
-        public WhiteLabelLaboratoryTest()
+        public WhiteLabelLaboratoryTest(int portNumber)
         {
+            Port = portNumber;
             _routeAddress = $"http://localhost:{Port}";
         }
 
@@ -59,7 +60,7 @@ Content-Type: application/json; charset=utf-8
 Content-Length: 0
 
 {""isSuccess"":true,""result"": 1}");
-                
+
                 resourceManager.Append(@$"GET /api/MicroserviceContextTable/GetAll HTTP/1.1
 Host: localhost:{Port}
 Accept: text/plain*RequestSkipBody*"
@@ -70,11 +71,11 @@ Content-Length: 0
 
 {""isSuccess"":true,""result"":[{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""AddressEntity"",""contextTableId"":1},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""CompanyEntity"",""contextTableId"":2},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""ProfileEntity"",""contextTableId"":3},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""UserCompanyEntity"",""contextTableId"":4},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""UserEntity"",""contextTableId"":5}]}");
 
-resourceManager.Append(@$"GET /api/ContextTable/GetAll HTTP/1.1
+                resourceManager.Append(@$"GET /api/ContextTable/GetAll HTTP/1.1
 Host: localhost:{Port}
 Accept: text/plain*RequestSkipBody*"
-,
-@"HTTP/1.1 200 OK
+                ,
+                @"HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Content-Length: 0
 
@@ -132,7 +133,7 @@ Content-Length: 0
             var all = await client.GetAllAsync();
             Assert.True(all.IsSuccess);
             Assert.True(all.Result.Count >= 5);
-            Assert.True(all.Result.All(x=>x.MicroserviceName == "TextExample"));
+            Assert.True(all.Result.All(x => x.MicroserviceName == "TextExample"));
         }
 
         [Fact]
