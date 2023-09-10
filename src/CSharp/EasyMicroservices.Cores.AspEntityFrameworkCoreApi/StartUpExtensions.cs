@@ -108,7 +108,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
-                var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
+                using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
                 await uow.Initialize("TextExample", "http://localhost:6041", typeof(TContext)).ConfigureAwait(false);
             }
             var build = app.Build();
@@ -121,7 +121,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <typeparam name="TContext"></typeparam>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static WebApplication Build<TContext>(this WebApplicationBuilder app)
+        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app)
             where TContext : RelationalCoreContext
         {
             var build = app.Build();
@@ -139,6 +139,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
+                using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
+                await uow.Initialize("TextExample", "http://localhost:6041", typeof(TContext)).ConfigureAwait(false);
             }
             return build;
         }
