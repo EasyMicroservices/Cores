@@ -50,7 +50,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <returns></returns>
-        public IDatabase GetDatabase()
+        public virtual IDatabase GetDatabase()
         {
             var context = _service.GetService<RelationalCoreContext>();
             if (context == null)
@@ -224,7 +224,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <typeparam name="TContext"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IDatabase GetDatabase<TContext>()
+        public virtual IDatabase GetDatabase<TContext>()
                 where TContext : RelationalCoreContext
         {
             var context = _service.GetService<TContext>();
@@ -239,9 +239,12 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IMapperProvider GetMapper()
+        public virtual IMapperProvider GetMapper()
         {
-            var mapper = new CompileTimeMapperProvider(new SerializerMapperProvider(new NewtonsoftJsonProvider()));
+            var mapper = new CompileTimeMapperProvider(new SerializerMapperProvider(new NewtonsoftJsonProvider(new Newtonsoft.Json.JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            })));
             if (MapperTypeAssembly != null)
             {
                 foreach (var type in MapperTypeAssembly.Assembly.GetTypes())
@@ -274,7 +277,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public IUniqueIdentityManager GetUniqueIdentityManager()
+        public virtual IUniqueIdentityManager GetUniqueIdentityManager()
         {
             if (UniqueIdentityManager == null)
                 UniqueIdentityManager = new DefaultUniqueIdentityManager(DefaultUniqueIdentity, MicroserviceId);
@@ -288,7 +291,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <param name="whiteLableRoute"></param>
         /// <param name="dbContextTypes"></param>
         /// <returns></returns>
-        public Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        public virtual Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
             return new WhiteLabelManager(_service).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
         }
@@ -297,7 +300,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <exception cref="NotImplementedException"></exception>
-        public void Dispose()
+        public virtual void Dispose()
         {
             foreach (var item in Disposables)
             {
@@ -312,7 +315,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <returns></returns>
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             foreach (var item in Disposables)
             {
