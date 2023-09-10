@@ -16,7 +16,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
 
-            var build = app.Build<MyTestContext>();
+            var build = await app.Build<MyTestContext>();
             build.MapControllers();
             build.Run();
         }
