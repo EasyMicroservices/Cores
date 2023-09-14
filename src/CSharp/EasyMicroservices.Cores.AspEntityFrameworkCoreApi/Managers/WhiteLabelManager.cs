@@ -71,9 +71,9 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
             {
                 var contextTableClient = new WhiteLables.GeneratedServices.ContextTableClient(whiteLableRoute, HttpClient);
                 var contextTables = await contextTableClient.GetAllAsync().ConfigureAwait(false);
-                using var insctanceOfContext = _serviceProvider.GetService(contextType) as DbContext;
+                using var instanceOfContext = _serviceProvider.GetService(contextType) as DbContext;
                 string contextName = uniqueIdentityManager.GetContextName(contextType);
-                foreach (var entityType in insctanceOfContext.Model.GetEntityTypes())
+                foreach (var entityType in instanceOfContext.Model.GetEntityTypes())
                 {
                     string tableName = entityType.ServiceOnlyConstructorBinding.RuntimeType.Name;
                     var tableFullName = uniqueIdentityManager.GetContextTableName(foundMicroservice.Id, contextType.Name, tableName);
