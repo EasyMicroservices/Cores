@@ -29,7 +29,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         public static Type MapperTypeAssembly { get; set; }
-        IServiceProvider _service;
+        /// <summary>
+        /// 
+        /// </summary>
+        protected IServiceProvider _service;
         /// <summary>
         /// 
         /// </summary>
