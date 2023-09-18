@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.7" />
-    <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.5" />
-    <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.2" />
-    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.3" />
+    <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.9" />
+    <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.6" />
+    <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.3" />
+    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.6" />
     <PackageReference Include="EasyMicroservices.Tests" Version="0.0.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />

@@ -2,7 +2,6 @@
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
-using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
@@ -31,6 +30,10 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
         }
 
+        IContractLogic<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity, long> GetProfileContractLogic()
+        {
+            return new LongIdMappedDatabaseLogicBase<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity>(GetDatabase().GetReadableOf<ProfileEntity>(), GetDatabase().GetWritableOf<ProfileEntity>(), GetMapper(), GetUniqueIdentityManager());
+        }
 
         IContractLogic<UserEntity, UserEntity, UserEntity, UserEntity, long> GetContractLogic()
         {
@@ -48,10 +51,12 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
 
         const long TableContextId = 150;
+        const long ProfileTableContextId = 151;
         public virtual IUniqueIdentityManager GetUniqueIdentityManager()
         {
             var manager = new DefaultUniqueIdentityManager("1-1", 5);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(UserEntity)), TableContextId);
+            manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(ProfileEntity)), ProfileTableContextId);
             return manager;
         }
 
@@ -95,6 +100,22 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.Equal(ids.Last(), foundUser.Result.Id);
             Assert.Equal(TableContextId, ids[^2]);
             return foundUser.Result;
+        }
+
+        public async Task<ProfileEntity> AddProfileAsync(long userId, string name)
+        {
+            await using var logic = GetContractLogic();
+            var user = await logic.GetById(userId);
+            Assert.True(user.IsSuccess);
+            await using var profileLogic = GetProfileContractLogic();
+            var addedProfile = await profileLogic.AddEntity(new ProfileEntity()
+            {
+                FirstName = name,
+                LastName = "Yousefi",
+                UniqueIdentity = user.Result.UniqueIdentity,
+                UserId = userId
+            });
+            return addedProfile.Result;
         }
 
         [Theory]
@@ -144,6 +165,24 @@ namespace EasyMicroservices.Cores.Tests.Database
                 UniqueIdentity = DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(added.UniqueIdentity, 2)
             });
             Assert.Contains(foundAll.Result, x => x.UserName == userName);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var addedProfile = await AddProfileAsync(added.Id, $"Ali{i}");
+            }
+            await using var profileLogic = GetProfileContractLogic();
+            var foundAllProfiles = await profileLogic.GetAllByUniqueIdentity(new GetUniqueIdentityRequestContract()
+            {
+                UniqueIdentity = added.UniqueIdentity
+            });
+            Assert.Contains(foundAllProfiles.Result, x => x.FirstName.StartsWith("Ali"));
+            Assert.Equal(foundAllProfiles.Result.Count, 10);
+
+            var onlyUniqueIdentity = await profileLogic.GetByUniqueIdentity(new GetUniqueIdentityRequestContract()
+            {
+                UniqueIdentity = added.UniqueIdentity
+            }, q => q.Where(x => x.FirstName == "Ali5"));
+            Assert.Contains(foundAllProfiles.Result, x => x.FirstName == "Ali5");
         }
 
         [Theory]

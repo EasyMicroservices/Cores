@@ -81,9 +81,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public async Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
-            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
-            if (query != null)
-                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, idRequest, func, cancellationToken);
         }
 
@@ -96,9 +94,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public async Task<MessageContract<TResponseContract>> GetBy(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
-            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
-            if (query != null)
-                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, func, cancellationToken);
         }
 
@@ -136,9 +132,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <exception cref="NotImplementedException"></exception>
         public async Task<ListMessageContract<TResponseContract>> GetAll(Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
-            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
-            if (query != null)
-                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return await GetAll<TEntity, TResponseContract>(_easyReadableQueryable, func, cancellationToken);
         }
 
@@ -151,9 +145,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<ListMessageContract<TResponseContract>> Filter(FilterRequestContract filterRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
-            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
-            if (query != null)
-                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return Filter<TEntity, TResponseContract>(filterRequest, _easyReadableQueryable, func, cancellationToken);
         }
 
@@ -256,9 +248,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <exception cref="NotImplementedException"></exception>
         public Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
-            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
-            if (query != null)
-                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return base.GetAllByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, func, cancellationToken);
         }
 
@@ -271,10 +261,20 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract<TResponseContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
-            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
-            if (query != null)
-                func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return base.GetByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, func, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        protected Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> UpdateFunctionQuery(Func<IQueryable<TEntity>, IQueryable<TEntity>> query)
+        {
+            if (query != null)
+                return (q) => _easyReadableQueryable.ConvertToReadable(query(q));
+            return null;
         }
     }
 }
