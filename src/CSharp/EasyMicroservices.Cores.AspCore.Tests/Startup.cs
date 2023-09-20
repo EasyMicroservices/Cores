@@ -19,7 +19,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             UnitOfWork.DefaultUniqueIdentity = "1-2";
             UnitOfWork.MicroserviceId = 1250;
             StartUpExtensions.Builder<MyTestContext>(services);
-            services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
+            services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
         }

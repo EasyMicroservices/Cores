@@ -3,6 +3,7 @@ using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using System;
+using System.Security.Cryptography;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
 {
@@ -37,7 +38,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongLogic<TEntity>()
            where TEntity : class, IIdSchema<long>;
-
         /// <summary>
         /// 
         /// </summary>
@@ -45,8 +45,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TContract"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TContract, TContract, TContract, long> GetLongContractLogic<TEntity, TContract>()
-           where TContract : class
-           where TEntity : class, IIdSchema<long>;
+         where TContract : class
+         where TEntity : class, IIdSchema<long>;
 
         /// <summary>
         /// 
@@ -54,7 +54,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongReadableLogic<TEntity>()
-           where TEntity : class, IIdSchema<long>;
+         where TEntity : class, IIdSchema<long>;
 
         /// <summary>
         /// 
@@ -83,8 +83,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TId"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TContract, TContract, TContract, TId> GetContractLogic<TEntity, TContract, TId>()
-           where TContract : class
-           where TEntity : class, IIdSchema<TId>;
+         where TContract : class
+         where TEntity : class, IIdSchema<TId>;
+
 
         /// <summary>
         /// 
@@ -93,8 +94,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TId"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetReadableLogic<TEntity, TId>()
-           where TEntity : class, IIdSchema<TId>;
-
+         where TEntity : class, IIdSchema<TId>;
         /// <summary>
         /// 
         /// </summary>
@@ -105,7 +105,43 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         IContractLogic<TEntity, TContract, TContract, TContract, TId> GetReadableContractLogic<TEntity, TContract, TId>()
            where TContract : class
            where TEntity : class, IIdSchema<TId>;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TCreateRequestContract"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        IContractLogic<TEntity, TContract, TCreateRequestContract, TContract, long> GetLongContractLogic<TEntity, TCreateRequestContract, TContract>()
+            where TContract : class
+            where TEntity : class, IIdSchema<long>;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TResponseContract"></typeparam>
+        /// <typeparam name="TCreateRequestContract"></typeparam>
+        /// <typeparam name="TUpdateRequestContract"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
+            where TResponseContract : class
+            where TEntity : class, IIdSchema<long>;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TCreateRequestContract"></typeparam>
+        /// <typeparam name="TUpdateRequestContract"></typeparam>
+        /// <typeparam name="TResponseContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> GetContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>()
+            where TResponseContract : class
+            where TEntity : class, IIdSchema<TId>;
         /// <summary>
         /// 
         /// </summary>
