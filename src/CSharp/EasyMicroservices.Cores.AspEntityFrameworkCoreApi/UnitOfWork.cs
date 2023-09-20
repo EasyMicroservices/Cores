@@ -333,10 +333,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return new WhiteLabelManager(_service).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
         }
 
-        IContractLogic<TEntity , TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
+        IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
           where TResponseContract : class
           where TEntity : class, IIdSchema<long>
-        { 
+        {
             return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), GetMapper(), GetUniqueIdentityManager()));
         }
 
