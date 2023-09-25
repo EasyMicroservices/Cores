@@ -15,6 +15,7 @@ using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -64,16 +65,17 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TCreateRequestContract"></typeparam>
-        /// <typeparam name="TUpdateRequestContract"></typeparam>
-        /// <typeparam name="TResponseContract"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
         /// <returns></returns>
-        public virtual IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
-            where TEntity : class, IIdSchema<long>
-            where TResponseContract : class
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual IDatabase GetDatabase<TContext>()
+                where TContext : RelationalCoreContext
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            var context = _service.GetService<TContext>();
+            if (context == null)
+                throw new Exception("TContext is null, please add your context to Context as Transit or Scope.\r\nExample : services.AddTransient<YourContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
+
+            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
         }
 
         /// <summary>
@@ -84,7 +86,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongLogic<TEntity>()
            where TEntity : class, IIdSchema<long>
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TEntity, TEntity, TEntity>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return GetInternalLongContractLogic<TEntity, TEntity, TEntity, TEntity>();
         }
 
         /// <summary>
@@ -97,7 +99,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class, IIdSchema<long>
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TContract, TContract, TContract>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return GetInternalLongContractLogic<TEntity, TContract, TContract, TContract>();
         }
 
         /// <summary>
@@ -108,7 +110,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongReadableLogic<TEntity>()
            where TEntity : class, IIdSchema<long>
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TEntity, TEntity, TEntity>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return GetInternalLongContractLogic<TEntity, TEntity, TEntity, TEntity>();
         }
 
         /// <summary>
@@ -121,7 +123,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class, IIdSchema<long>
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TContract, TContract, TContract>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return GetInternalLongContractLogic<TEntity, TContract, TContract, TContract>();
         }
 
         /// <summary>
@@ -218,23 +220,55 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IEasyReadableQueryableAsync<TEntity> GetReadableQueryable<TEntity>()
             where TEntity : class, IIdSchema<long>
         {
-            return GetDatabase().GetReadableOf<TEntity>();
+            return AddDisposable(GetDatabase().GetReadableOf<TEntity>());
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TContext"></typeparam>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TCreateRequestContract"></typeparam>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public virtual IDatabase GetDatabase<TContext>()
-                where TContext : RelationalCoreContext
+        public virtual IContractLogic<TEntity, TContract, TCreateRequestContract, TContract, long> GetLongContractLogic<TEntity, TCreateRequestContract, TContract>()
+            where TContract : class
+            where TEntity : class, IIdSchema<long>
         {
-            var context = _service.GetService<TContext>();
-            if (context == null)
-                throw new Exception("TContext is null, please add your context to Context as Transit or Scope.\r\nExample : services.AddTransient<YourContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
+            return GetInternalLongContractLogic<TEntity, TContract, TCreateRequestContract, TContract>();
+        }
 
-            return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TResponseContract"></typeparam>
+        /// <typeparam name="TCreateRequestContract"></typeparam>
+        /// <typeparam name="TUpdateRequestContract"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
+            where TResponseContract : class
+            where TEntity : class, IIdSchema<long>
+        {
+            return GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TCreateRequestContract"></typeparam>
+        /// <typeparam name="TUpdateRequestContract"></typeparam>
+        /// <typeparam name="TResponseContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> GetContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>()
+            where TResponseContract : class
+            where TEntity : class, IIdSchema<TId>
+        {
+            return GetInternalContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>();
         }
 
         /// <summary>
@@ -299,19 +333,28 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return new WhiteLabelManager(_service).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
         }
 
+        IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
+          where TResponseContract : class
+          where TEntity : class, IIdSchema<long>
+        {
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), GetMapper(), GetUniqueIdentityManager()));
+        }
+
+        IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> GetInternalContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>()
+          where TResponseContract : class
+          where TEntity : class, IIdSchema<TId>
+        {
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), GetMapper(), GetUniqueIdentityManager()));
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <exception cref="NotImplementedException"></exception>
         public virtual void Dispose()
         {
-            foreach (var item in Disposables)
-            {
-                if (item is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-            }
+            InternalSyncDispose();
+            _ = InternalDispsose();
         }
 
         /// <summary>
@@ -320,6 +363,12 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <returns></returns>
         public virtual async ValueTask DisposeAsync()
         {
+            InternalSyncDispose();
+            await InternalDispsose();
+        }
+
+        async Task InternalDispsose()
+        {
             foreach (var item in Disposables)
             {
                 if (item is IAsyncDisposable disposable)
@@ -327,7 +376,17 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                     await disposable.DisposeAsync();
                 }
             }
-            Dispose();
+        }
+
+        void InternalSyncDispose()
+        {
+            foreach (var item in Disposables)
+            {
+                if (item is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
         }
     }
 }
