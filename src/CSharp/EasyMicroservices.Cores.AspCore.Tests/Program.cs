@@ -15,7 +15,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
-
+            StartUpExtensions.AddWhiteLabel("TestExample", "RootAddresses:WhiteLabel");
             var build = await app.Build<MyTestContext>();
             build.MapControllers();
             build.Run();
