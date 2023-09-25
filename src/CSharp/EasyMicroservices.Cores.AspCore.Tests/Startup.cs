@@ -33,6 +33,8 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             {
                 endpoints.MapControllers();
             });
+            StartUpExtensions.AddWhiteLabel("TestExample", "RootAddresses:WhiteLabel");
+
             app.Build<MyTestContext>().Wait();
         }
     }

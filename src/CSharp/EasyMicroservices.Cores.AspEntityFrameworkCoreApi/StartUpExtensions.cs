@@ -6,6 +6,7 @@ using EasyMicroservices.ServiceContracts.Exceptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -101,6 +102,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             app.UseHttpsRedirection();
             app.UseAuthorization();
 
+            IConfiguration config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .Build();
             //app.MapControllers();
             //app.Run(build);
             using (var scope = app.ApplicationServices.CreateAsyncScope())
@@ -109,10 +113,23 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
                 using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                await uow.Initialize("TextExample", "http://localhost:6041", typeof(TContext)).ConfigureAwait(false);
+                await uow.Initialize(MicroserviceName, config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
             }
             var build = app.Build();
             app.Run(build);
+        }
+
+        private static string MicroserviceName = default;
+        private static string ConfigName = default;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="microserviceName"></param>
+        /// <param name="configName"></param>
+        public static void AddWhiteLabel(string microserviceName, string configName)
+        {
+            MicroserviceName = microserviceName;
+            ConfigName = configName;
         }
 
         /// <summary>
@@ -132,6 +149,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
             build.UseHttpsRedirection();
             build.UseAuthorization();
+
+            IConfiguration config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .Build();
             //app.MapControllers();
             //app.Run(build);
             using (var scope = build.Services.CreateAsyncScope())
@@ -140,13 +161,12 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
                 using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                await uow.Initialize("TextExample", "http://localhost:6041", typeof(TContext)).ConfigureAwait(false);
+                await uow.Initialize(MicroserviceName, config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
             }
             return build;
         }
     }
 }
-
 
 internal class GenericFilter : ISchemaFilter
 {
