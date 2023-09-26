@@ -13,6 +13,19 @@
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="id"></param>
+        public static implicit operator SoftDeleteRequestContract<T>(T id)
+        {
+            return new SoftDeleteRequestContract<T>()
+            {
+                Id = id,
+                IsDelete = true
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="values"></param>
         public static implicit operator SoftDeleteRequestContract<T>((T Id, bool IsDelete) values)
         {

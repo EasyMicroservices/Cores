@@ -6,6 +6,7 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -119,6 +120,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
+        {
+            var result = await Add(_easyWriteableQueryable, request, cancellationToken);
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -225,6 +238,19 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, cancellationToken);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TUpdateRequestContract> schema, CancellationToken cancellationToken = default)
+        {
+            return UpdateBulk(_easyWriteableQueryable, schema, cancellationToken);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -235,6 +261,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         public Task<MessageContract> HardDeleteById(DeleteRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("HardDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteById method");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract> HardDeleteBulkByIds(DeleteBulkRequestContract<TResponseContract> request, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("HardDeleteBulkByIds is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteBulkByIds method");
         }
 
         /// <summary>
@@ -277,7 +315,19 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TResponseContract> deleteRequest, CancellationToken cancellationToken = default)
         {
-            throw new Exception("SoftDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
+            throw new Exception("SoftDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteById method");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TResponseContract> deleteRequest, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("SoftDeleteBulkByIds is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteBulkByIds method");
         }
     }
 }

@@ -115,6 +115,32 @@ namespace EasyMicroservices.Cores.Tests.Database
             return foundUser.Result;
         }
 
+        [Theory]
+        [InlineData("Ali")]
+        [InlineData("Reza")]
+        [InlineData("Javad")]
+        public async Task AddBulkAsync(string userName)
+        {
+            await using var logic = GetContractLogic();
+            List<UserEntity> items = new List<UserEntity>();
+            for (int i = 0; i < 10; i++)
+            {
+                items.Add(new UserEntity()
+                {
+                    UserName = userName + Guid.NewGuid()
+                });
+            }
+            var user = await logic.AddBulk(items);
+            Assert.True(user.IsSuccess);
+            foreach (var item in items)
+            {
+                var foundUser = await logic.GetBy(x => x.UserName == item.UserName);
+                Assert.True(foundUser.IsSuccess);
+                Assert.True(foundUser.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+                Assert.True(items.Any(x => x.UserName == item.UserName));
+            }
+        }
+
         public async Task<ProfileEntity> AddProfileAsync(long userId, string name)
         {
             await using var logic = GetContractLogic();
@@ -161,6 +187,50 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
 
         [Theory]
+        [InlineData("Mahdi", "Mahdi1")]
+        [InlineData("Hassan", "Hassan1")]
+        public async Task UpdateBulkAsync(string userName, string toUserName)
+        {
+            await using var logic = GetContractLogic();
+            List<UserEntity> items = new List<UserEntity>();
+            for (int i = 0; i < 10; i++)
+            {
+                items.Add(new UserEntity()
+                {
+                    UserName = userName + Guid.NewGuid()
+                });
+            }
+            var user = await logic.AddBulk(items);
+            Assert.True(user.IsSuccess);
+            List<UserEntity> updateItems = new List<UserEntity>();
+            foreach (var item in items)
+            {
+                var foundUser = await logic.GetBy(x => x.UserName == item.UserName);
+                Assert.True(foundUser.IsSuccess);
+                Assert.True(foundUser.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+                Assert.True(items.Any(x => x.UserName == item.UserName));
+                updateItems.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<UserEntity>(Newtonsoft.Json.JsonConvert.SerializeObject(foundUser.Result)));
+            }
+            foreach (var item in updateItems)
+            {
+                item.UserName += "Updated";
+            }
+            await using var logic2 = GetContractLogic();
+            var updateResult = await logic2.UpdateBulk(updateItems);
+            foreach (var item in updateItems)
+            {
+                var found = await logic2.GetBy(x => x.UserName == item.UserName);
+                Assert.True(found);
+                Assert.NotNull(found.Result.ModificationDateTime);
+                Assert.Equal(found.Result.CreationDateTime, item.CreationDateTime);
+                Assert.True(found.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+                Assert.True(found.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+                var find = items.FirstOrDefault(x => x.UserName == found.Result.UserName.Replace("Updated", ""));
+                Assert.Equal(found.Result.UserName, find.UserName + "Updated");
+            }
+        }
+
+        [Theory]
         [InlineData("Ahmad")]
         [InlineData("Yasin")]
         public async Task UniqueIdentityAsync(string userName)
@@ -200,6 +270,9 @@ namespace EasyMicroservices.Cores.Tests.Database
 
         [Theory]
         [InlineData("Hossein")]
+        [InlineData("HosseinA")]
+        [InlineData("HosseinB")]
+        [InlineData("HosseinC")]
         public async Task HardDeleteAsync(string userName)
         {
             await using var logic = GetContractLogic();
@@ -219,6 +292,37 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Id = added.Id
             });
             Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+        }
+
+        [Theory]
+        [InlineData("Ali", new string[] { "Hossein", "HosseinA", "HosseinB", "HosseinC" })]
+        public async Task HardDeleteBulkAsync(string name, string[] userNames)
+        {
+            await using var logic = GetContractLogic();
+            List<long> ids = new List<long>();
+            foreach (var item in userNames)
+            {
+                UserEntity added = await AddAsync(item);
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = added.Id
+                });
+                ids.Add(added.Id);
+                Assert.Equal(found.Result.Id, added.Id);
+            }
+            var deleted = await logic.HardDeleteBulkByIds(new DeleteBulkRequestContract<long>()
+            {
+                Ids = ids
+            });
+            Assert.True(deleted);
+            foreach (var item in ids)
+            {
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = item
+                });
+                Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+            }
         }
 
         [Theory]
@@ -244,6 +348,40 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Id = added.Id
             });
             Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+        }
+
+        [Theory]
+        [InlineData("Ali", new string[] { "Hossein", "HosseinA", "HosseinB", "HosseinC" })]
+        public async Task SoftDeleteBulkByIdsAsync(string name, string[] userNames)
+        {
+            await using var logic = GetContractLogic();
+            List<long> ids = new List<long>();
+            foreach (var userName in userNames)
+            {
+                var added = await AddAsync(userName);
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = added.Id
+                });
+                ids.Add(added.Id);
+                Assert.Equal(found.Result.Id, added.Id);
+            }
+
+            var deleted = await logic.SoftDeleteBulkByIds(new SoftDeleteBulkRequestContract<long>
+            {
+                Ids = ids,
+                IsDelete = true
+            });
+            Assert.True(deleted);
+            foreach (var item in ids)
+            {
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = item
+                });
+                Assert.False(found.IsSuccess);
+                Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+            }
         }
 
         [Theory]

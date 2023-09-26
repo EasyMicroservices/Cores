@@ -6,6 +6,7 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -141,6 +142,30 @@ namespace EasyMicroservices.Cores.Database.Logics
             var result = await queryable.FirstOrDefaultAsync(predicate, cancellationToken);
             if (result == null)
                 return (FailedReasonType.NotFound, $"Item by predicate not found!");
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="predicate"></param>
+        /// <param name="query"></param>
+        /// <param name="doCheckIsDelete"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<ListMessageContract<TEntity>> GetAllBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Expression<Func<TEntity, bool>> predicate, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, bool doCheckIsDelete = true, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            if (query != null)
+                queryable = query(queryable);
+
+            if (doCheckIsDelete && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => !(x as ISoftDeleteSchema).IsDeleted));
+
+            var result = await queryable.ConvertToReadable(queryable.Where(predicate)).ToListAsync(cancellationToken);
             return result;
         }
 
@@ -399,21 +424,36 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<MessageContract<TEntity>> InternalUpdate<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default, bool doSkipUpdate = true, bool doSkipDelete = true)
             where TEntity : class
         {
-            var result = await easyWritableQueryable.Update(entity, cancellationToken);
-            if (entity is IDateTimeSchema schema)
+            var result = await InternalUpdateBulk(easyWritableQueryable, new List<TEntity>() { entity }, cancellationToken, doSkipUpdate, doSkipDelete);
+            if (!result)
+                return result.ToContract<TEntity>();
+            return result.Result.First();
+        }
+
+        private async Task<ListMessageContract<TEntity>> InternalUpdateBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, List<TEntity> entities, CancellationToken cancellationToken = default, bool doSkipUpdate = true, bool doSkipDelete = true)
+            where TEntity : class
+        {
+            List<IEntityEntry<TEntity>> items = new List<IEntityEntry<TEntity>>();
+            var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
+            foreach (var entity in result)
             {
-                easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
-                if (!doSkipUpdate)
-                    schema.ModificationDateTime = DateTime.Now;
-            }
-            if (doSkipDelete && entity is ISoftDeleteSchema)
-            {
-                easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
-                easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
+                if (entity.Entity is IDateTimeSchema schema)
+                {
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
+                    if (!doSkipUpdate)
+                        schema.ModificationDateTime = DateTime.Now;
+                }
+                if (doSkipDelete && entity.Entity is ISoftDeleteSchema)
+                {
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
+                }
+                items.Add(entity);
             }
             await easyWritableQueryable.SaveChangesAsync();
-            await easyWritableQueryable.Context.Reload(result.Entity, cancellationToken);
-            return result.Entity;
+            foreach (var entity in items)
+                await easyWritableQueryable.Context.Reload(entity.Entity, cancellationToken);
+            return items.Select(x => x.Entity).ToList();
         }
 
         /// <summary>
@@ -439,6 +479,23 @@ namespace EasyMicroservices.Cores.Database.Logics
             return mappedResult;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TUpdateContract"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> UpdateBulk<TEntity, TUpdateContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, UpdateBulkRequestContract<TUpdateContract> request, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var entities = await _mapperProvider.MapToListAsync<TEntity>(request.Items);
+            ValidateMappedResult(ref entities);
+            var result = await InternalUpdateBulk(easyWritableQueryable, entities, cancellationToken, false, true);
+            return result;
+        }
         #endregion
 
         #region Delete
@@ -479,6 +536,23 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> HardDeleteBulkByIds<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteBulkRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
+            where TEntity : class, IIdSchema<TId>
+        {
+            var result = await easyWritableQueryable.RemoveAllAsync(x => deleteRequest.Ids.Contains(x.Id), cancellationToken);
+            await easyWritableQueryable.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
@@ -508,8 +582,6 @@ namespace EasyMicroservices.Cores.Database.Logics
             return true;
         }
 
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -528,6 +600,21 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="deleteRequest"></param>
+        /// /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract> SoftDeleteBulkByIds<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, SoftDeleteBulkRequestContract<TId> deleteRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class, IIdSchema<TId>
+        {
+            return SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => deleteRequest.Ids.Contains(x.Id), deleteRequest.IsDelete, query, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWritableQueryable"></param>
@@ -539,20 +626,23 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract> SoftDeleteBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, bool isDelete, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var getResult = await GetBy(easyReadableQueryable, predicate, query, false, cancellationToken);
+            var getResult = await GetAllBy(easyReadableQueryable, predicate, query, false, cancellationToken);
             if (!getResult)
                 return getResult;
-            if (getResult.Result is ISoftDeleteSchema softDeleteSchema)
+            foreach (var item in getResult.Result)
             {
-                softDeleteSchema.IsDeleted = isDelete;
-                if (isDelete)
-                    softDeleteSchema.DeletedDateTime = DateTime.Now;
+                if (item is ISoftDeleteSchema softDeleteSchema)
+                {
+                    softDeleteSchema.IsDeleted = isDelete;
+                    if (isDelete)
+                        softDeleteSchema.DeletedDateTime = DateTime.Now;
+                    else
+                        softDeleteSchema.DeletedDateTime = null;
+                }
                 else
-                    softDeleteSchema.DeletedDateTime = null;
-                return await InternalUpdate(easyWritableQueryable, getResult.Result, cancellationToken, true, false);
+                    return (FailedReasonType.OperationFailed, $"Your entity type {item.GetType().FullName} is not inheritance from ISoftDeleteSchema");
             }
-            else
-                return (FailedReasonType.OperationFailed, $"Your entity type {getResult.Result.GetType().FullName} is not inheritance from ISoftDeleteSchema");
+            return await InternalUpdateBulk(easyWritableQueryable, getResult.Result, cancellationToken, true, false);
         }
 
         #endregion
@@ -587,6 +677,41 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="entities"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> AddBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            foreach (var item in entities)
+            {
+                if (item is IDateTimeSchema schema)
+                    schema.CreationDateTime = DateTime.Now;
+            }
+
+            var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
+            await easyWritableQueryable.SaveChangesAsync();
+            bool anyUpdate = false;
+            foreach (var item in result)
+            {
+                if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
+                {
+                    anyUpdate = true;
+                }
+            }
+            if (anyUpdate)
+            {
+                await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), cancellationToken);
+                await easyWritableQueryable.SaveChangesAsync();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="contract"></param>
@@ -598,6 +723,24 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entity = await _mapperProvider.MapAsync<TEntity>(contract);
             ValidateMappedResult(ref entity);
             var result = await Add<TEntity>(easyWritableQueryable, entity, cancellationToken);
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, CreateBulkRequestContract<TContract> request, CancellationToken cancellationToken = default)
+           where TEntity : class
+        {
+            var entities = await _mapperProvider.MapToListAsync<TEntity>(request.Items);
+            ValidateMappedResult(ref entities);
+            var result = await AddBulk<TEntity>(easyWritableQueryable, entities, cancellationToken);
             return result;
         }
 

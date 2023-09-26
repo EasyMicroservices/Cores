@@ -18,7 +18,14 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="schema"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TResultSchema>> Update(TRequsetSchema schema, CancellationToken cancellationToken = default);
+        Task<MessageContract<TResultSchema>> Update(TRequsetSchema schema, CancellationToken cancellationToken = default); 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TRequsetSchema> schema, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
@@ -29,10 +36,25 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> HardDeleteBulkByIds(DeleteBulkRequestContract<TId> request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="deleteRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -52,6 +74,13 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract<TId>> Add(TCreateContract contract, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateContract> request, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
