@@ -20,7 +20,7 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
         public DbSet<ProfileEntity> Profiles { get; set; }
         public DbSet<CategoryEntity> Categories { get; set; }
         public DbSet<SubjectEntity> Subjects { get; set; }
-        
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (_builder != null)
