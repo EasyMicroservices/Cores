@@ -23,5 +23,18 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="uniqueIdentity"></param>
         /// <returns></returns>
         bool IsUniqueIdentityForThisTable<TEntity>(IContext context, string uniqueIdentity);
+        /// <summary>
+        /// get table first segment item of unique identity
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        string GetTableUniqueIdentity<TEntity>(IContext context);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        string GetLastTableUniqueIdentity(string uniqueIdentity);
     }
 }

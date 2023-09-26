@@ -3,9 +3,7 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,7 +55,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpPost]
         public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
-            return ContractLogic.GetByUniqueIdentity(request, OnGetQuery(), cancellationToken);
+            return ContractLogic.GetByUniqueIdentity(request, OnGetQuery(), request.Type, cancellationToken);
         }
 
         /// <summary>
@@ -92,7 +90,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpPost]
         public virtual Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(GetUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
-            return ContractLogic.GetAllByUniqueIdentity(request, OnGetAllQuery(), cancellationToken);
+            return ContractLogic.GetAllByUniqueIdentity(request, OnGetAllQuery(), request.Type, cancellationToken);
         }
 
         /// <summary>

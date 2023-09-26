@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
@@ -69,9 +70,10 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// </summary>
         /// <param name="request"></param>
         /// <param name="query"></param>
+        /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        Task<MessageContract<TContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, GetUniqueIdentityType type = GetUniqueIdentityType.All, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
@@ -93,8 +95,9 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// </summary>
         /// <param name="request"></param>
         /// <param name="query"></param>
+        /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ListMessageContract<TContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        Task<ListMessageContract<TContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, GetUniqueIdentityType type = GetUniqueIdentityType.All, CancellationToken cancellationToken = default);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
@@ -57,13 +58,35 @@ namespace EasyMicroservices.Cores.Database.Logics
                 throw new NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
         }
 
-        private IEasyReadableQueryableAsync<TEntity> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity)
+        private IEasyReadableQueryableAsync<TEntity> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!_uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
                 uniqueIdentity += "-";
-            queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IUniqueIdentitySchema).UniqueIdentity.StartsWith(uniqueIdentity)));
+            bool isEndWithDash = uniqueIdentity.EndsWith("-");
+            bool doEqual = false;
+            if (type == GetUniqueIdentityType.OnlyParent)
+            {
+                var tableUniqueIdentity = _uniqueIdentityManager.GetTableUniqueIdentity<TEntity>(easyReadableQueryable.Context);
+                var lastTableUniqueIdentity = _uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity);
+                doEqual = tableUniqueIdentity.Equals(lastTableUniqueIdentity);
+
+                if (!isEndWithDash && !doEqual)
+                    uniqueIdentity += "-";
+                if (!doEqual)
+                    uniqueIdentity += tableUniqueIdentity + "-";
+            }
+            else if (type == GetUniqueIdentityType.OnlyChilren)
+            {
+                if (!isEndWithDash)
+                    uniqueIdentity += "-";
+                uniqueIdentity += _uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity) + "-";
+            }
+            if (doEqual)
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IUniqueIdentitySchema).UniqueIdentity.Equals(uniqueIdentity)));
+            else
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IUniqueIdentitySchema).UniqueIdentity.StartsWith(uniqueIdentity)));
             return queryable;
         }
 
@@ -198,14 +221,15 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="request"></param>
         /// <param name="query"></param>
+        /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<MessageContract<TContract>> GetByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TContract>> GetByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, GetUniqueIdentityType type = GetUniqueIdentityType.All, CancellationToken cancellationToken = default)
             where TEntity : class
             where TContract : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity);
+            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
             var entityResult = await GetBy(queryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToContract<TContract>();
@@ -241,7 +265,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 queryable = queryable.ConvertToReadable(queryable.Take((int)filterRequest.Length.Value));
 
             if (filterRequest.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
-                queryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity);
+                queryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
 
             if (filterRequest.FromCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).CreationDateTime >= filterRequest.FromCreationDateTime));
@@ -336,14 +360,15 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="request"></param>
         /// <param name="query"></param>
+        /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<ListMessageContract<TContract>> GetAllByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TContract>> GetAllByUniqueIdentity<TEntity, TContract>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IUniqueIdentitySchema request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = null, GetUniqueIdentityType type = GetUniqueIdentityType.All, CancellationToken cancellationToken = default)
             where TEntity : class
             where TContract : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity);
+            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
             var entityResult = await GetAll(queryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToAnotherListContract<TContract>();

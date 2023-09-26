@@ -334,5 +334,16 @@ namespace EasyMicroservices.Cores.Database.Managers
             }
             throw new Exception($"Type of {tableType} is not table of {contextType}!");
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        public string GetLastTableUniqueIdentity(string uniqueIdentity)
+        {
+            var decode = DecodeUniqueIdentity(uniqueIdentity);
+            return GenerateUniqueIdentity(decode[decode.Length - 2]);
+        }
     }
 }
