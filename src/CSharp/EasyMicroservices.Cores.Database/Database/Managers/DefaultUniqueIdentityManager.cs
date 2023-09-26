@@ -234,5 +234,105 @@ namespace EasyMicroservices.Cores.Database.Managers
             }
             return false;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="context"></param>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        public int GetRepeatCountOfTableId<TEntity>(IContext context, string uniqueIdentity)
+        {
+            return GetRepeatCountOfTableId<TEntity>(context.ContextType, uniqueIdentity);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        public int GetRepeatCountOfTableId<TEntity, TContext>(string uniqueIdentity)
+        {
+            return GetRepeatCountOfTableId<TEntity>(typeof(TContext), uniqueIdentity);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="contextType"></param>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        public int GetRepeatCountOfTableId<TEntity>(Type contextType, string uniqueIdentity)
+        {
+            return GetRepeatCountOfTableId(contextType, typeof(TEntity), uniqueIdentity);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contextType"></param>
+        /// <param name="tableType"></param>
+        /// <param name="uniqueIdentity"></param>
+        /// <returns></returns>
+        public int GetRepeatCountOfTableId(Type contextType, Type tableType, string uniqueIdentity)
+        {
+            var decodeIds = DecodeUniqueIdentity(uniqueIdentity);
+            if (TableIds.TryGetValue(GetContextTableName(MicroserviceId, GetContextName(contextType), GetTableName(tableType)), out long tableId))
+            {
+                return decodeIds.Count(x => x == tableId);
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public string GetTableUniqueIdentity<TEntity>(IContext context)
+        {
+            return GetTableUniqueIdentity<TEntity>(context.ContextType);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContext"></typeparam>
+        /// <returns></returns>
+        public string GetTableUniqueIdentity<TEntity, TContext>()
+        {
+            return GetTableUniqueIdentity<TEntity>(typeof(TContext));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="contextType"></param>
+        /// <returns></returns>
+        public string GetTableUniqueIdentity<TEntity>(Type contextType)
+        {
+            return GetTableUniqueIdentity(contextType, typeof(TEntity));
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contextType"></param>
+        /// <param name="tableType"></param>
+        /// <returns></returns>
+        public string GetTableUniqueIdentity(Type contextType, Type tableType)
+        {
+            if (TableIds.TryGetValue(GetContextTableName(MicroserviceId, GetContextName(contextType), GetTableName(tableType)), out long tableId))
+            {
+                return GenerateUniqueIdentity(tableId);
+            }
+            throw new Exception($"Type of {tableType} is not table of {contextType}!");
+        }
     }
 }
