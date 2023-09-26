@@ -29,6 +29,14 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> HardDeleteBulkByIds(DeleteBulkRequestContract<TId> request, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="deleteRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

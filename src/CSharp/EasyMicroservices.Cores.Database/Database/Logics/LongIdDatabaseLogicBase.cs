@@ -1,7 +1,11 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
+using EasyMicroservices.ServiceContracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Logics
 {

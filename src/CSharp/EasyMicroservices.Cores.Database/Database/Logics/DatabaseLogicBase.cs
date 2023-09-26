@@ -175,6 +175,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public Task<MessageContract> HardDeleteBulkByIds(DeleteBulkRequestContract<TId> request, CancellationToken cancellationToken = default)
+        {
+            return HardDeleteBulkByIds(_easyWriteableQueryable, request, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

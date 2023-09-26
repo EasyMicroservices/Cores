@@ -13,6 +13,7 @@ using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace EasyMicroservices.Cores.Tests.Database
 {
@@ -200,6 +201,9 @@ namespace EasyMicroservices.Cores.Tests.Database
 
         [Theory]
         [InlineData("Hossein")]
+        [InlineData("HosseinA")]
+        [InlineData("HosseinB")]
+        [InlineData("HosseinC")]
         public async Task HardDeleteAsync(string userName)
         {
             await using var logic = GetContractLogic();
@@ -219,6 +223,37 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Id = added.Id
             });
             Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+        }
+
+        [Theory]
+        [InlineData("Ali", new string[] { "Hossein", "HosseinA", "HosseinB", "HosseinC" })]
+        public async Task HardDeleteBulkAsync(string name, string[] userNames)
+        {
+            await using var logic = GetContractLogic();
+            List<long> ids = new List<long>();
+            foreach (var item in userNames)
+            {
+                UserEntity added = await AddAsync(item);
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = added.Id
+                });
+                ids.Add(added.Id);
+                Assert.Equal(found.Result.Id, added.Id);
+            }
+            var deleted = await logic.HardDeleteBulkByIds(new DeleteBulkRequestContract<long>()
+            {
+                Ids = ids
+            });
+            Assert.True(deleted);
+            foreach (var item in ids)
+            {
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = item
+                });
+                Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+            }
         }
 
         [Theory]

@@ -479,6 +479,23 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> HardDeleteBulkByIds<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteBulkRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
+            where TEntity : class, IIdSchema<TId>
+        {
+            var result = await easyWritableQueryable.RemoveAllAsync(x => deleteRequest.Ids.Contains(x.Id), cancellationToken);
+            await easyWritableQueryable.SaveChangesAsync();
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>

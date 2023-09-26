@@ -225,6 +225,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, cancellationToken);
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -235,6 +236,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         public Task<MessageContract> HardDeleteById(DeleteRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("HardDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteById method");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract> HardDeleteBulkByIds(DeleteBulkRequestContract<TResponseContract> request, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("HardDeleteBulkByIds is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this HardDeleteBulkByIds method");
         }
 
         /// <summary>
@@ -277,7 +290,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TResponseContract> deleteRequest, CancellationToken cancellationToken = default)
         {
-            throw new Exception("SoftDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
+            throw new Exception("SoftDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteById method");
         }
     }
 }

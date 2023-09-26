@@ -73,6 +73,18 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpDelete]
+        public virtual Task<MessageContract> HardDeleteBulkByIds(DeleteBulkRequestContract<TId> request, CancellationToken cancellationToken = default)
+        {
+            return writableContractLogic.HardDeleteBulkByIds(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpDelete]
         public virtual Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TId> request, CancellationToken cancellationToken = default)
         {
             return writableContractLogic.SoftDeleteById(request, cancellationToken);
