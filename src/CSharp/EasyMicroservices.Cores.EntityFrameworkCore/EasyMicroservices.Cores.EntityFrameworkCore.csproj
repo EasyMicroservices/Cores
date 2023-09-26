@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Database.EntityFrameworkCore" Version="0.0.0.9" />
+    <PackageReference Include="EasyMicroservices.Database.EntityFrameworkCore" Version="0.0.0.10" />
   </ItemGroup>
 
   <ItemGroup>

@@ -214,6 +214,17 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, cancellationToken);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TUpdateRequestContract> schema, CancellationToken cancellationToken = default)
+        {
+            return UpdateBulk(_easyWriteableQueryable, schema, cancellationToken);
+        }
 
         /// <summary>
         /// 

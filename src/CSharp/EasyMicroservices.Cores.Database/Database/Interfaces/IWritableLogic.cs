@@ -18,7 +18,14 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="schema"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TResultSchema>> Update(TRequsetSchema schema, CancellationToken cancellationToken = default);
+        Task<MessageContract<TResultSchema>> Update(TRequsetSchema schema, CancellationToken cancellationToken = default); 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TRequsetSchema> schema, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
