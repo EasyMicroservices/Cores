@@ -70,6 +70,13 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateContract> request, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

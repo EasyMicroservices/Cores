@@ -13,7 +13,6 @@ using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace EasyMicroservices.Cores.Tests.Database
 {
@@ -114,6 +113,35 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.Equal(ids.Last(), foundUser.Result.Id);
             Assert.Equal(TableContextId, ids[^2]);
             return foundUser.Result;
+        }
+
+        [Theory]
+        [InlineData("Ali")]
+        [InlineData("Reza")]
+        [InlineData("Javad")]
+        public async Task AddBulkAsync(string userName)
+        {
+            await using var logic = GetContractLogic();
+            List<UserEntity> items = new List<UserEntity>();
+            for (int i = 0; i < 10; i++)
+            {
+                items.Add(new UserEntity()
+                {
+                    UserName = userName + i
+                });
+            }
+            var user = await logic.AddBulk(items);
+            Assert.True(user.IsSuccess);
+            foreach (var item in items)
+            {
+                var foundUser = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = item.Id
+                });
+                Assert.True(foundUser.IsSuccess);
+                Assert.True(foundUser.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+                Assert.True(items.Any(x => x.UserName == item.UserName));
+            }
         }
 
         public async Task<ProfileEntity> AddProfileAsync(long userId, string name)

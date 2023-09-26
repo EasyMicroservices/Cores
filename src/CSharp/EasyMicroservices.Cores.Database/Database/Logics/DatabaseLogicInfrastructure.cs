@@ -434,21 +434,21 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             List<IEntityEntry<TEntity>> items = new List<IEntityEntry<TEntity>>();
-            foreach (var entity in entities)
+            var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
+            foreach (var entity in result)
             {
-                var result = await easyWritableQueryable.Update(entity, cancellationToken);
-                if (entity is IDateTimeSchema schema)
+                if (entity.Entity is IDateTimeSchema schema)
                 {
-                    easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
                     if (!doSkipUpdate)
                         schema.ModificationDateTime = DateTime.Now;
                 }
-                if (doSkipDelete && entity is ISoftDeleteSchema)
+                if (doSkipDelete && entity.Entity is ISoftDeleteSchema)
                 {
-                    easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
-                    easyWritableQueryable.Context.ChangeModificationPropertyState(result.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
                 }
-                items.Add(result);
+                items.Add(entity);
             }
             await easyWritableQueryable.SaveChangesAsync();
             foreach (var entity in items)
@@ -660,6 +660,38 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="entities"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> AddBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            if (entities is IDateTimeSchema schema)
+                schema.CreationDateTime = DateTime.Now;
+
+            var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
+            await easyWritableQueryable.SaveChangesAsync();
+            bool anyUpdate = false;
+            foreach (var item in result)
+            {
+                if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
+                {
+                    anyUpdate = true;
+                }
+            }
+            if (anyUpdate)
+            {
+                await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), cancellationToken);
+                await easyWritableQueryable.SaveChangesAsync();
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="contract"></param>
@@ -671,6 +703,24 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entity = await _mapperProvider.MapAsync<TEntity>(contract);
             ValidateMappedResult(ref entity);
             var result = await Add<TEntity>(easyWritableQueryable, entity, cancellationToken);
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="easyWritableQueryable"></param>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, CreateBulkRequestContract<TContract> request, CancellationToken cancellationToken = default)
+           where TEntity : class
+        {
+            var entities = await _mapperProvider.MapToListAsync<TEntity>(request.Items);
+            ValidateMappedResult(ref entities);
+            var result = await AddBulk<TEntity>(easyWritableQueryable, entities, cancellationToken);
             return result;
         }
 

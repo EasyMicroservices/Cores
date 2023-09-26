@@ -6,6 +6,7 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -114,6 +115,18 @@ namespace EasyMicroservices.Cores.Database.Logics
             var mapped = await _mapperProvider.MapAsync<TResponseContract>(result.Result);
             ValidateMappedResult(ref mapped);
             return mapped;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
+        {
+            var result = await Add(_easyWriteableQueryable, request, cancellationToken);
+            return result;
         }
 
         /// <summary>
