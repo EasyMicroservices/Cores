@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EasyMicroservices.Cores.DataTypes;
+using System;
 
 namespace EasyMicroservices.Cores.Contracts.Requests
 {
@@ -41,6 +42,10 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// 
         /// </summary>
         public string UniqueIdentity { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public GetUniqueIdentityType? UniqueIdentityType { get; set; }
         /// <summary>
         /// 
         /// </summary>

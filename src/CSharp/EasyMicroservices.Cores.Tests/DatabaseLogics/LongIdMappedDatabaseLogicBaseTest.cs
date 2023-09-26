@@ -30,6 +30,15 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
         }
 
+        IContractLogic<SubjectEntity, SubjectEntity, SubjectEntity, SubjectEntity, long> GetSubjectContractLogic()
+        {
+            return new LongIdMappedDatabaseLogicBase<SubjectEntity, SubjectEntity, SubjectEntity, SubjectEntity>(GetDatabase().GetReadableOf<SubjectEntity>(), GetDatabase().GetWritableOf<SubjectEntity>(), GetMapper(), GetUniqueIdentityManager());
+        }
+        IContractLogic<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity, long> GetCategoryContractLogic()
+        {
+            return new LongIdMappedDatabaseLogicBase<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity>(GetDatabase().GetReadableOf<CategoryEntity>(), GetDatabase().GetWritableOf<CategoryEntity>(), GetMapper(), GetUniqueIdentityManager());
+        }
+
         IContractLogic<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity, long> GetProfileContractLogic()
         {
             return new LongIdMappedDatabaseLogicBase<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity>(GetDatabase().GetReadableOf<ProfileEntity>(), GetDatabase().GetWritableOf<ProfileEntity>(), GetMapper(), GetUniqueIdentityManager());
@@ -52,11 +61,15 @@ namespace EasyMicroservices.Cores.Tests.Database
 
         const long TableContextId = 150;
         const long ProfileTableContextId = 151;
+        const long CategoryTableContextId = 152;
+        const long SubjectTableContextId = 153;
         public virtual IUniqueIdentityManager GetUniqueIdentityManager()
         {
             var manager = new DefaultUniqueIdentityManager("1-1", 5);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(UserEntity)), TableContextId);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(ProfileEntity)), ProfileTableContextId);
+            manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(CategoryEntity)), CategoryTableContextId);
+            manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(SubjectEntity)), SubjectTableContextId);
             return manager;
         }
 
@@ -181,7 +194,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             var onlyUniqueIdentity = await profileLogic.GetByUniqueIdentity(new GetUniqueIdentityRequestContract()
             {
                 UniqueIdentity = added.UniqueIdentity
-            }, q => q.Where(x => x.FirstName == "Ali5"));
+            }, default, q => q.Where(x => x.FirstName == "Ali5"));
             Assert.Contains(foundAllProfiles.Result, x => x.FirstName == "Ali5");
         }
 
@@ -231,6 +244,108 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Id = added.Id
             });
             Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+        }
+
+        [Theory]
+        [InlineData("Ali", new string[] { "reza", "javad", "hassan" })]
+        public async Task SelfChildTestAsync(string parentName, string[] chilren)
+        {
+            await using var logic = GetCategoryContractLogic();
+            var addUser = new CategoryEntity()
+            {
+                Name = parentName,
+                UniqueIdentity = "A-B"
+            };
+            var user = await logic.Add(addUser);
+            Assert.True(user.IsSuccess);
+            Assert.True(user.Result > 0);
+            var foundUser = await logic.GetById(new GetIdRequestContract<long>()
+            {
+                Id = user.Result
+            });
+            foreach (var item in chilren)
+            {
+                var chidlAddUser = new CategoryEntity()
+                {
+                    Name = item,
+                    UniqueIdentity = foundUser.Result.UniqueIdentity
+                };
+                var childUser = await logic.Add(chidlAddUser);
+                Assert.True(childUser.IsSuccess);
+                Assert.True(childUser.Result > 0);
+            }
+
+            var allResult = await logic.GetAllByUniqueIdentity(foundUser.Result);
+            Assert.True(allResult.HasItems);
+            Assert.True(chilren.All(x => allResult.Result.Any(y => y.Name == x)));
+            Assert.True(allResult.Result.Any(y => y.Name == parentName));
+
+            var onlyChildrenResult = await logic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChilren);
+            Assert.True(onlyChildrenResult.HasItems);
+            Assert.True(chilren.All(x => onlyChildrenResult.Result.Any(y => y.Name == x)));
+            Assert.True(!onlyChildrenResult.Result.Any(y => y.Name == parentName));
+
+            var onlyParentResult = await logic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyParent);
+            Assert.True(onlyParentResult.HasItems);
+            Assert.True(chilren.All(x => !onlyParentResult.Result.Any(y => y.Name == x)));
+            Assert.True(onlyParentResult.Result.Any(y => y.Name == parentName));
+        }
+
+        [Theory]
+        [InlineData("Ali", new string[] { "reza", "javad", "hassan" })]
+        public async Task ChildTestAsync(string parentName, string[] chilren)
+        {
+            await using var logic = GetCategoryContractLogic();
+            await using var subjectlogic = GetSubjectContractLogic();
+            var addUser = new CategoryEntity()
+            {
+                Name = parentName,
+                UniqueIdentity = "A-B"
+            };
+            var user = await logic.Add(addUser);
+            Assert.True(user.IsSuccess);
+            Assert.True(user.Result > 0);
+            var foundUser = await logic.GetById(new GetIdRequestContract<long>()
+            {
+                Id = user.Result
+            });
+            foreach (var item in chilren)
+            {
+                var chidlAddUser = new CategoryEntity()
+                {
+                    Name = item,
+                    UniqueIdentity = foundUser.Result.UniqueIdentity
+                };
+                var childUser = await logic.Add(chidlAddUser);
+                Assert.True(childUser.IsSuccess);
+                Assert.True(childUser.Result > 0);
+            }
+
+            var allResult = await logic.GetAllByUniqueIdentity(foundUser.Result);
+            Assert.True(allResult.HasItems);
+            Assert.True(chilren.All(x => allResult.Result.Any(y => y.Name == x)));
+            Assert.True(allResult.Result.Any(y => y.Name == parentName));
+
+            foreach (var item in allResult.Result)
+            {
+                var chidlAddUser = new SubjectEntity()
+                {
+                    Name = "Subcject" + item.Name,
+                    UniqueIdentity = item.UniqueIdentity
+                };
+                var childUser = await subjectlogic.Add(chidlAddUser);
+                Assert.True(childUser.IsSuccess);
+                Assert.True(childUser.Result > 0);
+            }
+            var onlyChildrenResult = await subjectlogic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChilren);
+            Assert.True(onlyChildrenResult.HasItems);
+            Assert.True(chilren.All(x => onlyChildrenResult.Result.Any(y => y.Name == "Subcject" + x)));
+            Assert.True(!onlyChildrenResult.Result.Any(y => y.Name == "Subcject" + parentName));
+
+            var onlyParentResult = await subjectlogic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyParent);
+            Assert.True(onlyParentResult.HasItems);
+            Assert.True(chilren.All(x => !onlyParentResult.Result.Any(y => y.Name == "Subcject" + x)));
+            Assert.True(onlyParentResult.Result.Any(y => y.Name == "Subcject" + parentName));
         }
     }
 }
