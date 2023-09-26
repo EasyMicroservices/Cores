@@ -55,7 +55,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpPost]
         public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
-            return ContractLogic.GetByUniqueIdentity(request, OnGetQuery(), request.Type, cancellationToken);
+            return ContractLogic.GetByUniqueIdentity(request, request.Type, OnGetQuery(), cancellationToken);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpPost]
         public virtual Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(GetUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
-            return ContractLogic.GetAllByUniqueIdentity(request, OnGetAllQuery(), request.Type, cancellationToken);
+            return ContractLogic.GetAllByUniqueIdentity(request, request.Type, OnGetAllQuery(), cancellationToken);
         }
 
         /// <summary>

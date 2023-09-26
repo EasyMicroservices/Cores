@@ -194,7 +194,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             var onlyUniqueIdentity = await profileLogic.GetByUniqueIdentity(new GetUniqueIdentityRequestContract()
             {
                 UniqueIdentity = added.UniqueIdentity
-            }, q => q.Where(x => x.FirstName == "Ali5"));
+            }, default, q => q.Where(x => x.FirstName == "Ali5"));
             Assert.Contains(foundAllProfiles.Result, x => x.FirstName == "Ali5");
         }
 

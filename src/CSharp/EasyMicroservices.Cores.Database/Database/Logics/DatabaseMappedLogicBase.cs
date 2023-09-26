@@ -245,12 +245,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, GetUniqueIdentityType type = GetUniqueIdentityType.All, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetByUniqueIdentity(IUniqueIdentitySchema request, GetUniqueIdentityType type = GetUniqueIdentityType.All, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
-            return base.GetByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, func, type, cancellationToken);
+            return base.GetByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, type, func, cancellationToken);
         }
 
         /// <summary>
@@ -261,12 +261,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="type"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, GetUniqueIdentityType type = GetUniqueIdentityType.All, CancellationToken cancellationToken = default)
+        public Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(IUniqueIdentitySchema request, GetUniqueIdentityType type = GetUniqueIdentityType.All, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = null, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)
                 func = (q) => _easyReadableQueryable.ConvertToReadable(query(_easyReadableQueryable));
-            return base.GetAllByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, func, type, cancellationToken);
+            return base.GetAllByUniqueIdentity<TEntity, TResponseContract>(_easyReadableQueryable, request, type, func, cancellationToken);
         }
 
         /// <summary>
