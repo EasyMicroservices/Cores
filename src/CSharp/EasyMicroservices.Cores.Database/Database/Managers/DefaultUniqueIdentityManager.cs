@@ -65,11 +65,11 @@ namespace EasyMicroservices.Cores.Database.Managers
                 {
                     if (entity is IIdSchema<long> longIdSchema)
                     {
-                        uniqueIdentitySchema.UniqueIdentity = ids.IsNullOrEmpty() ? GenerateUniqueIdentity(tableId, longIdSchema.Id) : GenerateUniqueIdentity(ids, tableId, longIdSchema.Id);
+                        uniqueIdentitySchema.UniqueIdentity = ids.IsEmpty() ? GenerateUniqueIdentity(tableId, longIdSchema.Id) : GenerateUniqueIdentity(ids, tableId, longIdSchema.Id);
                     }
                     else if (entity is IIdSchema<int> intIdSchema)
                     {
-                        uniqueIdentitySchema.UniqueIdentity = ids.IsNullOrEmpty() ? GenerateUniqueIdentity(tableId, intIdSchema.Id) : GenerateUniqueIdentity(ids, tableId, intIdSchema.Id);
+                        uniqueIdentitySchema.UniqueIdentity = ids.IsEmpty() ? GenerateUniqueIdentity(tableId, intIdSchema.Id) : GenerateUniqueIdentity(ids, tableId, intIdSchema.Id);
                     }
                 }
                 return true;
@@ -85,7 +85,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <returns></returns>
         public static string GenerateUniqueIdentity(params long[] parameters)
         {
-            if (parameters.IsNullOrEmpty())
+            if (parameters.IsEmpty())
                 throw new Exception($"{nameof(parameters)} cannot be null or empty!");
             return string.Join("-", parameters.Select(x => StringHelper.EncodeByKey(x)));
         }
@@ -98,9 +98,9 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <returns></returns>
         public static string GenerateUniqueIdentity(long[] startParameters, params long[] parameters)
         {
-            if (parameters.IsNullOrEmpty())
+            if (parameters.IsEmpty())
                 throw new Exception($"{nameof(parameters)} cannot be null or empty!");
-            if (startParameters.IsNullOrEmpty())
+            if (startParameters.IsEmpty())
                 throw new Exception($"{nameof(startParameters)} cannot be null or empty!");
             return string.Join("-", startParameters.Select(x => StringHelper.EncodeByKey(x))) + "-" +
                 string.Join("-", parameters.Select(x => StringHelper.EncodeByKey(x)));
