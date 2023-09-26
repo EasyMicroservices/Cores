@@ -282,6 +282,40 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
 
         [Theory]
+        [InlineData("Ali", new string[] { "Hossein", "HosseinA", "HosseinB", "HosseinC" })]
+        public async Task SoftDeleteBulkByIdsAsync(string name, string[] userNames)
+        {
+            await using var logic = GetContractLogic();
+            List<long> ids = new List<long>();
+            foreach (var userName in userNames)
+            {
+                var added = await AddAsync(userName);
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = added.Id
+                });
+                ids.Add(added.Id);
+                Assert.Equal(found.Result.Id, added.Id);
+            }
+
+            var deleted = await logic.SoftDeleteBulkByIds(new SoftDeleteBulkRequestContract<long>
+            {
+                Ids = ids,
+                IsDelete = true
+            });
+            Assert.True(deleted);
+            foreach (var item in ids)
+            {
+                var found = await logic.GetById(new GetIdRequestContract<long>()
+                {
+                    Id = item
+                });
+                Assert.False(found.IsSuccess);
+                Assert.Equal(FailedReasonType.NotFound, found.Error.FailedReasonType);
+            }
+        }
+
+        [Theory]
         [InlineData("Ali", new string[] { "reza", "javad", "hassan" })]
         public async Task SelfChildTestAsync(string parentName, string[] chilren)
         {

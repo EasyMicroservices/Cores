@@ -292,5 +292,17 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             throw new Exception("SoftDeleteById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteById method");
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TResponseContract> deleteRequest, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("SoftDeleteBulkByIds is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteBulkByIds method");
+        }
     }
 }

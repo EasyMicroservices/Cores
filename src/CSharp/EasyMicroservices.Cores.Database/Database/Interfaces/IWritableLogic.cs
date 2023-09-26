@@ -41,6 +41,13 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<MessageContract> SoftDeleteById(SoftDeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default);
     }
 
     /// <summary>

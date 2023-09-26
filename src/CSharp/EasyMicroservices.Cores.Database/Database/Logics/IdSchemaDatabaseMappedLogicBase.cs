@@ -254,6 +254,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="deleteRequest"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
+        {
+            return SoftDeleteBulkByIds(_easyReadableQueryable, _easyWriteableQueryable, deleteRequest, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="request"></param>
         /// <param name="query"></param>
         /// <param name="type"></param>

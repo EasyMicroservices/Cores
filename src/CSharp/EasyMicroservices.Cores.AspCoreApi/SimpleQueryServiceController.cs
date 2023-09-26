@@ -89,5 +89,16 @@ namespace EasyMicroservices.Cores.AspCoreApi
         {
             return writableContractLogic.SoftDeleteById(request, cancellationToken);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        public virtual Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TId> request, CancellationToken cancellationToken = default)
+        {
+            return writableContractLogic.SoftDeleteBulkByIds(request, cancellationToken);
+        }
     }
 }
