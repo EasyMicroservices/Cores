@@ -1,5 +1,7 @@
-﻿using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
+using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,12 +21,15 @@ namespace EasyMicroservices.Cores.AspCoreApi
     [ApiController]
     [Route("api/[controller]/[action]")]
     public class ReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId> : ControllerBase
+        where TResponseContract : class
+        where TEntity : class,IIdSchema<TId>
         where TFilterContract : FilterRequestContract
     {
         /// <summary>
         /// 
         /// </summary>
-        protected IContractReadableLogic<TEntity, TResponseContract, TId> ContractLogic { get; private set; }
+        protected virtual IContractReadableLogic<TEntity, TResponseContract, TId> ContractLogic { get; private set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -33,7 +38,15 @@ namespace EasyMicroservices.Cores.AspCoreApi
         {
             ContractLogic = contractReadable;
         }
-
+        /// <summary>
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        public ReadableQueryServiceController(IBaseUnitOfWork unitOfWork)
+        {
+            ContractLogic = unitOfWork.GetReadableContractLogic<TEntity,TResponseContract,TId>();
+        }
         /// <summary>
         /// 
         /// </summary>
