@@ -22,7 +22,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
     [Route("api/[controller]/[action]")]
     public class ReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId> : ControllerBase
         where TResponseContract : class
-        where TEntity : class,IIdSchema<TId>
+        where TEntity : class, IIdSchema<TId>
         where TFilterContract : FilterRequestContract
     {
         /// <summary>
@@ -45,7 +45,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="unitOfWork"></param>
         public ReadableQueryServiceController(IBaseUnitOfWork unitOfWork)
         {
-            ContractLogic = unitOfWork.GetReadableContractLogic<TEntity,TResponseContract,TId>();
+            ContractLogic = unitOfWork.GetReadableContractLogic<TEntity, TResponseContract, TId>();
         }
         /// <summary>
         /// 
