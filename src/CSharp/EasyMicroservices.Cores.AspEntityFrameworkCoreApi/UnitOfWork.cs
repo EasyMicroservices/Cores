@@ -15,7 +15,6 @@ using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -40,6 +39,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <param name="service"></param>
         public UnitOfWork(IServiceProvider service)
         {
+            service.ThrowIfNull(nameof(service));
             _service = service;
         }
 
@@ -56,6 +56,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <returns></returns>
         public virtual IDatabase GetDatabase()
         {
+            if (_service == null)
+                throw new ObjectDisposedException(nameof(_service));
             var context = _service.GetService<RelationalCoreContext>();
             if (context == null)
                 throw new Exception("RelationalCoreContext is null, please add your context to RelationalCoreContext as Transit or Scope.\r\nExample : services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
@@ -71,6 +73,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IDatabase GetDatabase<TContext>()
                 where TContext : RelationalCoreContext
         {
+            if (_service == null)
+                throw new ObjectDisposedException(nameof(_service));
             var context = _service.GetService<TContext>();
             if (context == null)
                 throw new Exception("TContext is null, please add your context to Context as Transit or Scope.\r\nExample : services.AddTransient<YourContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
@@ -330,6 +334,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <returns></returns>
         public virtual Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
+            if (_service == null)
+                throw new ObjectDisposedException(nameof(_service));
             return new WhiteLabelManager(_service).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
         }
 
@@ -355,6 +361,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         {
             InternalSyncDispose();
             _ = InternalDispsose();
+            Disposables.Clear();
+            _service = null;
         }
 
         /// <summary>
@@ -365,6 +373,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         {
             InternalSyncDispose();
             await InternalDispsose();
+            Disposables.Clear();
+            _service = null;
         }
 
         async Task InternalDispsose()
