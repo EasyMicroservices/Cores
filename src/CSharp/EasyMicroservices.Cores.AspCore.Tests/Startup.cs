@@ -16,8 +16,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
 
         public void ConfigureServices(IServiceCollection services)
         {
-            UnitOfWork.DefaultUniqueIdentity = "1-2";
-            UnitOfWork.MicroserviceId = 1250;
             StartUpExtensions.Builder<MyTestContext>(services);
             services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
