@@ -20,7 +20,7 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         }
 
         protected static WhiteLabelVirtualTestManager WhiteLabelVirtualTestManager { get; set; } = new WhiteLabelVirtualTestManager();
-       
+
         static bool _isInitialized = false;
         static SemaphoreSlim Semaphore = new SemaphoreSlim(1);
         protected async Task OnInitialize()
