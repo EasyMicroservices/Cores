@@ -21,7 +21,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
     [Route("api/[controller]/[action]")]
     public class SimpleQueryServiceController<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : ReadableQueryServiceController<TEntity, FilterRequestContract, TResponseContract, TId>
             where TResponseContract : class
-            where TEntity : class, IIdSchema<TId>
+            where TEntity : class
     {
         /// <summary>
         /// 

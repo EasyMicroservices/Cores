@@ -22,7 +22,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
     [Route("api/[controller]/[action]")]
     public class ReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId> : ControllerBase
         where TResponseContract : class
-        where TEntity : class, IIdSchema<TId>
+        where TEntity : class
         where TFilterContract : FilterRequestContract
     {
         /// <summary>

@@ -104,7 +104,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected async Task<MessageContract<TEntity>> GetById<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetIdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+            where TEntity : class
         {
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (query != null)
@@ -113,7 +113,12 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
                 queryable = queryable.ConvertToReadable(queryable.Where(x => !(x as ISoftDeleteSchema).IsDeleted));
 
-            var result = await queryable.FirstOrDefaultAsync(x => x.Id.Equals(idRequest.Id), cancellationToken);
+            if (typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IIdSchema<TId>).Id.Equals(idRequest.Id)));
+            else
+                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            var result = await queryable.FirstOrDefaultAsync(cancellationToken);
             if (result == null)
                 return (FailedReasonType.NotFound, $"Item by id {idRequest.Id} not found!");
             return result;
@@ -227,7 +232,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         protected async Task<MessageContract<TContract>> GetById<TEntity, TContract, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetIdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+            where TEntity : class
             where TContract : class
         {
             var entityResult = await GetById(easyReadableQueryable, idRequest, query, cancellationToken);
@@ -508,9 +513,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<MessageContract> HardDeleteById<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+            where TEntity : class
         {
-            var result = await easyWritableQueryable.RemoveAllAsync(x => x.Id.Equals(deleteRequest.Id), cancellationToken);
+            if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
+                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            var result = await easyWritableQueryable.RemoveAllAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
         }
@@ -526,9 +534,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<MessageContract> HardDeleteById<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+            where TEntity : class
         {
-            var result = await easyWritableQueryable.RemoveAllAsync(x => x.Id.Equals(deleteRequest.Id), cancellationToken);
+            if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
+                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            var result = await easyWritableQueryable.RemoveAllAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
         }
@@ -543,9 +554,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<MessageContract> HardDeleteBulkByIds<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteBulkRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+            where TEntity : class
         {
-            var result = await easyWritableQueryable.RemoveAllAsync(x => deleteRequest.Ids.Contains(x.Id), cancellationToken);
+            if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
+                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            var result = await easyWritableQueryable.RemoveAllAsync(x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
         }
@@ -591,10 +605,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract> SoftDeleteById<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, SoftDeleteRequestContract<TId> deleteRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+        public async Task<MessageContract> SoftDeleteById<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, SoftDeleteRequestContract<TId> deleteRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class
         {
-            return SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => x.Id.Equals(deleteRequest.Id), deleteRequest.IsDelete, query, cancellationToken);
+            if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
+                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            return await SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), deleteRequest.IsDelete, query, cancellationToken);
         }
 
         /// <summary>
@@ -606,10 +623,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract> SoftDeleteBulkByIds<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, SoftDeleteBulkRequestContract<TId> deleteRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
-            where TEntity : class, IIdSchema<TId>
+        public async Task<MessageContract> SoftDeleteBulkByIds<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, SoftDeleteBulkRequestContract<TId> deleteRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class
         {
-            return SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => deleteRequest.Ids.Contains(x.Id), deleteRequest.IsDelete, query, cancellationToken);
+            if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
+                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            return await SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id), deleteRequest.IsDelete, query, cancellationToken);
         }
 
         /// <summary>
