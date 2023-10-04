@@ -2,6 +2,8 @@
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
+using EasyMicroservices.Payments.VirtualServerForTests.TestResources;
+using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
