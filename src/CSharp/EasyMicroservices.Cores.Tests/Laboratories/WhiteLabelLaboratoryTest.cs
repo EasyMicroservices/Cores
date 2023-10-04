@@ -1,5 +1,9 @@
-﻿using EasyMicroservices.Laboratory.Engine;
+﻿using EasyMicroservices.Cores.Tests.Database;
+using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
+using EasyMicroservices.Laboratory.Engine;
 using EasyMicroservices.Laboratory.Engine.Net.Http;
+using EasyMicroservices.Payments.VirtualServerForTests.TestResources;
+using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests;
 using System.Text;
 
 namespace EasyMicroservices.Cores.Tests.Laboratories
@@ -15,6 +19,8 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
             _routeAddress = $"http://localhost:{Port}";
         }
 
+        protected static WhiteLabelVirtualTestManager WhiteLabelVirtualTestManager { get; set; } = new WhiteLabelVirtualTestManager();
+       
         static bool _isInitialized = false;
         static SemaphoreSlim Semaphore = new SemaphoreSlim(1);
         protected async Task OnInitialize()
@@ -24,63 +30,16 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
             try
             {
                 await Semaphore.WaitAsync();
+                if (_isInitialized)
+                    return;
                 _isInitialized = true;
-
-                ResourceManager resourceManager = new ResourceManager();
-                HttpHandler httpHandler = new HttpHandler(resourceManager);
-                await httpHandler.Start(Port);
-                resourceManager.Append(@$"GET /api/WhiteLabel/GetAll HTTP/1.1
-Host: localhost:{Port}
-Accept: text/plain*RequestSkipBody*"
-,
-@"HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 0
-
-{""isSuccess"":true,""result"":[{""id"":1,""name"":""ProjectName""},{""id"":2,""name"":""TenantName"",""parentId"":1}]}");
-
-
-                resourceManager.Append(@$"GET /api/Microservice/GetAll HTTP/1.1
-Host: localhost:{Port}
-Accept: text/plain*RequestSkipBody*"
-,
-@"HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 0
-
-{""isSuccess"":true,""result"":[{""id"":1,""name"":""TextExample"",""description"":""Automatically added""}]}");
-
-
-                resourceManager.Append(@$"POST /api/Microservice/Add HTTP/1.1
-Host: localhost:{Port}
-Accept: text/plain*RequestSkipBody*"
-,
-@"HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 0
-
-{""isSuccess"":true,""result"": 1}");
-
-                resourceManager.Append(@$"GET /api/MicroserviceContextTable/GetAll HTTP/1.1
-Host: localhost:{Port}
-Accept: text/plain*RequestSkipBody*"
-,
-@"HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 0
-
-{""isSuccess"":true,""result"":[{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""AddressEntity"",""contextTableId"":1},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""CompanyEntity"",""contextTableId"":2},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""ProfileEntity"",""contextTableId"":3},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""UserCompanyEntity"",""contextTableId"":4},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""UserEntity"",""contextTableId"":5},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""CategoryEntity"",""contextTableId"":6},{""microserviceName"":""TextExample"",""microserviceId"":1,""contextName"":""MyTestContext"",""tableName"":""SubjectEntity"",""contextTableId"":7}]}");
-
-                resourceManager.Append(@$"GET /api/ContextTable/GetAll HTTP/1.1
-Host: localhost:{Port}
-Accept: text/plain*RequestSkipBody*"
-                ,
-                @"HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 0
-
-{""isSuccess"":true,""result"":[{""id"":1,""tableName"":""AddressEntity"",""contextName"":""MyTestContext""},{""id"":2,""tableName"":""CompanyEntity"",""contextName"":""MyTestContext""},{""id"":3,""tableName"":""ProfileEntity"",""contextName"":""MyTestContext""},{""id"":4,""tableName"":""UserCompanyEntity"",""contextName"":""MyTestContext""},{""id"":5,""tableName"":""UserEntity"",""contextName"":""MyTestContext""},{""id"":6,""tableName"":""CategoryEntity"",""contextName"":""MyTestContext""},{""id"":7,""tableName"":""SubjectEntity"",""contextName"":""MyTestContext""}]}");
-
+                if (await WhiteLabelVirtualTestManager.OnInitialize(Port))
+                {
+                    foreach (var item in WhiteLabelResource.GetResources(new MyTestContext(new DatabaseBuilder()), "TextExample"))
+                    {
+                        WhiteLabelVirtualTestManager.AppendService(Port, item.Key, item.Value);
+                    }
+                }
             }
             finally
             {
