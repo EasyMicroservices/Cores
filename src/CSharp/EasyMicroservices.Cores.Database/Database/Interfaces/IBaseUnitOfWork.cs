@@ -37,7 +37,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongLogic<TEntity>()
-           where TEntity : class, IIdSchema<long>;
+           where TEntity : class;
         /// <summary>
         /// 
         /// </summary>
@@ -46,7 +46,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <returns></returns>
         IContractLogic<TEntity, TContract, TContract, TContract, long> GetLongContractLogic<TEntity, TContract>()
          where TContract : class
-         where TEntity : class, IIdSchema<long>;
+         where TEntity : class;
 
         /// <summary>
         /// 
@@ -54,7 +54,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongReadableLogic<TEntity>()
-         where TEntity : class, IIdSchema<long>;
+         where TEntity : class;
 
         /// <summary>
         /// 
@@ -64,7 +64,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <returns></returns>
         IContractLogic<TEntity, TContract, TContract, TContract, long> GetLongReadableContractLogic<TEntity, TContract>()
            where TContract : class
-           where TEntity : class, IIdSchema<long>;
+           where TEntity : class;
 
         /// <summary>
         /// 
@@ -73,7 +73,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TId"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetLogic<TEntity, TId>()
-           where TEntity : class, IIdSchema<TId>;
+           where TEntity : class;
 
         /// <summary>
         /// 
@@ -84,7 +84,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <returns></returns>
         IContractLogic<TEntity, TContract, TContract, TContract, TId> GetContractLogic<TEntity, TContract, TId>()
          where TContract : class
-         where TEntity : class, IIdSchema<TId>;
+         where TEntity : class;
 
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TId"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetReadableLogic<TEntity, TId>()
-         where TEntity : class, IIdSchema<TId>;
+         where TEntity : class;
         /// <summary>
         /// 
         /// </summary>
@@ -104,7 +104,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <returns></returns>
         IContractLogic<TEntity, TContract, TContract, TContract, TId> GetReadableContractLogic<TEntity, TContract, TId>()
            where TContract : class
-           where TEntity : class, IIdSchema<TId>;
+           where TEntity : class;
         /// <summary>
         /// 
         /// </summary>
@@ -115,7 +115,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <exception cref="NotImplementedException"></exception>
         IContractLogic<TEntity, TContract, TCreateRequestContract, TContract, long> GetLongContractLogic<TEntity, TCreateRequestContract, TContract>()
             where TContract : class
-            where TEntity : class, IIdSchema<long>;
+            where TEntity : class;
         /// <summary>
         /// 
         /// </summary>
@@ -127,7 +127,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <exception cref="NotImplementedException"></exception>
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
             where TResponseContract : class
-            where TEntity : class, IIdSchema<long>;
+            where TEntity : class;
 
         /// <summary>
         /// 
@@ -141,7 +141,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <exception cref="NotImplementedException"></exception>
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> GetContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>()
             where TResponseContract : class
-            where TEntity : class, IIdSchema<TId>;
+            where TEntity : class;
         /// <summary>
         /// 
         /// </summary>
@@ -172,6 +172,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         IEasyReadableQueryableAsync<TEntity> GetReadableQueryable<TEntity>()
-            where TEntity : class, IIdSchema<long>;
+            where TEntity : class;
     }
 }

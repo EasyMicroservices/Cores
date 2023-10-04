@@ -22,7 +22,7 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// <typeparam name="TUpdateRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
     public class IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : DatabaseLogicInfrastructure, IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>
-        where TEntity : class, IIdSchema<TId>
+        where TEntity : class
         where TResponseContract : class
     {
         readonly IEasyReadableQueryableAsync<TEntity> _easyReadableQueryable;
@@ -109,7 +109,9 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract<TId>> Add(TCreateRequestContract contract, CancellationToken cancellationToken = default)
         {
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
-            return result.Result.Id;
+            if (result && result.Result is IIdSchema<TId> schema)
+                return schema.Id;
+            return default;
         }
 
         /// <summary>

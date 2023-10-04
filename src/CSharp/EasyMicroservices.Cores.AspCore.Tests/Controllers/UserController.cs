@@ -4,6 +4,7 @@ using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EasyMicroservices.Cores.AspCore.Tests.Controllers
 {
@@ -14,11 +15,13 @@ namespace EasyMicroservices.Cores.AspCore.Tests.Controllers
         }
 
         [Authorize]
+        [HttpGet]
         public MessageContract AuthorizeError()
         {
             return true;
         }
 
+        [HttpGet]
         public MessageContract InternalError()
         {
             throw new Exception("Internal Error!");

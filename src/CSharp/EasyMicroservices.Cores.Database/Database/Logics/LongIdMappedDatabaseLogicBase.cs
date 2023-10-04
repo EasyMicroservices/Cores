@@ -13,7 +13,7 @@ namespace EasyMicroservices.Cores.Database.Logics
     /// <typeparam name="TUpdateRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
     public class LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract> : IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long>
-        where TEntity : class, IIdSchema<long>
+        where TEntity : class
         where TResponseContract : class
     {
         /// <summary>
