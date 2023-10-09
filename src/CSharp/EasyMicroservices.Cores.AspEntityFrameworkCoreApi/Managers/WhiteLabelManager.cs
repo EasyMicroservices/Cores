@@ -3,6 +3,7 @@ using EasyMicroservices.Cores.Database.Managers;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -19,7 +20,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
         }
 
         private readonly IServiceProvider _serviceProvider;
-        public static HttpClient HttpClient { get; set; } = new HttpClient();
+        public HttpClient HttpClient { get; set; } = new HttpClient();
 
         string GetDefaultUniqueIdentity(ICollection<WhiteLabelContract> whiteLables, long? parentId)
         {
@@ -33,6 +34,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
         public async Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
+            Debug.WriteLine($"WhiteLabelManager Initialized!");
+            Debug.WriteLine(Environment.StackTrace);
             if (dbContextTypes.IsEmpty())
                 return;
             var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, HttpClient);

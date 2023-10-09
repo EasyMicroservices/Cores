@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using EasyMicroservices.ServiceContracts;
@@ -67,7 +68,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <param name="app"></param>
-        public static void UseGlobalExceptionHandler(this IApplicationBuilder app)
+        static void UseGlobalExceptionHandler(this IApplicationBuilder app)
         {
             app.UseExceptionHandler(appInner =>
             {
@@ -121,6 +122,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
         private static string MicroserviceName = default;
         private static string ConfigName = default;
+        private static string WhiteLabelRoute = default;
         /// <summary>
         /// 
         /// </summary>
@@ -135,21 +137,36 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="microserviceName"></param>
+        /// <param name="whiteLabelRoute"></param>
+        public static void AddWhiteLabelRoute(string microserviceName, string whiteLabelRoute)
+        {
+            MicroserviceName = microserviceName;
+            WhiteLabelRoute = whiteLabelRoute;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="app"></param>
+        /// <param name="useGlobalExceptionHandling"></param>
         /// <returns></returns>
-        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app)
+        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false)
             where TContext : RelationalCoreContext
         {
             var build = app.Build();
-            build.UseDeveloperExceptionPage();
+
+            if (useGlobalExceptionHandling)
+                build.UseGlobalExceptionHandler();
+            build.UseMiddleware<AppAuthorizationMiddleware>();
+
             // Configure the HTTP request pipeline.
             build.UseSwagger();
             build.UseSwaggerUI();
 
             build.UseHttpsRedirection();
             build.UseAuthorization();
-
             IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
@@ -161,7 +178,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
                 using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                await uow.Initialize(MicroserviceName, config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                await uow.Initialize(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
             }
             return build;
         }

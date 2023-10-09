@@ -1,5 +1,4 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
-using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
@@ -33,10 +32,25 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <summary>
         /// 
         /// </summary>
+        protected virtual IBaseUnitOfWork UnitOfWork { get; }
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="contractReadable"></param>
         public ReadableQueryServiceController(IContractReadableLogic<TEntity, TResponseContract, TId> contractReadable)
         {
             ContractLogic = contractReadable;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        /// <param name="contractReadable"></param>
+        public ReadableQueryServiceController(IBaseUnitOfWork unitOfWork, IContractReadableLogic<TEntity, TResponseContract, TId> contractReadable)
+        {
+            ContractLogic = contractReadable;
+            UnitOfWork = unitOfWork;
         }
         /// <summary>
         /// 

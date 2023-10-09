@@ -1,9 +1,9 @@
-﻿using EasyMicroservices.Cores.AspCoreApi.Managers;
+﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
-using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Database.EntityFrameworkCore.Providers;
 using EasyMicroservices.Database.Interfaces;
@@ -64,6 +64,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual IAuthorization GetAuthorization()
+        {
+            return _service.GetService<IAuthorization>();
+        }
         /// <summary>
         /// 
         /// </summary>

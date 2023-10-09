@@ -2,66 +2,116 @@
 using EasyMicroservices.Cores.Tests.Contracts.Common;
 using EasyMicroservices.Cores.Tests.Laboratories;
 using EasyMicroservices.ServiceContracts;
-using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
     public class BasicTests : WhiteLabelLaboratoryTest
     {
-        protected TestServer _testServer;
-        public BasicTests() : base(6041)
+        public BasicTests()
         {
-            var webBuilder = new WebHostBuilder();
-            webBuilder.UseStartup<Startup>();
-            base.OnInitialize().Wait();
-            _testServer = new TestServer(webBuilder);
+            InitializeTestHost(false, null);
+        }
+
+        public virtual int AppPort { get; } = 4564;
+        protected virtual void InitializeTestHost(bool isUseAuthorization, Action<IServiceCollection> serviceCollection)
+        {
+            Exception exception = default;
+            TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+            Thread thread = new Thread(async () =>
+            {
+                try
+                {
+                    await OnInitialize();
+                    await Startup.Run(AppPort, serviceCollection, null);
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+                finally
+                {
+                    taskCompletionSource.SetResult();
+                }
+            });
+            thread.Start();
+            taskCompletionSource.Task.GetAwaiter().GetResult();
+            if (exception != default)
+                throw new Exception("see inner", exception);
+        }
+
+        string RouteAddress
+        {
+            get
+            {
+                return $"http://localhost:{AppPort}";
+            }
+        }
+
+        protected string GetBaseUrl()
+        {
+            return RouteAddress;
         }
 
         [Fact]
         public async Task<string> Get_EndpointsReturnSuccessAndCorrectContentType()
         {
-            var client = _testServer.CreateClient();
-            var data = await client.GetStringAsync($"api/user/getall");
+            var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/getall");
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
-            Assert.True(result);
+            AssertTrue(result);
             return data;
         }
 
         [Fact]
         public async Task AuthorizeTest()
         {
-            var client = _testServer.CreateClient();
-            var data = await client.GetStringAsync($"api/user/AuthorizeError");
+            var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/AuthorizeError");
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
-            Assert.False(result);
+            Assert.True(result.Error.FailedReasonType == FailedReasonType.SessionAccessDenied);
         }
 
         [Fact]
         public async Task InternalErrorTest()
         {
-            var client = _testServer.CreateClient();
-            var data = await client.GetStringAsync($"api/user/InternalError");
+            var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/InternalError");
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
-            Assert.False(result);
-            Assert.Contains(result.Error.StackTrace, x => x.Contains("UserController.cs"));
+            AssertFalse(result);
+            if (result.Error.FailedReasonType != FailedReasonType.SessionAccessDenied)
+                AssertContains(result.Error.StackTrace, x => x.Contains("UserController.cs"));
         }
 
         [Fact]
         public async Task AddUser()
         {
-            var client = _testServer.CreateClient();
-            var data = await client.PostAsJsonAsync($"api/user/Add", new UpdateUserContract()
+            var data = await HttpClient.PostAsJsonAsync($"{GetBaseUrl()}/api/user/Add", new UpdateUserContract()
             {
                 UserName = "Ali",
                 UniqueIdentity = "1-2"
             });
             var result = JsonConvert.DeserializeObject<MessageContract>(await data.Content.ReadAsStringAsync());
-            Assert.True(result);
+            AssertTrue(result);
             var getAllRespone = await Get_EndpointsReturnSuccessAndCorrectContentType();
             var users = JsonConvert.DeserializeObject<ListMessageContract<UpdateUserContract>>(getAllRespone);
-            Assert.True(users);
-            Assert.True(users.Result.All(x => DefaultUniqueIdentityManager.DecodeUniqueIdentity(x.UniqueIdentity).Length > 2));
+            AssertTrue(users);
+            if (users.IsSuccess)
+                AssertTrue(users.Result.All(x => DefaultUniqueIdentityManager.DecodeUniqueIdentity(x.UniqueIdentity).Length > 2));
+        }
+
+        protected virtual void AssertTrue(MessageContract messageContract)
+        {
+            Assert.True(messageContract);
+        }
+
+        protected virtual void AssertFalse(MessageContract messageContract)
+        {
+            Assert.False(messageContract);
+        }
+
+        protected virtual void AssertContains<T>(
+            IEnumerable<T> collection,
+            Predicate<T> filter)
+        {
+            Assert.Contains(collection, filter);
         }
     }
 }

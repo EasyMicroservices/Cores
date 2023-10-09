@@ -1,41 +1,43 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
+﻿using EasyMicroservices.Cores.AspCore.Tests.Controllers;
+using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
-using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
-using EasyMicroservices.Payments.VirtualServerForTests.TestResources;
-using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests;
+using EasyMicroservices.ServiceContracts;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        static WebApplicationBuilder CreateBuilder(long port)
         {
-            Configuration = configuration;
+            var app = StartUpExtensions.Create<MyTestContext>(null);
+            app.Services.Builder<MyTestContext>();
+            app.Services.AddTransient<IUnitOfWork>((serviceProvider) => new UnitOfWork(serviceProvider));
+            app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
+            app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
+            StartUpExtensions.AddWhiteLabelRoute("TestExample", $"http://localhost:6041");
+            app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);
+            app.WebHost.UseUrls($"http://localhost:{port}");
+            return app;
         }
 
-        public IConfiguration Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
+        public static async Task Run(long port, Action<IServiceCollection> use, Action<IServiceProvider> serviceProvider)
         {
-            StartUpExtensions.Builder<MyTestContext>(services);
-            services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
-            services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
-            services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
+            var app = CreateBuilder(port);
+            use?.Invoke(app.Services);
+            var build = await app.Build<MyTestContext>(true);
+            serviceProvider?.Invoke(build.Services);
+            build.MapControllers();
+            _ = build.RunAsync();
         }
-
-        public void Configure(IApplicationBuilder app)
+    }
+    public class AppAuthorization : IAuthorization
+    {
+        public Task<MessageContract> CheckIsAuthorized(HttpContext httpContext)
         {
-            app.UseGlobalExceptionHandler();
-            app.UseRouting();
-            app.UseAuthorization();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-            StartUpExtensions.AddWhiteLabel("TestExample", "RootAddresses:WhiteLabel");
-
-            app.Build<MyTestContext>().Wait();
+            return Task.FromResult<MessageContract>((FailedReasonType.SessionAccessDenied, "AppAuthorization"));
         }
     }
 }
