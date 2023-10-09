@@ -1,4 +1,6 @@
-﻿using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
+﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Database.Interfaces;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
@@ -8,6 +10,11 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
     /// </summary>
     public interface IUnitOfWork : IBaseUnitOfWork
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IAuthorization GetAuthorization();
         /// <summary>
         /// 
         /// </summary>

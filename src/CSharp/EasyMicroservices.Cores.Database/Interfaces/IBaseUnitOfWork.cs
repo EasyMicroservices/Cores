@@ -1,11 +1,9 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
-using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using System;
-using System.Security.Cryptography;
 
-namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces
+namespace EasyMicroservices.Cores.Interfaces
 {
     /// <summary>
     /// 

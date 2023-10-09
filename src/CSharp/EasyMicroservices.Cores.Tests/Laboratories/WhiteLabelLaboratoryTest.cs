@@ -1,7 +1,5 @@
 ﻿using EasyMicroservices.Cores.Tests.Database;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
-using EasyMicroservices.Laboratory.Engine;
-using EasyMicroservices.Laboratory.Engine.Net.Http;
 using EasyMicroservices.Payments.VirtualServerForTests.TestResources;
 using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests;
 using System.Text;
@@ -10,12 +8,11 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
 {
     public abstract class WhiteLabelLaboratoryTest
     {
-        int Port = 6041;
+        protected int Port = 6041;
         string _routeAddress = "";
-        public static HttpClient HttpClient { get; set; } = new HttpClient();
-        public WhiteLabelLaboratoryTest(int portNumber)
+        public HttpClient HttpClient { get; set; } = new HttpClient();
+        public WhiteLabelLaboratoryTest()
         {
-            Port = portNumber;
             _routeAddress = $"http://localhost:{Port}";
         }
 
@@ -25,14 +22,11 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         static SemaphoreSlim Semaphore = new SemaphoreSlim(1);
         protected async Task OnInitialize()
         {
-            if (_isInitialized)
-                return;
             try
             {
                 await Semaphore.WaitAsync();
                 if (_isInitialized)
                     return;
-                _isInitialized = true;
                 if (await WhiteLabelVirtualTestManager.OnInitialize(Port))
                 {
                     foreach (var item in WhiteLabelResource.GetResources(new MyTestContext(new DatabaseBuilder()), "TextExample"))
@@ -40,6 +34,7 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
                         WhiteLabelVirtualTestManager.AppendService(Port, item.Key, item.Value);
                     }
                 }
+                _isInitialized = true;
             }
             finally
             {

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.11" />
+    <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.12" />
     <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.6" />
     <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.3" />
     <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.6" />
@@ -20,7 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests" Version="0.0.0.2" />
+    <PackageReference Include="EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests" Version="0.0.0.3" />
   </ItemGroup>
 
   <ItemGroup>

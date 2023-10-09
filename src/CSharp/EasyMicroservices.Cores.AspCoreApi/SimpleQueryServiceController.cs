@@ -1,5 +1,4 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
-using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
@@ -37,7 +36,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// 
         /// </summary>
         /// <param name="unitOfWork"></param>
-        public SimpleQueryServiceController(IBaseUnitOfWork unitOfWork) : base(unitOfWork.GetContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>())
+        public SimpleQueryServiceController(IBaseUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.GetContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>())
         {
         }
 
