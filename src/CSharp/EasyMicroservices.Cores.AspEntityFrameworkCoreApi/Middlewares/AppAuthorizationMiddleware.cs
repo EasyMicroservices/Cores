@@ -1,6 +1,8 @@
 ﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.ServiceContracts;
 using EasyMicroservices.ServiceContracts.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -55,6 +57,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares
                 }
             }
             await _next(httpContext);
+            if (httpContext.Response.StatusCode == 401 || httpContext.Response.StatusCode == 403)
+            {
+                httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+                httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                MessageContract response = FailedReasonType.SessionAccessDenied;
+                response.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
+                var json = JsonSerializer.Serialize(response);
+                await httpContext.Response.WriteAsync(json);
+            }
         }
     }
 }
