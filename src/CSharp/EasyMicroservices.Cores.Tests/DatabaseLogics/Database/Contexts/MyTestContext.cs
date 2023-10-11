@@ -37,6 +37,7 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
             });
 
             Assert.Equal(@"User-Addresses-UserId
+User-Profiles-UserId
 User-UserCompanies-UserId
 Company-UserCompanies-CompanyId
 ", builder.ToString());
