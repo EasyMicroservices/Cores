@@ -106,7 +106,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
                         var findForeignKey = allProperties.FirstOrDefault(x => x.Name.StartsWith(property.Name));
                         if (findForeignKey != null)
                         {
-                            var findCollection = GetColectionProperty(entityType, property.PropertyType);
+                            var findCollection = GetRelationProperty(entityType, property);
                             if (findCollection != null)
                             {
                                 entityTypeBuilder.HasOne(property.Name)
@@ -126,11 +126,24 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             return type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type);
         }
 
-        PropertyInfo GetColectionProperty(Type entityType, Type propertyType)
+        PropertyInfo GetRelationProperty(Type entityType, PropertyInfo property)
         {
+            var propertyType = property.PropertyType;
             var findProperties = propertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                 .Where(x => GetSimplifyPropertyName(x.Name).Any(i => i.StartsWith(GetSimplifyClassName(entityType.Name)))).ToList();
-            return findProperties.FirstOrDefault(x => IsCollection(x.PropertyType));
+                 .Where(x => x != property && CouldBeARelation(x.PropertyType, entityType)).ToList();
+            return findProperties.OrderBy(x => IsCollection(x.PropertyType)).FirstOrDefault();
+        }
+
+        bool CouldBeARelation(Type type, Type propertyType)
+        {
+            if (type == propertyType)
+                return true;
+            return IsCollectionOf(type, propertyType) || IsCollectionOf(propertyType, type);
+        }
+
+        bool IsCollectionOf(Type type, Type propertyType)
+        {
+            return type.IsGenericType && propertyType == type.GetGenericArguments()[0];
         }
 
         bool HasProperty(Type entityType, string name)
