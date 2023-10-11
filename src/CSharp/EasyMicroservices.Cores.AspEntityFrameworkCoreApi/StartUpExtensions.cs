@@ -41,8 +41,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="swaggerOptions"></param>
         /// <returns></returns>
-        public static IServiceCollection Builder<TContext>(this IServiceCollection services)
+        public static IServiceCollection Builder<TContext>(this IServiceCollection services, Action<SwaggerGenOptions> swaggerOptions = default)
             where TContext : RelationalCoreContext
         {
 
@@ -53,6 +54,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
+                swaggerOptions?.Invoke(options);
                 options.SchemaFilter<GenericFilter>();
                 options.SchemaFilter<XEnumNamesSchemaFilter>();
             });
@@ -61,30 +63,24 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
             services.AddScoped(service => new UnitOfWork(service).GetMapper());
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
+            services.AddExceptionHandler((option) =>
+            {
+                option.ExceptionHandler = ExceptionHandler;
+            });
             return services;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="app"></param>
-        static void UseGlobalExceptionHandler(this IApplicationBuilder app)
+        static async Task ExceptionHandler(HttpContext context)
         {
-            app.UseExceptionHandler(appInner =>
-            {
-                appInner.Run(async context =>
-                {
-                    context.Response.ContentType = MediaTypeNames.Application.Json;
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-                    MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
-                    if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase))
-                        response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
-                    response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();
-                    var json = JsonSerializer.Serialize(response);
-                    await context.Response.WriteAsync(json);
-                });
-            });
+            context.Response.ContentType = MediaTypeNames.Application.Json;
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+            MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
+            if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase))
+                response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
+            response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();
+            var json = JsonSerializer.Serialize(response);
+            await context.Response.WriteAsync(json);
         }
 
         /// <summary>
@@ -151,14 +147,20 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <typeparam name="TContext"></typeparam>
         /// <param name="app"></param>
         /// <param name="useGlobalExceptionHandling"></param>
+        /// <param name="useAuthorization"></param>
         /// <returns></returns>
-        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false)
+        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false, bool useAuthorization = false)
             where TContext : RelationalCoreContext
         {
             var build = app.Build();
+            build.UseRouting();
+            if (useAuthorization)
+                build.UseAuthentication();
 
             if (useGlobalExceptionHandling)
-                build.UseGlobalExceptionHandler();
+            {
+                build.UseExceptionHandler();
+            }
             build.UseMiddleware<AppAuthorizationMiddleware>();
 
             // Configure the HTTP request pipeline.
@@ -170,8 +172,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
-            //app.MapControllers();
-            //app.Run(build);
+
             using (var scope = build.Services.CreateAsyncScope())
             {
                 var dbbuilder = new DatabaseCreator();
