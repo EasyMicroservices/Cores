@@ -44,7 +44,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             get
             {
-                return $"http://localhost:{AppPort}";
+                return $"http://{localhost}:{AppPort}";
             }
         }
 

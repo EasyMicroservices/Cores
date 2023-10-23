@@ -8,12 +8,13 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
 {
     public abstract class WhiteLabelLaboratoryTest
     {
+        public const string localhost = "localhost";
         protected int Port = 6041;
         string _routeAddress = "";
         public HttpClient HttpClient { get; set; } = new HttpClient();
         public WhiteLabelLaboratoryTest()
         {
-            _routeAddress = $"http://localhost:{Port}";
+            _routeAddress = $"http://{localhost}:{Port}";
         }
 
         protected static WhiteLabelVirtualTestManager WhiteLabelVirtualTestManager { get; set; } = new WhiteLabelVirtualTestManager();
