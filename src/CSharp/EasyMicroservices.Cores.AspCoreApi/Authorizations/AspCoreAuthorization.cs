@@ -1,5 +1,4 @@
-﻿using EasyMicroservices.Cores.AspCoreApi.Attributes;
-using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using EasyMicroservices.Utilities.Collections.Generic;

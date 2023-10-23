@@ -1,5 +1,4 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi;
-using EasyMicroservices.Cores.AspCoreApi.Attributes;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using EasyMicroservices.ServiceContracts;
