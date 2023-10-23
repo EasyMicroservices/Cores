@@ -12,7 +12,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             InitializeTestHost(false, null);
         }
-
         public virtual int AppPort { get; } = 4564;
         protected virtual void InitializeTestHost(bool isUseAuthorization, Action<IServiceCollection> serviceCollection)
         {

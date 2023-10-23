@@ -42,6 +42,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
 
         protected override void AssertTrue(MessageContract messageContract)
         {
+            Assert.False(messageContract.IsSuccess);
             Assert.True(messageContract.Error.FailedReasonType == FailedReasonType.AccessDenied, messageContract.ToString());
         }
 
@@ -88,6 +89,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             {
                 AuthenticationVirtualTestManager.AppendService(portNumber, resource.Key, resource.Value);
             }
+
             HttpClient CurrentHttpClient = new HttpClient();
             if (result)
             {

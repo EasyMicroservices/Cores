@@ -11,7 +11,7 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         public const string localhost = "localhost";
         protected int Port = 6041;
         string _routeAddress = "";
-        public HttpClient HttpClient { get; set; } = new HttpClient();
+        protected static HttpClient HttpClient { get; set; } = new HttpClient();
         public WhiteLabelLaboratoryTest()
         {
             _routeAddress = $"http://{localhost}:{Port}";
