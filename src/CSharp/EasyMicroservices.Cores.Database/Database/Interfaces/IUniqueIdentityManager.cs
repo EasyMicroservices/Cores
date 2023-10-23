@@ -8,6 +8,18 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     public interface IUniqueIdentityManager
     {
         /// <summary>
+        /// 
+        /// </summary>
+        string StartUniqueIdentity { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        long MicroserviceId { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        string MicroserviceName { get; set; }
+        /// <summary>
         /// update unique identity
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>

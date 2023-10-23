@@ -57,7 +57,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                 foundMicroservice.Id = addMicroservice.Result;
             }
             UnitOfWork.MicroserviceId = foundMicroservice.Id;
-
+            UnitOfWork.MicroserviceName = microserviceName;
             var uniqueIdentityManager = new UnitOfWork(_serviceProvider).GetUniqueIdentityManager() as DefaultUniqueIdentityManager;
 
             var microserviceContextTableClient = new WhiteLables.GeneratedServices.MicroserviceContextTableClient(whiteLableRoute, HttpClient);

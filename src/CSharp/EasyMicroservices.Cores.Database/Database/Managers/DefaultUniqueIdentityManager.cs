@@ -18,21 +18,25 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// </summary>
         /// <param name="startUniqueIdentity"></param>
         /// <param name="microserviceId"></param>
-        public DefaultUniqueIdentityManager(string startUniqueIdentity, long microserviceId)
+        /// <param name="microserviceName"></param>
+        public DefaultUniqueIdentityManager(string startUniqueIdentity, long microserviceId, string microserviceName)
         {
             if (startUniqueIdentity.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(startUniqueIdentity));
             StartUniqueIdentity = startUniqueIdentity;
             MicroserviceId = microserviceId;
+            MicroserviceName = microserviceName;
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="microserviceId"></param>
-        public DefaultUniqueIdentityManager(long microserviceId)
+        /// <param name="microserviceName"></param>
+        public DefaultUniqueIdentityManager(long microserviceId, string microserviceName)
         {
             MicroserviceId = microserviceId;
+            MicroserviceName = microserviceName;
         }
 
         /// <summary>
@@ -43,8 +47,19 @@ namespace EasyMicroservices.Cores.Database.Managers
 
         }
 
-        string StartUniqueIdentity { get; set; }
-        long MicroserviceId { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string StartUniqueIdentity { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public long MicroserviceId { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string MicroserviceName { get; set; }
+
         Dictionary<string, long> TableIds { get; set; } = new Dictionary<string, long>();
         /// <summary>
         /// 
