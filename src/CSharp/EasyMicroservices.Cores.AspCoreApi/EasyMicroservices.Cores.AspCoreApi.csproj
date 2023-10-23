@@ -25,4 +25,12 @@
     <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EasyMicroservices.AuthenticationsMicroservice.Clients" Version="0.0.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Attributes\" />
+  </ItemGroup>
+
 </Project>
