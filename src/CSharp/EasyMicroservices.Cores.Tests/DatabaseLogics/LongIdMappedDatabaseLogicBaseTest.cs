@@ -65,7 +65,7 @@ namespace EasyMicroservices.Cores.Tests.Database
         const long SubjectTableContextId = 153;
         public virtual IUniqueIdentityManager GetUniqueIdentityManager()
         {
-            var manager = new DefaultUniqueIdentityManager("1-1", 5);
+            var manager = new DefaultUniqueIdentityManager("1-1", 5, "TestExample");
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(UserEntity)), TableContextId);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(ProfileEntity)), ProfileTableContextId);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(CategoryEntity)), CategoryTableContextId);
