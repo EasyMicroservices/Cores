@@ -30,6 +30,7 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
                     return;
                 if (await WhiteLabelVirtualTestManager.OnInitialize(Port))
                 {
+                    Console.WriteLine($"WhiteLabelVirtualTestManager Initialized! {Port}");
                     foreach (var item in WhiteLabelResource.GetResources(new MyTestContext(new DatabaseBuilder()), "TextExample"))
                     {
                         WhiteLabelVirtualTestManager.AppendService(Port, item.Key, item.Value);

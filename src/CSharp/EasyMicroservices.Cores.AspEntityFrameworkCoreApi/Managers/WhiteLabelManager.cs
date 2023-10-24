@@ -33,10 +33,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
         public async Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
-            Trace.WriteLine($"T WhiteLabelManager Initialized! {microserviceName} {whiteLableRoute}");
-            Console.WriteLine($"C WhiteLabelManager Initialized! {microserviceName} {whiteLableRoute}");
-            Debug.WriteLine($"D WhiteLabelManager Initialized! {microserviceName} {whiteLableRoute}");
-            Debug.WriteLine(Environment.StackTrace);
+            Console.WriteLine($"WhiteLabelManager Initialize! {microserviceName} {whiteLableRoute}");
             if (dbContextTypes.IsEmpty())
                 return;
             var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, HttpClient);
