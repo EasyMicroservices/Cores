@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using WhiteLables.GeneratedServices;
 
@@ -34,7 +33,9 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
         public async Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
-            Debug.WriteLine($"WhiteLabelManager Initialized!");
+            Trace.WriteLine($"T WhiteLabelManager Initialized! {microserviceName} {whiteLableRoute}");
+            Console.WriteLine($"C WhiteLabelManager Initialized! {microserviceName} {whiteLableRoute}");
+            Debug.WriteLine($"D WhiteLabelManager Initialized! {microserviceName} {whiteLableRoute}");
             Debug.WriteLine(Environment.StackTrace);
             if (dbContextTypes.IsEmpty())
                 return;
