@@ -1,4 +1,4 @@
-name: NuGet Push Public
+name: NuGet Push Public Windows
 
 on: [workflow_dispatch]
 
