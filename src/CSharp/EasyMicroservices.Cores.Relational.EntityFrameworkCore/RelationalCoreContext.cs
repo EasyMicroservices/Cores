@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
@@ -52,7 +53,11 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            InternalOnModelCreating(modelBuilder);
+        }
 
+        void InternalOnModelCreating(ModelBuilder modelBuilder)
+        {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 if (typeof(IUniqueIdentitySchema).IsAssignableFrom(entityType.ClrType))
@@ -69,8 +74,9 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         /// </summary>
         protected virtual StringBuilder AutoModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             StringBuilder stringBuilder = new StringBuilder();
-            OnModelCreating(modelBuilder);
+            InternalOnModelCreating(modelBuilder);
             foreach (var entityType in GetAllEntities(modelBuilder))
             {
                 modelBuilder.Entity(entityType, e =>
