@@ -1,0 +1,24 @@
+name: NuGet Push Public
+
+on: [workflow_dispatch]
+
+jobs:
+  build-test-prep-push:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+      - name: Restore dependencies
+        run: dotnet restore ./src/CSharp/EasyMicroservices.Cores.sln
+      - name: Build
+        run: dotnet build ./src/CSharp/EasyMicroservices.Cores.sln --no-restore
+      - name: Test
+        run: dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal
+      - name: Create the package
+        run: dotnet pack ./src/CSharp/EasyMicroservices.Cores.sln --output nupkgs
+      - name: Publish the package to NuGet.org
+        run: dotnet nuget push nupkgs/*.nupkg -k ${{secrets.NUGET_KEY}} -s https://api.nuget.org/v3/index.json --skip-duplicate
