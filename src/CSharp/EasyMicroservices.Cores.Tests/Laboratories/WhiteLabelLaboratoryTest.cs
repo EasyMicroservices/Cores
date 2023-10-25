@@ -8,12 +8,13 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
 {
     public abstract class WhiteLabelLaboratoryTest
     {
+        public const string localhost = "127.0.0.1";
         protected int Port = 6041;
         string _routeAddress = "";
-        public HttpClient HttpClient { get; set; } = new HttpClient();
+        protected static HttpClient HttpClient { get; set; } = new HttpClient();
         public WhiteLabelLaboratoryTest()
         {
-            _routeAddress = $"http://localhost:{Port}";
+            _routeAddress = $"http://{localhost}:{Port}";
         }
 
         protected static WhiteLabelVirtualTestManager WhiteLabelVirtualTestManager { get; set; } = new WhiteLabelVirtualTestManager();
@@ -29,6 +30,7 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
                     return;
                 if (await WhiteLabelVirtualTestManager.OnInitialize(Port))
                 {
+                    Console.WriteLine($"WhiteLabelVirtualTestManager Initialized! {Port}");
                     foreach (var item in WhiteLabelResource.GetResources(new MyTestContext(new DatabaseBuilder()), "TextExample"))
                     {
                         WhiteLabelVirtualTestManager.AppendService(Port, item.Key, item.Value);

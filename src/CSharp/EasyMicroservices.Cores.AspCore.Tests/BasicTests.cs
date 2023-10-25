@@ -12,7 +12,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             InitializeTestHost(false, null);
         }
-
         public virtual int AppPort { get; } = 4564;
         protected virtual void InitializeTestHost(bool isUseAuthorization, Action<IServiceCollection> serviceCollection)
         {
@@ -44,7 +43,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             get
             {
-                return $"http://localhost:{AppPort}";
+                return $"http://{localhost}:{AppPort}";
             }
         }
 
@@ -67,7 +66,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/AuthorizeError");
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
-            Assert.True(result.Error.FailedReasonType == FailedReasonType.SessionAccessDenied);
+            AuthorizeAssert(result);
         }
 
         [Fact]
@@ -76,7 +75,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/InternalError");
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
             AssertFalse(result);
-            if (result.Error.FailedReasonType != FailedReasonType.SessionAccessDenied)
+            if (result.Error.FailedReasonType != FailedReasonType.SessionAccessDenied && result.Error.FailedReasonType != FailedReasonType.AccessDenied)
                 AssertContains(result.Error.StackTrace, x => x.Contains("UserController.cs"));
         }
 
@@ -95,6 +94,11 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             AssertTrue(users);
             if (users.IsSuccess)
                 AssertTrue(users.Result.All(x => DefaultUniqueIdentityManager.DecodeUniqueIdentity(x.UniqueIdentity).Length > 2));
+        }
+
+        protected virtual void AuthorizeAssert(MessageContract messageContract)
+        {
+            Assert.True(messageContract.Error.FailedReasonType == FailedReasonType.SessionAccessDenied);
         }
 
         protected virtual void AssertTrue(MessageContract messageContract)

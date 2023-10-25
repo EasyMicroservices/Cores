@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.38</Version>
+    <Version>0.0.0.41</Version>
     <Description>asp core servces.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database,services,asp,aspnet</PackageTags>
@@ -23,6 +23,14 @@
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.Database\EasyMicroservices.Cores.Database.csproj" />
     <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EasyMicroservices.AuthenticationsMicroservice.Clients" Version="0.0.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Attributes\" />
   </ItemGroup>
 
 </Project>

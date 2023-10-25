@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using WhiteLables.GeneratedServices;
 
@@ -34,8 +33,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
         public async Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
-            Debug.WriteLine($"WhiteLabelManager Initialized!");
-            Debug.WriteLine(Environment.StackTrace);
+            Console.WriteLine($"WhiteLabelManager Initialize! {microserviceName} {whiteLableRoute}");
             if (dbContextTypes.IsEmpty())
                 return;
             var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, HttpClient);
@@ -57,7 +55,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                 foundMicroservice.Id = addMicroservice.Result;
             }
             UnitOfWork.MicroserviceId = foundMicroservice.Id;
-
+            UnitOfWork.MicroserviceName = microserviceName;
             var uniqueIdentityManager = new UnitOfWork(_serviceProvider).GetUniqueIdentityManager() as DefaultUniqueIdentityManager;
 
             var microserviceContextTableClient = new WhiteLables.GeneratedServices.MicroserviceContextTableClient(whiteLableRoute, HttpClient);

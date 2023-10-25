@@ -70,7 +70,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         protected virtual StringBuilder AutoModelCreating(ModelBuilder modelBuilder)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            base.OnModelCreating(modelBuilder);
+            OnModelCreating(modelBuilder);
             foreach (var entityType in GetAllEntities(modelBuilder))
             {
                 modelBuilder.Entity(entityType, e =>

@@ -13,14 +13,16 @@ namespace EasyMicroservices.Cores.AspCoreApi
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <typeparam name="TId"></typeparam>
+    /// <typeparam name="TFilterRequestContract"></typeparam>
     /// <typeparam name="TCreateRequestContract"></typeparam>
     /// <typeparam name="TUpdateRequestContract"></typeparam>
     /// <typeparam name="TResponseContract"></typeparam>
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class SimpleQueryServiceController<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : ReadableQueryServiceController<TEntity, FilterRequestContract, TResponseContract, TId>
+    public class SimpleQueryServiceController<TEntity, TFilterRequestContract, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : ReadableQueryServiceController<TEntity, TFilterRequestContract, TResponseContract, TId>
             where TResponseContract : class
             where TEntity : class
+            where TFilterRequestContract : FilterRequestContract
     {
         /// <summary>
         /// 
@@ -144,6 +146,38 @@ namespace EasyMicroservices.Cores.AspCoreApi
         public virtual Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TId> request, CancellationToken cancellationToken = default)
         {
             return WritableContractLogic.SoftDeleteBulkByIds(request, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TId"></typeparam>
+    /// <typeparam name="TCreateRequestContract"></typeparam>
+    /// <typeparam name="TUpdateRequestContract"></typeparam>
+    /// <typeparam name="TResponseContract"></typeparam>
+    [ApiController]
+    [Route("api/[controller]/[action]")]
+    public class SimpleQueryServiceController<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> : SimpleQueryServiceController<TEntity, FilterRequestContract, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>
+        where TResponseContract : class
+        where TEntity : class
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contractLogic"></param>
+        public SimpleQueryServiceController(IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> contractLogic) : base(contractLogic)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        public SimpleQueryServiceController(IBaseUnitOfWork unitOfWork) : base(unitOfWork)
+        {
         }
     }
 }

@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
@@ -321,6 +322,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <summary>
         /// 
         /// </summary>
+        public static string MicroserviceName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public static IUniqueIdentityManager UniqueIdentityManager { get; set; }
         /// <summary>
         /// 
@@ -330,7 +335,12 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IUniqueIdentityManager GetUniqueIdentityManager()
         {
             if (UniqueIdentityManager == null)
-                UniqueIdentityManager = new DefaultUniqueIdentityManager(DefaultUniqueIdentity, MicroserviceId);
+            {
+                if (DefaultUniqueIdentity.HasValue())
+                    UniqueIdentityManager = new DefaultUniqueIdentityManager(DefaultUniqueIdentity, MicroserviceId, MicroserviceName);
+                else
+                    UniqueIdentityManager = new DefaultUniqueIdentityManager(MicroserviceId, MicroserviceName);
+            }
             return UniqueIdentityManager;
         }
 

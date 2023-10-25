@@ -76,7 +76,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
             MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
-            if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase))
+            if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase) && response.Error.FailedReasonType != FailedReasonType.AccessDenied)
                 response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
             response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();
             var json = JsonSerializer.Serialize(response);
