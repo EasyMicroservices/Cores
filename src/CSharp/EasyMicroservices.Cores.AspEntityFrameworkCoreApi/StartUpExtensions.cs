@@ -16,6 +16,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -109,8 +110,11 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
-                using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                await uow.Initialize(MicroserviceName, config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                if (WhiteLabelRoute.HasValue() || ConfigName.HasValue())
+                {
+                    using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
+                    await uow.Initialize(MicroserviceName, config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                }
             }
             var build = app.Build();
             app.Run(build);
@@ -179,7 +183,11 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
                 using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                await uow.Initialize(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                if (WhiteLabelRoute.HasValue() || ConfigName.HasValue())
+                {
+                    var value = WhiteLabelRoute ?? config.GetValue<string>(ConfigName);
+                    await uow.Initialize(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                }
             }
             return build;
         }
