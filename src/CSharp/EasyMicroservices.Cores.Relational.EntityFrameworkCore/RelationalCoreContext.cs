@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
@@ -98,9 +99,10 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             return modelBuilder.Model.GetEntityTypes().Select(x => x.ClrType);
         }
 
-        internal string DoRelationToForeignKey(ModelBuilder modelBuilder, EntityTypeBuilder entityTypeBuilder, Type entityType)
+        internal string DoRelationToForeignKey(ModelBuilder modelBuilder, EntityTypeBuilder entityTypeBuilder, Type entityType, bool throwIfHasError = true)
         {
             StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder errorStringBuilder = new StringBuilder();
             var allEntities = GetAllEntities(modelBuilder).ToList();
             var allProperties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
             foreach (var property in allProperties)
@@ -121,9 +123,13 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
                                 stringBuilder.AppendLine($"{property.Name}-{findCollection.Name}-{findForeignKey.Name}");
                             }
                         }
+                        else
+                            errorStringBuilder.AppendLine($"NotFound_{entityType.Name}_{property.Name}");
                     }
                 }
             }
+            if (throwIfHasError && errorStringBuilder.Length > 0)
+                throw new Exception($"Some of relations are not determine, please check them: {errorStringBuilder}");
             return stringBuilder.ToString();
         }
 
@@ -137,6 +143,8 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             var propertyType = property.PropertyType;
             var findProperties = propertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                  .Where(x => x != property && CouldBeARelation(x.PropertyType, entityType)).ToList();
+            if (findProperties.Count > 1)
+                return null;
             return findProperties.OrderBy(x => IsCollection(x.PropertyType)).FirstOrDefault();
         }
 
