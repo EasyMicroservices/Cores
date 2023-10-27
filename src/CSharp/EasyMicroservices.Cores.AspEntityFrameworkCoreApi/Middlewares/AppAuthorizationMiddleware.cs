@@ -1,19 +1,11 @@
 ﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
-using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using EasyMicroservices.ServiceContracts.Exceptions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Mime;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -56,16 +48,64 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares
                     return;
                 }
             }
-            await _next(httpContext);
-            if (httpContext.Response.StatusCode == 401 || httpContext.Response.StatusCode == 403)
+            try
             {
-                httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-                httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
-                MessageContract response = FailedReasonType.SessionAccessDenied;
-                response.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
-                var json = JsonSerializer.Serialize(response);
-                await httpContext.Response.WriteAsync(json);
+                await _next(httpContext);
+
+                if (httpContext.Response.StatusCode == 401 || httpContext.Response.StatusCode == 403)
+                {
+                    httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                    MessageContract response = FailedReasonType.SessionAccessDenied;
+                    response.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
+                    var json = JsonSerializer.Serialize(response);
+                    await httpContext.Response.WriteAsync(json);
+                }
+                else if (httpContext.Response.StatusCode == 204)
+                {
+                    httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                    MessageContract response = FailedReasonType.Nothing;
+                    response.Error.Message = "Do not send null value to the service response! always send me a MessageContract";
+                    response.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
+                    var json = JsonSerializer.Serialize(response);
+                    await httpContext.Response.WriteAsync(json);
+                }
             }
+            catch (Exception ex)
+            {
+                await ExceptionHandler(httpContext, ex);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        internal static Task ExceptionHandler(HttpContext context)
+        {
+            var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+            return ExceptionHandler(context, exception);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        internal static Task ExceptionHandler(HttpContext context, Exception exception)
+        {
+            context.Response.ContentType = MediaTypeNames.Application.Json;
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
+            if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase) && response.Error.FailedReasonType != FailedReasonType.AccessDenied)
+                response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
+            response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();
+            var json = JsonSerializer.Serialize(response);
+            return context.Response.WriteAsync(json);
         }
     }
 }

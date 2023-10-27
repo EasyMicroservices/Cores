@@ -66,22 +66,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
             services.AddExceptionHandler((option) =>
             {
-                option.ExceptionHandler = ExceptionHandler;
+                option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
             });
             return services;
-        }
-
-        static async Task ExceptionHandler(HttpContext context)
-        {
-            context.Response.ContentType = MediaTypeNames.Application.Json;
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-            MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
-            if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase) && response.Error.FailedReasonType != FailedReasonType.AccessDenied)
-                response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
-            response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();
-            var json = JsonSerializer.Serialize(response);
-            await context.Response.WriteAsync(json);
         }
 
         /// <summary>
