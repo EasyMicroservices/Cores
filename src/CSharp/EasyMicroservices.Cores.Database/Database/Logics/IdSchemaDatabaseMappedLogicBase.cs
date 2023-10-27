@@ -109,9 +109,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract<TId>> Add(TCreateRequestContract contract, CancellationToken cancellationToken = default)
         {
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
-            if (result && result.Result is IIdSchema<TId> schema)
-                return schema.Id;
-            return default;
+            if (result)
+            {
+                if (result.Result is IIdSchema<TId> schema)
+                    return schema.Id;
+                return _mapperProvider.Map<TId>(result.Result);
+            }
+            return result.ToContract<TId>();
         }
 
         /// <summary>
