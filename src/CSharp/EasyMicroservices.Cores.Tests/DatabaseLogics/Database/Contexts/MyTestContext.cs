@@ -22,7 +22,7 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
         public DbSet<SubjectEntity> Subjects { get; set; }
         public DbSet<RoleEntity> Roles { get; set; }
         public DbSet<RoleParentChildEntity> RoleParentChildren { get; set; }
-        
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (_builder != null)
@@ -42,8 +42,8 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts
                 e.HasKey(x => new { x.ParentId, x.ChildId });
 
                 e.HasOne(x => x.Child)
-                .WithMany(x=>x.Children)
-                .HasForeignKey(x=>x.ChildId);
+                .WithMany(x => x.Children)
+                .HasForeignKey(x => x.ChildId);
 
                 e.HasOne(x => x.Parent)
                 .WithMany(x => x.Parents)
