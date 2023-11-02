@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using EasyMicroservices.Utilities.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
@@ -23,9 +24,9 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// <summary>
         /// 
         /// </summary>
-        public AspCoreAuthorization(IUniqueIdentityManager uniqueIdentityManager)
+        public AspCoreAuthorization(IBaseUnitOfWork baseUnitOfWork)
         {
-            UniqueIdentityManager = uniqueIdentityManager;
+            UniqueIdentityManager = baseUnitOfWork.GetUniqueIdentityManager();
         }
 
         /// <summary>
