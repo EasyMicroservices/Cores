@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
+﻿using EasyMicroservices.Cores.AspCoreApi.Authorizations;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
@@ -97,19 +98,22 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
-                if (WhiteLabelRoute.HasValue() || ConfigName.HasValue())
+                if (WhiteLabelRoute.HasValue() || WhiteLabelConfigName.HasValue())
                 {
                     using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                    await uow.Initialize(MicroserviceName, config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                    await uow.Initialize(MicroserviceName, config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
                 }
+                if (AuthenticationConfigName.HasValue())
+                    AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);
             }
             var build = app.Build();
             app.Run(build);
         }
 
         private static string MicroserviceName = default;
-        private static string ConfigName = default;
+        private static string WhiteLabelConfigName = default;
         private static string WhiteLabelRoute = default;
+        private static string AuthenticationConfigName = default;
         /// <summary>
         /// 
         /// </summary>
@@ -118,7 +122,16 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public static void AddWhiteLabel(string microserviceName, string configName)
         {
             MicroserviceName = microserviceName;
-            ConfigName = configName;
+            WhiteLabelConfigName = configName;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="configName"></param>
+        public static void AddAuthentication(string configName)
+        {
+            AuthenticationConfigName = configName;
         }
 
         /// <summary>
@@ -170,11 +183,13 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
                 using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                if (WhiteLabelRoute.HasValue() || ConfigName.HasValue())
+                if (WhiteLabelRoute.HasValue() || WhiteLabelConfigName.HasValue())
                 {
-                    var value = WhiteLabelRoute ?? config.GetValue<string>(ConfigName);
-                    await uow.Initialize(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(ConfigName), typeof(TContext)).ConfigureAwait(false);
+                    var value = WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName);
+                    await uow.Initialize(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
                 }
+                if (AuthenticationConfigName.HasValue())
+                    AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);
             }
             return build;
         }
