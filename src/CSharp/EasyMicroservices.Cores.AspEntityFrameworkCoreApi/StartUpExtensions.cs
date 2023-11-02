@@ -57,7 +57,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
             services.AddHttpContextAccessor();
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
-            services.AddScoped<IBaseUnitOfWork, IUnitOfWork>();
+            services.AddScoped<IBaseUnitOfWork, UnitOfWork>();
             services.AddScoped(service => new UnitOfWork(service).GetMapper());
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
             services.AddExceptionHandler((option) =>
