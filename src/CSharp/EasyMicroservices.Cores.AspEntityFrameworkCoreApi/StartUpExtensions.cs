@@ -1,13 +1,10 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi.Authorizations;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
-using EasyMicroservices.ServiceContracts;
-using EasyMicroservices.ServiceContracts.Exceptions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
@@ -15,10 +12,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Linq;
-using System.Net;
-using System.Net.Mime;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
@@ -63,6 +57,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
             services.AddHttpContextAccessor();
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
+            services.AddScoped<IBaseUnitOfWork, IUnitOfWork>();
             services.AddScoped(service => new UnitOfWork(service).GetMapper());
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
             services.AddExceptionHandler((option) =>
