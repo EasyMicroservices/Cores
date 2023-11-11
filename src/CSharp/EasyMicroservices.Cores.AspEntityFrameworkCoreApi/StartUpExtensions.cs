@@ -11,6 +11,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,11 +49,13 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
+
             services.AddSwaggerGen(options =>
             {
                 swaggerOptions?.Invoke(options);
                 options.SchemaFilter<GenericFilter>();
                 options.SchemaFilter<XEnumNamesSchemaFilter>();
+                options.MapType<decimal>(() => new OpenApiSchema { Type = "number", Format = "decimal" });
             });
 
             services.AddHttpContextAccessor();
@@ -63,6 +66,45 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddExceptionHandler((option) =>
             {
                 option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
+            });
+            return services;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection UseDefaultSwaggerOptions(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    BearerFormat = "JWT",
+                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter your token in the text input below.\r\n Example: \"Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            //Scheme = "oauth2",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string>()
+                    }
+                });
             });
             return services;
         }
@@ -139,6 +181,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             MicroserviceName = microserviceName;
             WhiteLabelRoute = whiteLabelRoute;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="app"></param>
+        /// <returns></returns>
+        public static WebApplication Build(this WebApplicationBuilder app)
+        {
+            return app.Build();
+        }
 
         /// <summary>
         /// 
@@ -152,27 +203,56 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             where TContext : RelationalCoreContext
         {
             var build = app.Build();
-            build.UseRouting();
+            var webApp = await Use(build, useGlobalExceptionHandling, useAuthorization);
+            return await Use<TContext>(webApp, useGlobalExceptionHandling, useAuthorization);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="webApplication"></param>
+        /// <param name="useGlobalExceptionHandling"></param>
+        /// <param name="useAuthorization"></param>
+        /// <returns></returns>
+        public static Task<WebApplication> Use(this WebApplication webApplication, bool useGlobalExceptionHandling = false, bool useAuthorization = false)
+        {
+            webApplication.UseRouting();
             if (useAuthorization)
-                build.UseAuthentication();
+                webApplication.UseAuthentication();
 
             if (useGlobalExceptionHandling)
             {
-                build.UseExceptionHandler();
+                webApplication.UseExceptionHandler();
             }
-            build.UseMiddleware<AppAuthorizationMiddleware>();
+
+            return Task.FromResult(webApplication);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="webApplication"></param>
+        /// <param name="useGlobalExceptionHandling"></param>
+        /// <param name="useAuthorization"></param>
+        /// <returns></returns>
+        public static async Task<WebApplication> Use<TContext>(this WebApplication webApplication, bool useGlobalExceptionHandling = false, bool useAuthorization = false)
+            where TContext : RelationalCoreContext
+        {
+            webApplication.UseMiddleware<AppAuthorizationMiddleware>();
 
             // Configure the HTTP request pipeline.
-            build.UseSwagger();
-            build.UseSwaggerUI();
+            webApplication.UseSwagger();
+            webApplication.UseSwaggerUI();
 
-            build.UseHttpsRedirection();
-            build.UseAuthorization();
+            webApplication.UseHttpsRedirection();
+            webApplication.UseAuthorization();
             IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
 
-            using (var scope = build.Services.CreateAsyncScope())
+            using (var scope = webApplication.Services.CreateAsyncScope())
             {
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
@@ -186,7 +266,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 if (AuthenticationConfigName.HasValue())
                     AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);
             }
-            return build;
+            return webApplication;
         }
     }
 }

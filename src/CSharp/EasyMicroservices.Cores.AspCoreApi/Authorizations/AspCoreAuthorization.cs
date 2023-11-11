@@ -46,8 +46,10 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// <exception cref="NotImplementedException"></exception>
         public async Task<MessageContract> CheckIsAuthorized(HttpContext httpContext)
         {
-            var hasPermission = await HasPermission(httpContext).AsCheckedResult();
-            if (!hasPermission)
+            var hasPermission = await HasPermission(httpContext);
+            if (!hasPermission.IsSuccess)
+                return hasPermission.ToContract();
+            else if (!hasPermission.Result)
                 return (FailedReasonType.AccessDenied, "Sorry, you cannot call this service, you have not enough permissions!");
             return true;
         }
@@ -81,6 +83,9 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
 
         async Task<MessageContract<bool>> HasPermission(HttpContext httpContext)
         {
+            var endpoints = httpContext.GetEndpoint();
+            if (endpoints == null)
+                return true;
             var controllerActionDescriptor = httpContext.GetEndpoint().Metadata.GetMetadata<ControllerActionDescriptor>();
             if (controllerActionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any() ||
                 controllerActionDescriptor.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any())
