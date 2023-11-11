@@ -34,22 +34,22 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares
         /// <returns></returns>
         public async Task Invoke(HttpContext httpContext, IUnitOfWork baseUnitOfWork)
         {
-            var authorization = baseUnitOfWork.GetAuthorization();
-            if (authorization != null)
-            {
-                var authorizationResult = await authorization.CheckIsAuthorized(httpContext);
-                if (!authorizationResult)
-                {
-                    httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-                    httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
-                    authorizationResult.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
-                    var json = JsonSerializer.Serialize(authorizationResult);
-                    await httpContext.Response.WriteAsync(json);
-                    return;
-                }
-            }
             try
             {
+                var authorization = baseUnitOfWork.GetAuthorization();
+                if (authorization != null)
+                {
+                    var authorizationResult = await authorization.CheckIsAuthorized(httpContext);
+                    if (!authorizationResult)
+                    {
+                        httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+                        httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                        authorizationResult.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
+                        var json = JsonSerializer.Serialize(authorizationResult);
+                        await httpContext.Response.WriteAsync(json);
+                        return;
+                    }
+                }
                 await _next(httpContext);
 
                 if (httpContext.Response.StatusCode == 401 || httpContext.Response.StatusCode == 403)
