@@ -48,6 +48,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         {
             var hasPermission = await HasPermission(httpContext);
             if (!hasPermission.IsSuccess)
+                return hasPermission.ToContract();
+            else if (!hasPermission.Result)
                 return (FailedReasonType.AccessDenied, "Sorry, you cannot call this service, you have not enough permissions!");
             return true;
         }
