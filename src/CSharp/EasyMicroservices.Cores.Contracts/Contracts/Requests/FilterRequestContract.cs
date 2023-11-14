@@ -11,7 +11,7 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// <summary>
         /// 
         /// </summary>
-        public bool? IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; } = false;
         /// <summary>
         /// 
         /// </summary>
@@ -57,10 +57,14 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// <summary>
         /// 
         /// </summary>
-        public string SortColumnName { get; set; }
+        public string SortColumnNames { get; set; }
         /// <summary>
         /// 
         /// </summary>
         public bool IsDescending { get; set; }
+        /// <summary>
+        /// text to search
+        /// </summary>
+        public string Text { get; set; }
     }
 }
