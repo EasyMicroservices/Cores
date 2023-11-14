@@ -13,6 +13,7 @@ using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -294,7 +295,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         {
             var mapper = new CompileTimeMapperProvider(new SerializerMapperProvider(new NewtonsoftJsonProvider(new Newtonsoft.Json.JsonSerializerSettings()
             {
-                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore,
+                Error = HandleDeserializationError
             })));
             if (MapperTypeAssembly != null)
             {
@@ -309,6 +311,17 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 }
             }
             return mapper;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="errorArgs"></param>
+        public virtual void HandleDeserializationError(object sender, ErrorEventArgs errorArgs)
+        {
+            //var currentError = errorArgs.ErrorContext.Error.Message;
+            errorArgs.ErrorContext.Handled = true;
         }
 
         /// <summary>
