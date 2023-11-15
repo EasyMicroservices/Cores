@@ -6,7 +6,6 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -112,7 +111,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
             if (!result)
                 return result.ToContract<TResponseContract>();
-            var mapped = await _mapperProvider.MapAsync<TResponseContract>(result.Result);
+            var mapped = await MapAsync<TResponseContract, TEntity>(result.Result);
             ValidateMappedResult(ref mapped);
             return mapped;
         }
