@@ -8,7 +8,7 @@
         /// <summary>
         /// 
         /// </summary>
-        public bool IsDelete { get; set; }
+        public bool IsDelete { get; set; } = true;
 
         /// <summary>
         /// 
