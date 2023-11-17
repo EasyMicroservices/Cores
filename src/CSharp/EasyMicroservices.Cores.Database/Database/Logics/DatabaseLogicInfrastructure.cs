@@ -285,34 +285,55 @@ namespace EasyMicroservices.Cores.Database.Logics
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (query != null)
                 queryable = query(queryable);
-
+            var countQueryable = queryable;
             if (filterRequest.Index.HasValue)
                 queryable = queryable.ConvertToReadable(queryable.Skip((int)filterRequest.Index.Value));
             if (filterRequest.Length.HasValue)
                 queryable = queryable.ConvertToReadable(queryable.Take((int)filterRequest.Length.Value));
 
             if (filterRequest.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
-
+                countQueryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
+            }
             if (filterRequest.FromCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).CreationDateTime >= filterRequest.FromCreationDateTime));
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as IDateTimeSchema).CreationDateTime >= filterRequest.FromCreationDateTime));
+            }
             if (filterRequest.ToCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).CreationDateTime <= filterRequest.ToCreationDateTime));
-
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as IDateTimeSchema).CreationDateTime <= filterRequest.ToCreationDateTime));
+            }
             if (filterRequest.FromModificationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).ModificationDateTime >= filterRequest.FromModificationDateTime));
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as IDateTimeSchema).ModificationDateTime >= filterRequest.FromModificationDateTime));
+            }
             if (filterRequest.ToModificationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).ModificationDateTime <= filterRequest.ToModificationDateTime));
-
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as IDateTimeSchema).ModificationDateTime <= filterRequest.ToModificationDateTime));
+            }
             if (filterRequest.FromDeletedDateTime.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime >= filterRequest.FromDeletedDateTime));
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime >= filterRequest.FromDeletedDateTime));
+            }
             if (filterRequest.ToDeletedDateTime.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime <= filterRequest.ToDeletedDateTime));
-
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime <= filterRequest.ToDeletedDateTime));
+            }
             if (filterRequest.IsDeleted.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+            {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
-
-            return await queryable.ToListAsync(cancellationToken);
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
+            }
+            ListMessageContract<TEntity> result = await queryable.ToListAsync(cancellationToken);
+            result.TotalCount = await countQueryable.CountAsync(cancellationToken);
+            return result;
         }
 
         /// <summary>
@@ -332,7 +353,8 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entityResult = await Filter(filterRequest, easyReadableQueryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToAnotherListContract<TContract>();
-            var result = await MapToListAsync<TContract, TEntity>(entityResult.Result);
+            var result = (ListMessageContract<TContract>)await MapToListAsync<TContract, TEntity>(entityResult.Result);
+            result.TotalCount = entityResult.TotalCount;
             return result;
         }
 
@@ -478,7 +500,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return typeof(DatabaseLogicInfrastructure)
                 .GetMethod(nameof(GetDefaultValueGeneric), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                .MakeGenericMethod(type).Invoke(null,null);
+                .MakeGenericMethod(type).Invoke(null, null);
         }
 
         static T GetDefaultValueGeneric<T>()

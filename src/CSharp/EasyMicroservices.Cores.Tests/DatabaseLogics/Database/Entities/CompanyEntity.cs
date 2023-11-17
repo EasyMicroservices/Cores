@@ -1,6 +1,8 @@
-﻿namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities
+﻿using EasyMicroservices.Cores.Interfaces;
+
+namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities
 {
-    public class CompanyEntity
+    public class CompanyEntity : IIdSchema<long>
     {
         public long Id { get; set; }
         public string Name { get; set; }
