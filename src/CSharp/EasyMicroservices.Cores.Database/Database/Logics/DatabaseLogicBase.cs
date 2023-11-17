@@ -5,7 +5,6 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -158,7 +157,19 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract<TEntity>> Update(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return Update(_easyWriteableQueryable, entity, cancellationToken);
+            return Update(_easyWriteableQueryable, entity, false, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public Task<MessageContract<TEntity>> UpdateChangedValuesOnly(TEntity entity, CancellationToken cancellationToken = default)
+        {
+            return Update(_easyWriteableQueryable, entity, true, cancellationToken);
         }
 
         /// <summary>
@@ -170,7 +181,19 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <exception cref="System.NotImplementedException"></exception>
         public Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TEntity> request, CancellationToken cancellationToken = default)
         {
-            return UpdateBulk(_easyWriteableQueryable, request, cancellationToken);
+            return UpdateBulk(_easyWriteableQueryable, request, false, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public Task<MessageContract> UpdateBulkChangedValuesOnly(UpdateBulkRequestContract<TEntity> request, CancellationToken cancellationToken = default)
+        {
+            return UpdateBulk(_easyWriteableQueryable, request, true, cancellationToken);
         }
 
         /// <summary>

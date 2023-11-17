@@ -1,6 +1,8 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi.Authorizations;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
+using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
@@ -61,6 +63,13 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddHttpContextAccessor();
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
             services.AddScoped<IBaseUnitOfWork, UnitOfWork>();
+            services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
+            {
+                if (UnitOfWork.DefaultUniqueIdentity.HasValue())
+                    return new DefaultUniqueIdentityManager(UnitOfWork.DefaultUniqueIdentity, UnitOfWork.MicroserviceId, MicroserviceName);
+                else
+                    return new DefaultUniqueIdentityManager(UnitOfWork.MicroserviceId, MicroserviceName);
+            });
             services.AddScoped(service => new UnitOfWork(service).GetMapper());
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
             services.AddExceptionHandler((option) =>

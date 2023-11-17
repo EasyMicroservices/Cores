@@ -412,30 +412,33 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="entity"></param>
+        /// <param name="updateOnlyChangedValue"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TEntity>> Update<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TEntity>> Update<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, bool updateOnlyChangedValue, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            return InternalUpdate(easyWritableQueryable, entity, cancellationToken, false, true);
+            return InternalUpdate(easyWritableQueryable, entity, updateOnlyChangedValue, false, true, cancellationToken);
         }
 
-        private async Task<MessageContract<TEntity>> InternalUpdate<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default, bool doSkipUpdate = true, bool doSkipDelete = true)
+        private async Task<MessageContract<TEntity>> InternalUpdate<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var result = await InternalUpdateBulk(easyWritableQueryable, new List<TEntity>() { entity }, cancellationToken, doSkipUpdate, doSkipDelete);
+            var result = await InternalUpdateBulk(easyWritableQueryable, new List<TEntity>() { entity }, updateOnlyChangedValue, doSkipUpdate, doSkipDelete, cancellationToken);
             if (!result)
                 return result.ToContract<TEntity>();
             return result.Result.First();
         }
 
-        private async Task<ListMessageContract<TEntity>> InternalUpdateBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, List<TEntity> entities, CancellationToken cancellationToken = default, bool doSkipUpdate = true, bool doSkipDelete = true)
+        private async Task<ListMessageContract<TEntity>> InternalUpdateBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, List<TEntity> entities, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             List<IEntityEntry<TEntity>> items = new List<IEntityEntry<TEntity>>();
             var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
             foreach (var entity in result)
             {
+                if (updateOnlyChangedValue)
+                    UpdateOnlyChangedValue(easyWritableQueryable.Context, entity.Entity);
                 if (entity.Entity is IDateTimeSchema schema)
                 {
                     easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
@@ -455,6 +458,34 @@ namespace EasyMicroservices.Cores.Database.Logics
             return items.Select(x => x.Entity).ToList();
         }
 
+        void UpdateOnlyChangedValue<TEntity>(IContext context, TEntity entity)
+            where TEntity : class
+        {
+            var properties = context.GetProperties(entity);
+            foreach (var property in properties)
+            {
+                if (property.IsModified)
+                {
+                    if (property.CurrentValue is null && property.CurrentValue == GetDefault(property.Metadata.ClrType))
+                        property.IsModified = false;
+                    else if (property.CurrentValue.Equals(GetDefault(property.Metadata.ClrType)))
+                        property.IsModified = false;
+                }
+            }
+        }
+
+        static object GetDefault(Type type)
+        {
+            return typeof(DatabaseLogicInfrastructure)
+                .GetMethod(nameof(GetDefaultValueGeneric), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                .MakeGenericMethod(type).Invoke(null,null);
+        }
+
+        static T GetDefaultValueGeneric<T>()
+        {
+            return default(T);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -463,13 +494,14 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TUpdateContract"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="contract"></param>
+        /// <param name="updateOnlyChangedValue"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TContract>> Update<TEntity, TUpdateContract, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TUpdateContract contract, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TContract>> Update<TEntity, TUpdateContract, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TUpdateContract contract, bool updateOnlyChangedValue, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var entity = await MapAsync<TEntity, TUpdateContract>(contract);
-            var result = await Update(easyWritableQueryable, entity, cancellationToken);
+            var result = await Update(easyWritableQueryable, entity, updateOnlyChangedValue, cancellationToken);
             if (!result)
                 return result.ToContract<TContract>();
             var mappedResult = await MapAsync<TContract, TEntity>(result.Result);
@@ -483,13 +515,14 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TUpdateContract"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="request"></param>
+        /// <param name="updateOnlyChangedValue"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> UpdateBulk<TEntity, TUpdateContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, UpdateBulkRequestContract<TUpdateContract> request, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> UpdateBulk<TEntity, TUpdateContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, UpdateBulkRequestContract<TUpdateContract> request, bool updateOnlyChangedValue, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var entities = await MapToListAsync<TEntity, TUpdateContract>(request.Items);
-            var result = await InternalUpdateBulk(easyWritableQueryable, entities, cancellationToken, false, true);
+            var result = await InternalUpdateBulk(easyWritableQueryable, entities, updateOnlyChangedValue, false, true, cancellationToken);
             return result;
         }
         #endregion
@@ -653,7 +686,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 else
                     return (FailedReasonType.OperationFailed, $"Your entity type {item.GetType().FullName} is not inheritance from ISoftDeleteSchema");
             }
-            return await InternalUpdateBulk(easyWritableQueryable, getResult.Result, cancellationToken, true, false);
+            return await InternalUpdateBulk(easyWritableQueryable, getResult.Result, false, true, false, cancellationToken);
         }
 
         #endregion
@@ -678,7 +711,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             await easyWritableQueryable.SaveChangesAsync();
             if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
             {
-                await InternalUpdate(easyWritableQueryable, result.Entity, cancellationToken);
+                await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
             }
             return result.Entity;
@@ -713,7 +746,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             }
             if (anyUpdate)
             {
-                await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), cancellationToken);
+                await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), false, true, true, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
             }
             return true;

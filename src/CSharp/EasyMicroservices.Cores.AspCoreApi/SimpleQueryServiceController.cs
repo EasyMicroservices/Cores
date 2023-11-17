@@ -96,7 +96,31 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPut]
+        public virtual Task<MessageContract<TResponseContract>> UpdateChangedValuesOnly(TUpdateRequestContract request, CancellationToken cancellationToken = default)
+        {
+            return WritableContractLogic.UpdateChangedValuesOnly(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPut]
         public virtual Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TUpdateRequestContract> request, CancellationToken cancellationToken = default)
+        {
+            return WritableContractLogic.UpdateBulk(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public virtual Task<MessageContract> UpdateBulkChangedValuesOnly(UpdateBulkRequestContract<TUpdateRequestContract> request, CancellationToken cancellationToken = default)
         {
             return WritableContractLogic.UpdateBulk(request, cancellationToken);
         }

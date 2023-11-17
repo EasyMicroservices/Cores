@@ -235,7 +235,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract<TResponseContract>> Update(TUpdateRequestContract schema, CancellationToken cancellationToken = default)
         {
-            return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, cancellationToken);
+            return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, false, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TResponseContract>> UpdateChangedValuesOnly(TUpdateRequestContract schema, CancellationToken cancellationToken = default)
+        {
+            return Update<TEntity, TUpdateRequestContract, TResponseContract>(_easyWriteableQueryable, schema, true, cancellationToken);
         }
 
         /// <summary>
@@ -247,7 +258,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <exception cref="NotImplementedException"></exception>
         public Task<MessageContract> UpdateBulk(UpdateBulkRequestContract<TUpdateRequestContract> schema, CancellationToken cancellationToken = default)
         {
-            return UpdateBulk(_easyWriteableQueryable, schema, cancellationToken);
+            return UpdateBulk(_easyWriteableQueryable, schema, false, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract> UpdateBulkChangedValuesOnly(UpdateBulkRequestContract<TUpdateRequestContract> schema, CancellationToken cancellationToken = default)
+        {
+            return UpdateBulk(_easyWriteableQueryable, schema, true, cancellationToken);
         }
 
         /// <summary>

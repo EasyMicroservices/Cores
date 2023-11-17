@@ -1,8 +1,11 @@
 ﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
+using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
@@ -10,12 +13,20 @@ namespace EasyMicroservices.Cores.AspCore.Tests
     {
         public static async Task Main(string[] args)
         {
+            string microserviceName = "TestExample";
             var app = StartUpExtensions.Create<MyTestContext>(args);
             app.Services.Builder<MyTestContext>();
             app.Services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
-            StartUpExtensions.AddWhiteLabel("TestExample", "RootAddresses:WhiteLabel");
+            app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
+            {
+                if (UnitOfWork.DefaultUniqueIdentity.HasValue())
+                    return new DefaultUniqueIdentityManager(UnitOfWork.DefaultUniqueIdentity, UnitOfWork.MicroserviceId, microserviceName);
+                else
+                    return new DefaultUniqueIdentityManager(UnitOfWork.MicroserviceId, microserviceName);
+            });
+            StartUpExtensions.AddWhiteLabel(microserviceName, "RootAddresses:WhiteLabel");
             var build = await app.Build<MyTestContext>();
             build.MapControllers();
             build.Run();
