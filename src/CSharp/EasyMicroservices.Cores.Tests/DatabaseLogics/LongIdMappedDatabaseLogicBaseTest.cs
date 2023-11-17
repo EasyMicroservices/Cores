@@ -34,6 +34,12 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             return new LongIdMappedDatabaseLogicBase<SubjectEntity, SubjectEntity, SubjectEntity, SubjectEntity>(GetDatabase().GetReadableOf<SubjectEntity>(), GetDatabase().GetWritableOf<SubjectEntity>(), GetMapper(), GetUniqueIdentityManager());
         }
+
+        IContractLogic<CompanyEntity, CompanyEntity, CompanyEntity, CompanyEntity, long> GetCompanyContractLogic()
+        {
+            return new LongIdMappedDatabaseLogicBase<CompanyEntity, CompanyEntity, CompanyEntity, CompanyEntity>(GetDatabase().GetReadableOf<CompanyEntity>(), GetDatabase().GetWritableOf<CompanyEntity>(), GetMapper(), GetUniqueIdentityManager());
+        }
+
         IContractLogic<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity, long> GetCategoryContractLogic()
         {
             return new LongIdMappedDatabaseLogicBase<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity>(GetDatabase().GetReadableOf<CategoryEntity>(), GetDatabase().GetWritableOf<CategoryEntity>(), GetMapper(), GetUniqueIdentityManager());
@@ -109,10 +115,50 @@ namespace EasyMicroservices.Cores.Tests.Database
                 IsDeleted = false
             });
             Assert.True(allFilterUsers.Result.All(x => allUsers.Result.Any(i => x.Id == i.Id)));
+            Assert.True(allFilterUsers.TotalCount > 0);
             var ids = DefaultUniqueIdentityManager.DecodeUniqueIdentity(foundUser.Result.UniqueIdentity);
             Assert.Equal(ids.Last(), foundUser.Result.Id);
             Assert.Equal(TableContextId, ids[^2]);
             return foundUser.Result;
+        }
+
+        [Fact]
+        public async Task FilterAsync()
+        {
+            await using var logic = GetCompanyContractLogic();
+            for (int i = 0; i < 100; i++)
+            {
+                var company = new CompanyEntity()
+                {
+                    Name = $"Ali{i}",
+                };
+                Assert.True(await logic.Add(company));
+            }
+            var allFilterUsers = await logic.Filter(new FilterRequestContract()
+            {
+                IsDeleted = false
+            });
+            Assert.True(allFilterUsers.Result.Count == 100);
+            Assert.True(allFilterUsers.TotalCount == 100);
+            allFilterUsers = await logic.Filter(new FilterRequestContract()
+            {
+                IsDeleted = false,
+                Length = 10
+            });
+            Assert.True(allFilterUsers.Result.Count == 10);
+            Assert.True(allFilterUsers.TotalCount == 100);
+            Assert.True(allFilterUsers.Result.Any(x => x.Name == "Ali0"));
+            Assert.True(allFilterUsers.Result.Any(x => x.Name == "Ali9"));
+            allFilterUsers = await logic.Filter(new FilterRequestContract()
+            {
+                IsDeleted = false,
+                Length = 10,
+                Index = 10
+            });
+            Assert.True(allFilterUsers.Result.Count == 10);
+            Assert.True(allFilterUsers.TotalCount == 100);
+            Assert.True(allFilterUsers.Result.Any(x => x.Name == "Ali10"));
+            Assert.True(allFilterUsers.Result.Any(x => x.Name == "Ali19"));
         }
 
         [Theory]
