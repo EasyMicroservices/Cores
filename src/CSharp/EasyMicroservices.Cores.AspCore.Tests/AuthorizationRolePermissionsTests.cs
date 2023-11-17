@@ -22,7 +22,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             serviceCollection = (services) =>
             {
                 services.AddScoped<IAuthorization, AspCoreAuthorization>();
-                services.AddScoped(service => service.GetService<IUnitOfWork>().GetUniqueIdentityManager());
                 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters

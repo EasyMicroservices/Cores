@@ -164,12 +164,12 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             await using var logic = GetUpdateContractLogic();
             var added = await AddAsync(userName);
-            added.UserName = toUserName;
+            added.UserName = toUserName + "1";
             var updateResult = await logic.Update(new UpdateUserContract()
             {
                 Id = added.Id,
                 UniqueIdentity = added.UniqueIdentity,
-                UserName = added.UserName
+                UserName = toUserName
             });
             Assert.NotNull(updateResult.Result.ModificationDateTime);
             Assert.Equal(updateResult.Result.CreationDateTime, added.CreationDateTime);
@@ -187,9 +187,37 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
 
         [Theory]
-        [InlineData("Mahdi", "Mahdi1")]
-        [InlineData("Hassan", "Hassan1")]
-        public async Task UpdateBulkAsync(string userName, string toUserName)
+        [InlineData("Mahdi")]
+        [InlineData("Hassan")]
+        public async Task UpdateChangedValuesOnlyAsync(string userName)
+        {
+            await using var logic = GetUpdateContractLogic();
+            var added = await AddAsync(userName);
+            var updateResult = await logic.UpdateChangedValuesOnly(new UpdateUserContract()
+            {
+                Id = added.Id,
+                UniqueIdentity = added.UniqueIdentity,
+                UserName = default
+            });
+            Assert.NotNull(updateResult.Result.ModificationDateTime);
+            Assert.Equal(updateResult.Result.CreationDateTime, added.CreationDateTime);
+            Assert.True(updateResult.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(updateResult.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+            var found = await logic.GetById(new GetIdRequestContract<long>()
+            {
+                Id = added.Id
+            });
+            Assert.NotNull(found.Result.ModificationDateTime);
+            Assert.Equal(found.Result.CreationDateTime, added.CreationDateTime);
+            Assert.True(found.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(found.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.Equal(found.Result.UserName, userName);
+        }
+
+        [Theory]
+        [InlineData("Mahdi")]
+        [InlineData("Hassan")]
+        public async Task UpdateBulkAsync(string userName)
         {
             await using var logic = GetContractLogic();
             List<UserEntity> items = new List<UserEntity>();
@@ -227,6 +255,50 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Assert.True(found.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
                 var find = items.FirstOrDefault(x => x.UserName == found.Result.UserName.Replace("Updated", ""));
                 Assert.Equal(found.Result.UserName, find.UserName + "Updated");
+            }
+        }
+
+        [Theory]
+        [InlineData("Mahdi")]
+        [InlineData("Hassan")]
+        public async Task UpdateBulkChangedValuesOnlyAsync(string userName)
+        {
+            await using var logic = GetContractLogic();
+            List<UserEntity> items = new List<UserEntity>();
+            for (int i = 0; i < 10; i++)
+            {
+                items.Add(new UserEntity()
+                {
+                    UserName = userName + Guid.NewGuid()
+                });
+            }
+            var user = await logic.AddBulk(items);
+            Assert.True(user.IsSuccess);
+            List<UserEntity> updateItems = new List<UserEntity>();
+            foreach (var item in items)
+            {
+                var foundUser = await logic.GetBy(x => x.UserName == item.UserName);
+                Assert.True(foundUser.IsSuccess);
+                Assert.True(foundUser.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+                Assert.True(items.Any(x => x.UserName == item.UserName));
+                updateItems.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<UserEntity>(Newtonsoft.Json.JsonConvert.SerializeObject(foundUser.Result)));
+            }
+            foreach (var item in updateItems)
+            {
+                item.UserName = default;
+            }
+            await using var logic2 = GetContractLogic();
+            var updateResult = await logic2.UpdateBulkChangedValuesOnly(updateItems);
+            foreach (var item in updateItems)
+            {
+                var found = await logic2.GetBy(x => x.UserName == item.UserName);
+                Assert.True(found);
+                Assert.NotNull(found.Result.ModificationDateTime);
+                Assert.Equal(found.Result.CreationDateTime, item.CreationDateTime);
+                Assert.True(found.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+                Assert.True(found.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+                var find = items.FirstOrDefault(x => x.UserName == found.Result.UserName);
+                Assert.Equal(found.Result.UserName, find.UserName);
             }
         }
 
