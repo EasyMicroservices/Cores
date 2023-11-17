@@ -478,7 +478,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return typeof(DatabaseLogicInfrastructure)
                 .GetMethod(nameof(GetDefaultValueGeneric), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                .MakeGenericMethod(type).Invoke(null,null);
+                .MakeGenericMethod(type).Invoke(null, null);
         }
 
         static T GetDefaultValueGeneric<T>()
