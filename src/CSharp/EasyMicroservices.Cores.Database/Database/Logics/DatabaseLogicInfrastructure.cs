@@ -455,29 +455,33 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<ListMessageContract<TEntity>> InternalUpdateBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, List<TEntity> entities, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            List<IEntityEntry<TEntity>> items = new List<IEntityEntry<TEntity>>();
+            List<IEntityEntry> items = new List<IEntityEntry>();
             var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
-            foreach (var entity in result)
+
+            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities())
             {
+                if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Modified
+                    && entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Deleted)
+                    continue;
                 if (updateOnlyChangedValue)
-                    UpdateOnlyChangedValue(easyWritableQueryable.Context, entity.Entity);
-                if (entity.Entity is IDateTimeSchema schema)
+                    UpdateOnlyChangedValue(easyWritableQueryable.Context, entityEntry.Entity);
+                if (entityEntry.Entity is IDateTimeSchema schema)
                 {
-                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entityEntry.Entity, nameof(IDateTimeSchema.CreationDateTime), false);
                     if (!doSkipUpdate)
                         schema.ModificationDateTime = DateTime.Now;
                 }
-                if (doSkipDelete && entity.Entity is ISoftDeleteSchema)
+                if (doSkipDelete && entityEntry.Entity is ISoftDeleteSchema)
                 {
-                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
-                    easyWritableQueryable.Context.ChangeModificationPropertyState(entity.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entityEntry.Entity, nameof(ISoftDeleteSchema.DeletedDateTime), false);
+                    easyWritableQueryable.Context.ChangeModificationPropertyState(entityEntry.Entity, nameof(ISoftDeleteSchema.IsDeleted), false);
                 }
-                items.Add(entity);
+                items.Add(entityEntry);
             }
             await easyWritableQueryable.SaveChangesAsync();
             foreach (var entity in items)
                 await easyWritableQueryable.Context.Reload(entity.Entity, cancellationToken);
-            return items.Select(x => x.Entity).ToList();
+            return items.Where(x => x.Entity is TEntity).Select(x => x.Entity).Cast<TEntity>().ToList();
         }
 
         void UpdateOnlyChangedValue<TEntity>(IContext context, TEntity entity)
@@ -726,10 +730,16 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract<TEntity>> Add<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            if (entity is IDateTimeSchema schema)
-                schema.CreationDateTime = DateTime.Now;
-
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
+            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities())
+            {
+                if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
+                    continue;
+                if (entityEntry.Entity is IDateTimeSchema schema)
+                {
+                    schema.CreationDateTime = DateTime.Now;
+                }
+            }
             await easyWritableQueryable.SaveChangesAsync();
             if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
             {
@@ -750,13 +760,16 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract> AddBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            foreach (var item in entities)
-            {
-                if (item is IDateTimeSchema schema)
-                    schema.CreationDateTime = DateTime.Now;
-            }
-
             var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
+            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities())
+            {
+                if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
+                    continue;
+                if (entityEntry.Entity is IDateTimeSchema schema)
+                {
+                    schema.CreationDateTime = DateTime.Now;
+                }
+            }
             await easyWritableQueryable.SaveChangesAsync();
             bool anyUpdate = false;
             foreach (var item in result)

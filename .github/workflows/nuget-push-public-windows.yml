@@ -12,6 +12,7 @@ jobs:
           dotnet-version: |
             6.0.x
             7.0.x
+            8.0.x
         env:
           DOTNET_INSTALL_DIR: /usr/share/dotnet
       - name: Restore dependencies

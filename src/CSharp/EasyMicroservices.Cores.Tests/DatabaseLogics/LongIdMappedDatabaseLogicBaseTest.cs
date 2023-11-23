@@ -469,6 +469,52 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
 
         [Theory]
+        [InlineData("Mahdi")]
+        [InlineData("Hassan")]
+        public async Task SoftDeleteInnerAsync(string userName)
+        {
+            await using var logic = GetContractLogic();
+            var addUser = new UserEntity()
+            {
+                UserName = userName + Guid.NewGuid(),
+                Profiles = new List<ProfileEntity>()
+                {
+                    new ProfileEntity()
+                    {
+                          FirstName = "Test"
+                    }
+                }
+            };
+            var user = await logic.Add(addUser);
+            Assert.True(user.IsSuccess);
+            var found = await logic.GetBy(x => x.UserName == addUser.UserName, q => q.Include(x => x.Profiles));
+            Assert.True(found.IsSuccess);
+            Assert.True(found.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(found.Result.ModificationDateTime == null);
+            await using var profileLogic = GetProfileContractLogic();
+            var foundProfile = await profileLogic.GetBy(x => x.UserId == found.Result.Id);
+            Assert.True(foundProfile.IsSuccess);
+            Assert.True(foundProfile.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(foundProfile.Result.ModificationDateTime == null);
+            found.Result.UserName = "updated" + Guid.NewGuid();
+            found.Result.Profiles.First().FirstName = "updated" + Guid.NewGuid();
+            logic.Dispose();
+            await using var logic2 = GetContractLogic();
+
+            var updated = await logic2.Update(found.Result);
+            var found2 = await logic2.GetBy(x => x.UserName == found.Result.UserName);
+            Assert.True(found2.IsSuccess);
+            Assert.True(found2.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(found2.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+
+            await using var profileLogic2 = GetProfileContractLogic();
+            var foundProfile2 = await profileLogic2.GetBy(x => x.UserId == found.Result.Id);
+            Assert.True(foundProfile2.IsSuccess);
+            Assert.True(foundProfile2.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
+            Assert.True(foundProfile2.Result.ModificationDateTime > DateTime.Now.AddMinutes(-5));
+        }
+
+        [Theory]
         [InlineData("Ali", new string[] { "Hossein", "HosseinA", "HosseinB", "HosseinC" })]
         public async Task SoftDeleteBulkByIdsAsync(string name, string[] userNames)
         {

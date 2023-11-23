@@ -17,6 +17,7 @@ jobs:
           dotnet-version:  |
             6.0.x
             7.0.x
+            8.0.x
         env:
             NUGET_CERT_REVOCATION_MODE: offline
       - name: Restore dependencies
@@ -27,3 +28,4 @@ jobs:
         run:  |
           dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal -f net6.0
           dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal -f net7.0
+          dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal -f net8.0
