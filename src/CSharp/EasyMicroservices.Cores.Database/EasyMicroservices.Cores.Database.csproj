@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net45;net6.0;net8.0</TargetFrameworks>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.0.49</Version>
+    <Version>0.0.0.50</Version>
     <Description>core of database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database</PackageTags>
@@ -18,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.14" />
+    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.15" />
     <PackageReference Include="EasyMicroservices.Mapper" Version="0.0.0.5" />
     <PackageReference Include="EasyMicroservices.ServiceContracts" Version="0.0.0.19" />
     <PackageReference Include="EasyMicroservices.Utilities" Version="0.0.0.13" />
