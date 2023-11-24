@@ -458,7 +458,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             List<IEntityEntry> items = new List<IEntityEntry>();
             var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
 
-            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities())
+            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Modified
                     && entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Deleted)
@@ -731,7 +731,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
-            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities())
+            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                     continue;
@@ -761,7 +761,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
-            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities())
+            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                     continue;
