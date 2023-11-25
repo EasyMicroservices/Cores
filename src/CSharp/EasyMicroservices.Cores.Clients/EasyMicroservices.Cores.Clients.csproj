@@ -12,7 +12,6 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Clients.xml</DocumentationFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
