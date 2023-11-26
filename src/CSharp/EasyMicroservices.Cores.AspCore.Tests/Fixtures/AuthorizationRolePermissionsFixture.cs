@@ -11,7 +11,7 @@ public class AuthorizationRolePermissionsFixture : IAsyncLifetime
     public IServiceProvider ServiceProvider { get; private set; }
     public Task InitializeAsync()
     {
-        return BaseFixture.Init(4566, (services) =>
+        return BaseFixture.Init(4566,6043, (services) =>
         {
             services.AddScoped<IAuthorization, AspCoreAuthorization>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>

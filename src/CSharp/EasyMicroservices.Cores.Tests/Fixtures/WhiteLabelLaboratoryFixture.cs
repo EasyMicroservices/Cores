@@ -1,8 +1,4 @@
-﻿using EasyMicroservices.Cores.Tests.Database;
-using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
-using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests;
-using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests.TestResources;
-using System.Text;
+﻿using System.Text;
 
 namespace EasyMicroservices.Cores.Tests.Fixtures
 {
@@ -15,33 +11,6 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
         public WhiteLabelLaboratoryFixture()
         {
             _routeAddress = $"http://{localhost}:{Port}";
-        }
-
-        protected static WhiteLabelVirtualTestManager WhiteLabelVirtualTestManager { get; set; } = new WhiteLabelVirtualTestManager();
-
-        static bool _isInitialized = false;
-        static SemaphoreSlim Semaphore = new SemaphoreSlim(1);
-        protected async Task OnInitialize()
-        {
-            try
-            {
-                await Semaphore.WaitAsync();
-                if (_isInitialized)
-                    return;
-                if (await WhiteLabelVirtualTestManager.OnInitialize(Port))
-                {
-                    Console.WriteLine($"WhiteLabelVirtualTestManager Initialized! {Port}");
-                    foreach (var item in WhiteLabelResource.GetResources(new MyTestContext(new DatabaseBuilder()), "TextExample"))
-                    {
-                        WhiteLabelVirtualTestManager.AppendService(Port, item.Key, item.Value);
-                    }
-                }
-                _isInitialized = true;
-            }
-            finally
-            {
-                Semaphore.Release();
-            }
         }
 
         [Fact]
@@ -97,9 +66,9 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
             Assert.True(all.Result.Count >= 5);
         }
 
-        public async Task InitializeAsync()
+        public Task InitializeAsync()
         {
-            await OnInitialize();
+            return BaseWhiteLabelFixture.Run(6041);
         }
 
         public Task DisposeAsync()
