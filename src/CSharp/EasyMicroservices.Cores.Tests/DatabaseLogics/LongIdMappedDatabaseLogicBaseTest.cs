@@ -26,7 +26,7 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
     }
 
-    public class LongIdMappedDatabaseLogicBaseTest : IClassFixture<ServiceProviderFixture>, IClassFixture<WhiteLabelLaboratoryFixture>
+    public abstract class LongIdMappedDatabaseLogicBaseTest : IClassFixture<ServiceProviderFixture>, IClassFixture<WhiteLabelLaboratoryFixture>
     {
         private readonly IServiceProvider _serviceProvider;
         public LongIdMappedDatabaseLogicBaseTest(ServiceProviderFixture fixture)

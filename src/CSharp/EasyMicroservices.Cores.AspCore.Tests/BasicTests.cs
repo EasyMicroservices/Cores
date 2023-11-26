@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public class BasicTests : WhiteLabelLaboratoryFixture
+    public abstract class BasicTests : WhiteLabelLaboratoryFixture
     {
         public BasicTests()
         {

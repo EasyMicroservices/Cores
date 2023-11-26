@@ -3,7 +3,7 @@ using EasyMicroservices.ServiceContracts;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public class AuthorizationTests : BasicTests
+    public abstract class AuthorizationTests : BasicTests
     {
         public override int AppPort => 4565;
         public AuthorizationTests() : base()
