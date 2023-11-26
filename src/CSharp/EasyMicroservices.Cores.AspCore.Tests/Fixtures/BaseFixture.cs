@@ -31,6 +31,7 @@ public class BaseFixture
         var build = await app.Build<MyTestContext>(true);
         build.MapControllers();
         _ = build.RunAsync();
+        await Task.Delay(TimeSpan.FromSeconds(2));
         return build.Services;
     }
 }
