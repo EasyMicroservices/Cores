@@ -1,9 +1,10 @@
 ﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Models;
+using EasyMicroservices.ServiceContracts;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,7 +12,10 @@ using WhiteLables.GeneratedServices;
 
 namespace EasyMicroservices.Cores.AspCoreApi.Managers
 {
-    internal class WhiteLabelManager
+    /// <summary>
+    /// 
+    /// </summary>
+    public class WhiteLabelManager
     {
         internal WhiteLabelManager(IServiceProvider serviceProvider)
         {
@@ -19,7 +23,38 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
         }
 
         private readonly IServiceProvider _serviceProvider;
+        /// <summary>
+        /// 
+        /// </summary>
         public HttpClient HttpClient { get; set; } = new HttpClient();
+        /// <summary>
+        /// 
+        /// </summary>
+        public static bool IsInitialized
+        {
+            get
+            {
+                return _CurrentWhiteLabel is not null;
+            }
+        }
+
+        static WhiteLabelInfo _CurrentWhiteLabel;
+        /// <summary>
+        /// 
+        /// </summary>
+        public static WhiteLabelInfo CurrentWhiteLabel
+        {
+            get
+            {
+                if (_CurrentWhiteLabel is null)
+                    throw new Exception("Whitelabel is not intialized!");
+                return _CurrentWhiteLabel;
+            }
+            private set
+            {
+                _CurrentWhiteLabel = value;
+            }
+        }
 
         string GetDefaultUniqueIdentity(ICollection<WhiteLabelContract> whiteLables, long? parentId)
         {
@@ -31,14 +66,25 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
             return $"{DefaultUniqueIdentityManager.GenerateUniqueIdentity(found.Id)}-{GetDefaultUniqueIdentity(whiteLables, found.Id)}".Trim('-');
         }
 
-        public async Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="microserviceName"></param>
+        /// <param name="whiteLableRoute"></param>
+        /// <param name="dbContextTypes"></param>
+        /// <returns></returns>
+        public async Task<WhiteLabelInfo> Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
+            if (IsInitialized)
+                return CurrentWhiteLabel;
+            microserviceName.ThrowIfNullOrEmpty(nameof(microserviceName));
+            microserviceName.ThrowIfNullOrEmpty(nameof(whiteLableRoute));
             Console.WriteLine($"WhiteLabelManager Initialize! {microserviceName} {whiteLableRoute}");
             if (dbContextTypes.IsEmpty())
-                return;
+                return CurrentWhiteLabel;
             var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, HttpClient);
-            var whiteLabels = await whiteLabelClient.GetAllAsync().ConfigureAwait(false);
-            UnitOfWork.DefaultUniqueIdentity = GetDefaultUniqueIdentity(whiteLabels.Result, null);
+            var whiteLabels = await whiteLabelClient.GetAllAsync().AsCheckedResult(x => x.Result).ConfigureAwait(false);
+            var defaultUniqueIdentity = GetDefaultUniqueIdentity(whiteLabels, null);
 
             var microserviceClient = new WhiteLables.GeneratedServices.MicroserviceClient(whiteLableRoute, HttpClient);
             var microservices = await microserviceClient.GetAllAsync().ConfigureAwait(false);
@@ -54,8 +100,13 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                 var addMicroservice = await microserviceClient.AddAsync(foundMicroservice).ConfigureAwait(false);
                 foundMicroservice.Id = addMicroservice.Result;
             }
-            UnitOfWork.MicroserviceId = foundMicroservice.Id;
-            UnitOfWork.MicroserviceName = microserviceName;
+
+            CurrentWhiteLabel = new WhiteLabelInfo()
+            {
+                MicroserviceId = foundMicroservice.Id,
+                MicroserviceName = microserviceName,
+                StartUniqueIdentity = defaultUniqueIdentity
+            };
             var uniqueIdentityManager = new UnitOfWork(_serviceProvider).GetUniqueIdentityManager() as DefaultUniqueIdentityManager;
 
             var microserviceContextTableClient = new WhiteLables.GeneratedServices.MicroserviceContextTableClient(whiteLableRoute, HttpClient);
@@ -105,6 +156,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                     }
                 }
             }
+            return CurrentWhiteLabel;
         }
     }
 }

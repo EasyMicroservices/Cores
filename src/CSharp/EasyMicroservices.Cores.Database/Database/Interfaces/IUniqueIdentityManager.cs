@@ -1,4 +1,8 @@
-﻿using EasyMicroservices.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Models;
+using EasyMicroservices.Database.Interfaces;
+using System;
+using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Interfaces
 {
@@ -8,25 +12,14 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     public interface IUniqueIdentityManager
     {
         /// <summary>
-        /// 
-        /// </summary>
-        string StartUniqueIdentity { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        long MicroserviceId { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        string MicroserviceName { get; set; }
-        /// <summary>
         /// update unique identity
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="baseUnitOfWork"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
-        bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity);
+        Task<bool> UpdateUniqueIdentity<TEntity>(IBaseUnitOfWork baseUnitOfWork, IContext context, TEntity entity);
         /// <summary>
         /// 
         /// </summary>

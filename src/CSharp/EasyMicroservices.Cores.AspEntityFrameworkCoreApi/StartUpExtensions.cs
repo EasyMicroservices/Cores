@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi.Authorizations;
+using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
 using EasyMicroservices.Cores.Database.Interfaces;
@@ -7,6 +8,7 @@ using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
@@ -65,10 +67,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddScoped<IBaseUnitOfWork, UnitOfWork>();
             services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
-                if (UnitOfWork.DefaultUniqueIdentity.HasValue())
-                    return new DefaultUniqueIdentityManager(UnitOfWork.DefaultUniqueIdentity, UnitOfWork.MicroserviceId, MicroserviceName);
-                else
-                    return new DefaultUniqueIdentityManager(UnitOfWork.MicroserviceId, MicroserviceName);
+                return new DefaultUniqueIdentityManager(WhiteLabelManager.CurrentWhiteLabel);
             });
             services.AddScoped(service => new UnitOfWork(service).GetMapper());
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
@@ -78,6 +77,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             });
             return services;
         }
+
+        //static string GetUniqueIdentityFromHttpContext(HttpContext httpContext)
+        //{
+        //    httpContext.ThrowIfNull(nameof(httpContext));
+        //    var uniqueIdentity = httpContext.User.FindFirst(nameof(IUniqueIdentitySchema.UniqueIdentity));
+        //    if (uniqueIdentity == null || uniqueIdentity.Value.IsNullOrEmpty())
+        //        return UnitOfWork.DefaultUniqueIdentity;
+        //    return uniqueIdentity.Value;
+        //}
 
         /// <summary>
         /// 
@@ -147,7 +155,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 if (WhiteLabelRoute.HasValue() || WhiteLabelConfigName.HasValue())
                 {
                     using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                    await uow.Initialize(MicroserviceName, config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
+                    await uow.InitializeWhiteLabel(MicroserviceName, config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
                 }
                 if (AuthenticationConfigName.HasValue())
                     AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);
@@ -270,7 +278,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 if (WhiteLabelRoute.HasValue() || WhiteLabelConfigName.HasValue())
                 {
                     var value = WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName);
-                    await uow.Initialize(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
+                    await uow.InitializeWhiteLabel(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
                 }
                 if (AuthenticationConfigName.HasValue())
                     AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);

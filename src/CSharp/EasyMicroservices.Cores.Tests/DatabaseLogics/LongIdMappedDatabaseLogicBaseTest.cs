@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
+using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
@@ -6,6 +7,7 @@ using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
+using EasyMicroservices.Cores.Tests.Fixtures;
 using EasyMicroservices.Database.EntityFrameworkCore.Providers;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.CompileTimeMapper.Providers;
@@ -24,40 +26,47 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
     }
 
-    public class LongIdMappedDatabaseLogicBaseTest
+    public class LongIdMappedDatabaseLogicBaseTest : IClassFixture<ServiceProviderFixture>, IClassFixture<WhiteLabelLaboratoryFixture>
     {
-        public LongIdMappedDatabaseLogicBaseTest()
+        private readonly IServiceProvider _serviceProvider;
+        public LongIdMappedDatabaseLogicBaseTest(ServiceProviderFixture fixture)
         {
+            _serviceProvider = fixture.ServiceProvider;
+        }
+
+        UnitOfWork GetUnitOfWork()
+        {
+            return new UnitOfWork(_serviceProvider);
         }
 
         IContractLogic<SubjectEntity, SubjectEntity, SubjectEntity, SubjectEntity, long> GetSubjectContractLogic()
         {
-            return new LongIdMappedDatabaseLogicBase<SubjectEntity, SubjectEntity, SubjectEntity, SubjectEntity>(GetDatabase().GetReadableOf<SubjectEntity>(), GetDatabase().GetWritableOf<SubjectEntity>(), GetMapper(), GetUniqueIdentityManager());
+            return new LongIdMappedDatabaseLogicBase<SubjectEntity, SubjectEntity, SubjectEntity, SubjectEntity>(GetDatabase().GetReadableOf<SubjectEntity>(), GetDatabase().GetWritableOf<SubjectEntity>(), GetUnitOfWork());
         }
 
         IContractLogic<CompanyEntity, CompanyEntity, CompanyEntity, CompanyEntity, long> GetCompanyContractLogic()
         {
-            return new LongIdMappedDatabaseLogicBase<CompanyEntity, CompanyEntity, CompanyEntity, CompanyEntity>(GetDatabase().GetReadableOf<CompanyEntity>(), GetDatabase().GetWritableOf<CompanyEntity>(), GetMapper(), GetUniqueIdentityManager());
+            return new LongIdMappedDatabaseLogicBase<CompanyEntity, CompanyEntity, CompanyEntity, CompanyEntity>(GetDatabase().GetReadableOf<CompanyEntity>(), GetDatabase().GetWritableOf<CompanyEntity>(), GetUnitOfWork());
         }
 
         IContractLogic<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity, long> GetCategoryContractLogic()
         {
-            return new LongIdMappedDatabaseLogicBase<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity>(GetDatabase().GetReadableOf<CategoryEntity>(), GetDatabase().GetWritableOf<CategoryEntity>(), GetMapper(), GetUniqueIdentityManager());
+            return new LongIdMappedDatabaseLogicBase<CategoryEntity, CategoryEntity, CategoryEntity, CategoryEntity>(GetDatabase().GetReadableOf<CategoryEntity>(), GetDatabase().GetWritableOf<CategoryEntity>(), GetUnitOfWork());
         }
 
         IContractLogic<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity, long> GetProfileContractLogic()
         {
-            return new LongIdMappedDatabaseLogicBase<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity>(GetDatabase().GetReadableOf<ProfileEntity>(), GetDatabase().GetWritableOf<ProfileEntity>(), GetMapper(), GetUniqueIdentityManager());
+            return new LongIdMappedDatabaseLogicBase<ProfileEntity, ProfileEntity, ProfileEntity, ProfileEntity>(GetDatabase().GetReadableOf<ProfileEntity>(), GetDatabase().GetWritableOf<ProfileEntity>(), GetUnitOfWork());
         }
 
         IContractLogic<UserEntity, UserEntity, UserEntity, UserEntity, long> GetContractLogic()
         {
-            return new LongIdMappedDatabaseLogicBase<UserEntity, UserEntity, UserEntity, UserEntity>(GetDatabase().GetReadableOf<UserEntity>(), GetDatabase().GetWritableOf<UserEntity>(), GetMapper(), GetUniqueIdentityManager());
+            return new LongIdMappedDatabaseLogicBase<UserEntity, UserEntity, UserEntity, UserEntity>(GetDatabase().GetReadableOf<UserEntity>(), GetDatabase().GetWritableOf<UserEntity>(), GetUnitOfWork());
         }
 
         IContractLogic<UserEntity, UpdateUserContract, UpdateUserContract, UserEntity, long> GetUpdateContractLogic()
         {
-            return new LongIdMappedDatabaseLogicBase<UserEntity, UpdateUserContract, UpdateUserContract, UserEntity>(GetDatabase().GetReadableOf<UserEntity>(), GetDatabase().GetWritableOf<UserEntity>(), GetMapper(), GetUniqueIdentityManager());
+            return new LongIdMappedDatabaseLogicBase<UserEntity, UpdateUserContract, UpdateUserContract, UserEntity>(GetDatabase().GetReadableOf<UserEntity>(), GetDatabase().GetWritableOf<UserEntity>(), GetUnitOfWork());
         }
 
         public virtual IDatabase GetDatabase()
@@ -71,7 +80,12 @@ namespace EasyMicroservices.Cores.Tests.Database
         const long SubjectTableContextId = 153;
         public virtual IUniqueIdentityManager GetUniqueIdentityManager()
         {
-            var manager = new DefaultUniqueIdentityManager("1-1", 5, "TestExample");
+            var manager = new DefaultUniqueIdentityManager(new Models.WhiteLabelInfo()
+            {
+                StartUniqueIdentity = "1-1",
+                MicroserviceId = 5,
+                MicroserviceName = "TestExample"
+            });
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(UserEntity)), TableContextId);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(ProfileEntity)), ProfileTableContextId);
             manager.InitializeTables(5, manager.GetContextName(typeof(MyTestContext)), manager.GetTableName(typeof(CategoryEntity)), CategoryTableContextId);

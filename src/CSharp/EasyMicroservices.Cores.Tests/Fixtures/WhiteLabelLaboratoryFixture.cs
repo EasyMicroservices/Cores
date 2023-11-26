@@ -4,15 +4,15 @@ using EasyMicroservices.Payments.VirtualServerForTests.TestResources;
 using EasyMicroservices.WhiteLabelsMicroservice.VirtualServerForTests;
 using System.Text;
 
-namespace EasyMicroservices.Cores.Tests.Laboratories
+namespace EasyMicroservices.Cores.Tests.Fixtures
 {
-    public abstract class WhiteLabelLaboratoryTest
+    public class WhiteLabelLaboratoryFixture : IAsyncLifetime, IClassFixture<ServiceProviderFixture>
     {
         public const string localhost = "127.0.0.1";
         protected int Port = 6041;
         string _routeAddress = "";
         protected static HttpClient HttpClient { get; set; } = new HttpClient();
-        public WhiteLabelLaboratoryTest()
+        public WhiteLabelLaboratoryFixture()
         {
             _routeAddress = $"http://{localhost}:{Port}";
         }
@@ -47,7 +47,6 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         [Fact]
         public async Task WhiteLabelGetAllTest()
         {
-            await OnInitialize();
             var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(_routeAddress, HttpClient);
             var all = await whiteLabelClient.GetAllAsync();
             Assert.True(all.IsSuccess);
@@ -58,7 +57,6 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         [Fact]
         public async Task MicroserviceGetAllTest()
         {
-            await OnInitialize();
             var client = new WhiteLables.GeneratedServices.MicroserviceClient(_routeAddress, HttpClient);
             var all = await client.GetAllAsync();
             Assert.True(all.IsSuccess);
@@ -69,7 +67,6 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         [Fact]
         public async Task MicroserviceAddTest()
         {
-            await OnInitialize();
             var client = new WhiteLables.GeneratedServices.MicroserviceClient(_routeAddress, HttpClient);
             var added = await client.AddAsync(new WhiteLables.GeneratedServices.MicroserviceContract()
             {
@@ -84,7 +81,6 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         [Fact]
         public async Task MicroserviceContextTableGetAllTest()
         {
-            await OnInitialize();
             var client = new WhiteLables.GeneratedServices.MicroserviceContextTableClient(_routeAddress, HttpClient);
             var all = await client.GetAllAsync();
             Assert.True(all.IsSuccess);
@@ -95,11 +91,20 @@ namespace EasyMicroservices.Cores.Tests.Laboratories
         [Fact]
         public async Task ContextTableGetAllTest()
         {
-            await OnInitialize();
             var client = new WhiteLables.GeneratedServices.ContextTableClient(_routeAddress, HttpClient);
             var all = await client.GetAllAsync();
             Assert.True(all.IsSuccess);
             Assert.True(all.Result.Count >= 5);
+        }
+
+        public async Task InitializeAsync()
+        {
+            await OnInitialize();
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 }

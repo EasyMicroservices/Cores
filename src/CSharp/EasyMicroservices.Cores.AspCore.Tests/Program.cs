@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
+﻿using EasyMicroservices.Cores.AspCoreApi.Managers;
+using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
@@ -21,10 +22,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
             app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
-                if (UnitOfWork.DefaultUniqueIdentity.HasValue())
-                    return new DefaultUniqueIdentityManager(UnitOfWork.DefaultUniqueIdentity, UnitOfWork.MicroserviceId, microserviceName);
-                else
-                    return new DefaultUniqueIdentityManager(UnitOfWork.MicroserviceId, microserviceName);
+                return new DefaultUniqueIdentityManager(WhiteLabelManager.CurrentWhiteLabel);
             });
             StartUpExtensions.AddWhiteLabel(microserviceName, "RootAddresses:WhiteLabel");
             var build = await app.Build<MyTestContext>();

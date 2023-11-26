@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.AspCore.Tests.Controllers;
 using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
@@ -23,10 +24,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
             app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
-                if (UnitOfWork.DefaultUniqueIdentity.HasValue())
-                    return new DefaultUniqueIdentityManager(UnitOfWork.DefaultUniqueIdentity, UnitOfWork.MicroserviceId, microserviceName);
-                else
-                    return new DefaultUniqueIdentityManager(UnitOfWork.MicroserviceId, microserviceName);
+                return new DefaultUniqueIdentityManager(WhiteLabelManager.CurrentWhiteLabel);
             });
             StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:6041");
             app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);

@@ -1,10 +1,12 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Database.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Managers
 {
@@ -16,67 +18,31 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="startUniqueIdentity"></param>
-        /// <param name="microserviceId"></param>
-        /// <param name="microserviceName"></param>
-        public DefaultUniqueIdentityManager(string startUniqueIdentity, long microserviceId, string microserviceName)
+        public DefaultUniqueIdentityManager(WhiteLabelInfo whiteLabelInfo)
         {
-            if (startUniqueIdentity.IsNullOrEmpty())
-                throw new ArgumentNullException(nameof(startUniqueIdentity));
-            StartUniqueIdentity = startUniqueIdentity;
-            MicroserviceId = microserviceId;
-            MicroserviceName = microserviceName;
+            _whiteLabelInfo = whiteLabelInfo;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="microserviceId"></param>
-        /// <param name="microserviceName"></param>
-        public DefaultUniqueIdentityManager(long microserviceId, string microserviceName)
-        {
-            MicroserviceId = microserviceId;
-            MicroserviceName = microserviceName;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public DefaultUniqueIdentityManager()
-        {
-
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public string StartUniqueIdentity { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public long MicroserviceId { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string MicroserviceName { get; set; }
-
+        readonly WhiteLabelInfo _whiteLabelInfo;
         Dictionary<string, long> TableIds { get; set; } = new Dictionary<string, long>();
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="baseUnitOfWork"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity)
+        public async Task<bool> UpdateUniqueIdentity<TEntity>(IBaseUnitOfWork baseUnitOfWork, IContext context, TEntity entity)
         {
             if (entity is IUniqueIdentitySchema uniqueIdentitySchema)
             {
+                var whiteLabel = await baseUnitOfWork.InitializeWhiteLabel();
                 if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
-                    uniqueIdentitySchema.UniqueIdentity = StartUniqueIdentity;
+                    uniqueIdentitySchema.UniqueIdentity = whiteLabel.StartUniqueIdentity;
                 var ids = uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty() ? null : DecodeUniqueIdentity(uniqueIdentitySchema.UniqueIdentity);
-                if (TableIds.TryGetValue(GetContextTableName<TEntity>(context.ContextType, MicroserviceId), out long tableId))
+                if (TableIds.TryGetValue(GetContextTableName<TEntity>(context.ContextType, whiteLabel.MicroserviceId), out long tableId))
                 {
                     if (entity is IIdSchema<long> longIdSchema)
                     {
@@ -243,7 +209,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         public bool IsUniqueIdentityForThisTable<TEntity>(IContext context, string uniqueIdentity)
         {
             var decodeIds = DecodeUniqueIdentity(uniqueIdentity);
-            if (TableIds.TryGetValue(GetContextTableName(MicroserviceId, GetContextName(context.ContextType), GetTableName(typeof(TEntity))), out long tableId))
+            if (TableIds.TryGetValue(GetContextTableName(_whiteLabelInfo.MicroserviceId, GetContextName(context.ContextType), GetTableName(typeof(TEntity))), out long tableId))
             {
                 return decodeIds.Contains(tableId);
             }
@@ -296,7 +262,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         public int GetRepeatCountOfTableId(Type contextType, Type tableType, string uniqueIdentity)
         {
             var decodeIds = DecodeUniqueIdentity(uniqueIdentity);
-            if (TableIds.TryGetValue(GetContextTableName(MicroserviceId, GetContextName(contextType), GetTableName(tableType)), out long tableId))
+            if (TableIds.TryGetValue(GetContextTableName(_whiteLabelInfo.MicroserviceId, GetContextName(contextType), GetTableName(tableType)), out long tableId))
             {
                 return decodeIds.Count(x => x == tableId);
             }
@@ -343,7 +309,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <returns></returns>
         public string GetTableUniqueIdentity(Type contextType, Type tableType)
         {
-            if (TableIds.TryGetValue(GetContextTableName(MicroserviceId, GetContextName(contextType), GetTableName(tableType)), out long tableId))
+            if (TableIds.TryGetValue(GetContextTableName(_whiteLabelInfo.MicroserviceId, GetContextName(contextType), GetTableName(tableType)), out long tableId))
             {
                 return GenerateUniqueIdentity(tableId);
             }

@@ -39,5 +39,9 @@
     <ProjectReference Include="..\EasyMicroservices.Cores.Relational.EntityFrameworkCore\EasyMicroservices.Cores.Relational.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\EasyMicroservices.Cores.Services\EasyMicroservices.Cores.Services.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Laboratories\" />
+  </ItemGroup>
 
 </Project>
