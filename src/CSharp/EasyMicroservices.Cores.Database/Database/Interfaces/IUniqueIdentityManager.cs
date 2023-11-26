@@ -15,11 +15,10 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// update unique identity
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <param name="baseUnitOfWork"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
-        Task<bool> UpdateUniqueIdentity<TEntity>(IBaseUnitOfWork baseUnitOfWork, IContext context, TEntity entity);
+        bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity);
         /// <summary>
         /// 
         /// </summary>

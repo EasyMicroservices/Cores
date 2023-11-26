@@ -364,9 +364,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 throw new ObjectDisposedException(nameof(ServiceProvider));
             _InitializeWhiteLabel = async (serviceProvider) =>
             {
-                if (!WhiteLabelManager.IsInitialized)
-                    return await new WhiteLabelManager(serviceProvider).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
-                return WhiteLabelManager.CurrentWhiteLabel;
+                var whiteLabelManager = serviceProvider.GetService<WhiteLabelManager>();
+                if (!whiteLabelManager.IsInitialized)
+                   return await whiteLabelManager.Initialize(microserviceName, whiteLableRoute, dbContextTypes);
+                return whiteLabelManager.CurrentWhiteLabel;
             };
             return Task.CompletedTask;
         }

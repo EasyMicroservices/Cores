@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Managers;
+﻿using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
+using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
 using EasyMicroservices.Cores.Tests.Fixtures;
 using EasyMicroservices.ServiceContracts;
@@ -6,43 +7,15 @@ using Newtonsoft.Json;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public abstract class BasicTests : WhiteLabelLaboratoryFixture
+    public abstract class BasicTests : IClassFixture<WhiteLabelLaboratoryFixture>
     {
-        public BasicTests()
-        {
-            InitializeTestHost(false, null);
-        }
-        public virtual int AppPort { get; } = 4564;
-        protected virtual void InitializeTestHost(bool isUseAuthorization, Action<IServiceCollection> serviceCollection)
-        {
-            Exception exception = default;
-            TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
-            Thread thread = new Thread(async () =>
-            {
-                try
-                {
-                    await Startup.Run(AppPort, serviceCollection, null);
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
-                finally
-                {
-                    taskCompletionSource.SetResult();
-                }
-            });
-            thread.Start();
-            taskCompletionSource.Task.GetAwaiter().GetResult();
-            if (exception != default)
-                throw new Exception("see inner", exception);
-        }
-
+        protected static HttpClient HttpClient { get; set; } = new HttpClient();
+        public abstract int AppPort { get; }
         string RouteAddress
         {
             get
             {
-                return $"http://{localhost}:{AppPort}";
+                return $"http://localhost:{AppPort}";
             }
         }
 
@@ -86,13 +59,15 @@ namespace EasyMicroservices.Cores.AspCore.Tests
                 UserName = "Ali",
                 UniqueIdentity = "1-2"
             });
-            var result = JsonConvert.DeserializeObject<MessageContract>(await data.Content.ReadAsStringAsync());
+            var jsondata = await data.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<MessageContract>(jsondata);
             AssertTrue(result);
             var getAllRespone = await Get_EndpointsReturnSuccessAndCorrectContentType();
             var users = JsonConvert.DeserializeObject<ListMessageContract<UpdateUserContract>>(getAllRespone);
             AssertTrue(users);
             if (users.IsSuccess)
-                AssertTrue(users.Result.All(x => DefaultUniqueIdentityManager.DecodeUniqueIdentity(x.UniqueIdentity).Length > 2));
+                Assert.True(users.Result.All(x => DefaultUniqueIdentityManager.DecodeUniqueIdentity(x.UniqueIdentity).Length > 2),
+                   JsonConvert.SerializeObject(users.Result));
         }
 
         protected virtual void AuthorizeAssert(MessageContract messageContract)

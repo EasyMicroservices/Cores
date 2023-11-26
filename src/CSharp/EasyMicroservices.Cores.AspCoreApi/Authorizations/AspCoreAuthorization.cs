@@ -28,17 +28,12 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         public AspCoreAuthorization(IBaseUnitOfWork baseUnitOfWork)
         {
             BaseUnitOfWork = baseUnitOfWork;
-            UniqueIdentityManager = baseUnitOfWork.GetUniqueIdentityManager();
         }
 
         /// <summary>
         /// 
         /// </summary>
         public IBaseUnitOfWork BaseUnitOfWork { get; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public IUniqueIdentityManager UniqueIdentityManager { get; }
         /// <summary>
         /// 
         /// </summary>
