@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public abstract class BasicTests : IClassFixture<WhiteLabelLaboratoryFixture>
+    public abstract class BasicTests
     {
         protected static HttpClient HttpClient { get; set; } = new HttpClient();
         public abstract int AppPort { get; }

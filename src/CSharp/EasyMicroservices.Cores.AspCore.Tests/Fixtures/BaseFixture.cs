@@ -6,12 +6,13 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
+using EasyMicroservices.Cores.Tests.Fixtures;
 
 namespace EasyMicroservices.Cores.AspCore.Tests.Fixtures;
 
 public class BaseFixture
 {
-    public static async Task<IServiceProvider> Init(long port, Action<IServiceCollection> changeCollection = null)
+    public static async Task<IServiceProvider> Init(int port, int whiteLabelPort, Action<IServiceCollection> changeCollection = null)
     {
         string microserviceName = "TestExample";
         WebApplicationBuilder app = StartUpExtensions.Create<MyTestContext>(null);
@@ -25,12 +26,14 @@ public class BaseFixture
             return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
         });
         changeCollection?.Invoke(app.Services);
-        StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:6041");
+        await BaseWhiteLabelFixture.Run(whiteLabelPort);
+        StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:{whiteLabelPort}");
         app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);
         app.WebHost.UseUrls($"http://localhost:{port}");
         var build = await app.Build<MyTestContext>(true);
         build.MapControllers();
         _ = build.RunAsync();
+        //await Task.Delay(TimeSpan.FromSeconds(2));
         return build.Services;
     }
 }

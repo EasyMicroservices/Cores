@@ -7,7 +7,7 @@ public class AuthorizationFixture : IAsyncLifetime
     public IServiceProvider ServiceProvider { get; private set; }
     public Task InitializeAsync()
     {
-        return BaseFixture.Init(4565, (sc) =>
+        return BaseFixture.Init(4565, 6044, (sc) =>
         {
             sc.AddScoped<IAuthorization, AppAuthorization>();
         });
