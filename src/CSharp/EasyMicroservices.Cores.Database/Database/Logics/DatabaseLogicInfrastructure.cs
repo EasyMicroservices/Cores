@@ -27,7 +27,6 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         internal protected readonly IMapperProvider MapperProvider;
-        readonly IUniqueIdentityManager _uniqueIdentityManager;
         readonly IBaseUnitOfWork _baseUnitOfWork;
         /// <summary>
         /// 
@@ -37,9 +36,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             _baseUnitOfWork = baseUnitOfWork;
             MapperProvider = baseUnitOfWork.GetMapper();
-            _uniqueIdentityManager = baseUnitOfWork.GetUniqueIdentityManager();
         }
-
+        async Task<IUniqueIdentityManager> GetIUniqueIdentityManager()
+        {
+            await _baseUnitOfWork.InitializeWhiteLabel();
+            return _baseUnitOfWork.GetUniqueIdentityManager();
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -55,15 +57,16 @@ namespace EasyMicroservices.Cores.Database.Logics
         private IEasyReadableQueryableAsync<TEntity> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
+            var uniqueIdentityManager = _baseUnitOfWork.GetUniqueIdentityManager();
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
-            if (!_uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
+            if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
                 uniqueIdentity += "-";
             bool isEndWithDash = uniqueIdentity.EndsWith("-");
             bool doEqual = false;
             if (type == GetUniqueIdentityType.OnlyParent)
             {
-                var tableUniqueIdentity = _uniqueIdentityManager.GetTableUniqueIdentity<TEntity>(easyReadableQueryable.Context);
-                var lastTableUniqueIdentity = _uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity);
+                var tableUniqueIdentity = uniqueIdentityManager.GetTableUniqueIdentity<TEntity>(easyReadableQueryable.Context);
+                var lastTableUniqueIdentity = uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity);
                 doEqual = tableUniqueIdentity.Equals(lastTableUniqueIdentity);
 
                 if (!isEndWithDash && !doEqual)
@@ -75,7 +78,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             {
                 if (!isEndWithDash)
                     uniqueIdentity += "-";
-                uniqueIdentity += _uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity) + "-";
+                uniqueIdentity += uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity) + "-";
             }
             if (doEqual)
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IUniqueIdentitySchema).UniqueIdentity.Equals(uniqueIdentity)));
@@ -734,7 +737,8 @@ namespace EasyMicroservices.Cores.Database.Logics
                 }
             }
             await easyWritableQueryable.SaveChangesAsync();
-            if (await _uniqueIdentityManager.UpdateUniqueIdentity(_baseUnitOfWork, easyWritableQueryable.Context, result.Entity))
+            var uniqueIdentityManager = await GetIUniqueIdentityManager();
+            if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
             {
                 await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
@@ -765,9 +769,10 @@ namespace EasyMicroservices.Cores.Database.Logics
             }
             await easyWritableQueryable.SaveChangesAsync();
             bool anyUpdate = false;
+            var uniqueIdentityManager = await GetIUniqueIdentityManager();
             foreach (var item in result)
             {
-                if (await _uniqueIdentityManager.UpdateUniqueIdentity(_baseUnitOfWork, easyWritableQueryable.Context, item.Entity))
+                if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
                 {
                     anyUpdate = true;
                 }

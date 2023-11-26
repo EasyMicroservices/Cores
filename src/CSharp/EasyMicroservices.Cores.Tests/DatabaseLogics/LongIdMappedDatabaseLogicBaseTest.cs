@@ -26,7 +26,7 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
     }
 
-    public abstract class LongIdMappedDatabaseLogicBaseTest : IClassFixture<ServiceProviderFixture>, IClassFixture<WhiteLabelLaboratoryFixture>
+    public class LongIdMappedDatabaseLogicBaseTest : IClassFixture<ServiceProviderFixture>, IClassFixture<WhiteLabelLaboratoryFixture>
     {
         private readonly IServiceProvider _serviceProvider;
         public LongIdMappedDatabaseLogicBaseTest(ServiceProviderFixture fixture)
@@ -74,7 +74,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             return new EntityFrameworkCoreDatabaseProvider(new MyTestContext(new DatabaseBuilder()));
         }
 
-        const long TableContextId = 150;
+        const long TableContextId = 9;
         const long ProfileTableContextId = 151;
         const long CategoryTableContextId = 152;
         const long SubjectTableContextId = 153;

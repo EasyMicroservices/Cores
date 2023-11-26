@@ -1,22 +1,11 @@
-﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+﻿using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
 using EasyMicroservices.ServiceContracts;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public abstract class AuthorizationTests : BasicTests
+    public class AuthorizationTests : BasicTests, IClassFixture<AuthorizationFixture>
     {
-        public override int AppPort => 4565;
-        public AuthorizationTests() : base()
-        { }
-
-        protected override void InitializeTestHost(bool isUseAuthorization, Action<IServiceCollection> serviceCollection)
-        {
-            serviceCollection = (services) =>
-            {
-                services.AddScoped<IAuthorization, AppAuthorization>();
-            };
-            base.InitializeTestHost(true, serviceCollection);
-        }
+        public override int AppPort { get; } = 4565;
 
         protected override void AssertTrue(MessageContract messageContract)
         {

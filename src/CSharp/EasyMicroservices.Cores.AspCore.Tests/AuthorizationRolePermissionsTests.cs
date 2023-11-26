@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.AuthenticationsMicroservice.VirtualServerForTests;
 using EasyMicroservices.AuthenticationsMicroservice.VirtualServerForTests.TestResources;
+using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
 using EasyMicroservices.Cores.AspCoreApi.Authorizations;
 using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
@@ -11,33 +12,11 @@ using System.Text;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public abstract class AuthorizationRolePermissionsTests : BasicTests
+    public class AuthorizationRolePermissionsTests : BasicTests,IClassFixture<AuthorizationRolePermissionsFixture>
     {
         public override int AppPort => 4566;
         public AuthorizationRolePermissionsTests() : base()
         { }
-
-        protected override void InitializeTestHost(bool isUseAuthorization, Action<IServiceCollection> serviceCollection)
-        {
-            serviceCollection = (services) =>
-            {
-                services.AddScoped<IAuthorization, AspCoreAuthorization>();
-                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = "https://github.com/easymicroservices",
-                        ValidAudience = "easymicroservices",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("VGhpc0lzQVNlY3JldEtleUZvckp3dEF1dGhlbnRpY2F0aW9u="))
-                    };
-                });
-            };
-            base.InitializeTestHost(true, serviceCollection);
-        }
 
         protected override void AssertTrue(MessageContract messageContract)
         {
@@ -66,7 +45,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         public async Task WriterRoleTest(string microserviceName, string roleName, string serviceName, string methodName, bool result)
         {
             int portNumber = 1045;
-            AspCoreAuthorization.AuthenticationRouteAddress = $"http://{localhost}:{portNumber}";
+            AspCoreAuthorization.AuthenticationRouteAddress = $"http://localhost:{portNumber}";
             await AuthenticationVirtualTestManager.OnInitialize(portNumber);
             var resources = AuthenticationResource.GetResources(microserviceName, new Dictionary<string, List<TestServicePermissionContract>>()
             {
@@ -110,7 +89,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         public async Task ReaderRoleTest(string microserviceName, string roleName, string serviceName)
         {
             int portNumber = 1045;
-            AspCoreAuthorization.AuthenticationRouteAddress = $"http://{localhost}:{portNumber}";
+            AspCoreAuthorization.AuthenticationRouteAddress = $"http://localhost:{portNumber}";
             await AuthenticationVirtualTestManager.OnInitialize(portNumber);
             var resources = AuthenticationResource.GetResources(microserviceName, new Dictionary<string, List<TestServicePermissionContract>>()
             {

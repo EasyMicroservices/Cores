@@ -9,7 +9,6 @@ using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.Database;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 
 namespace EasyMicroservices.Cores.Tests.Fixtures
 {
@@ -21,6 +20,7 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
         {
 
         }
+
         public async Task InitializeAsync()
         {
             var serviceCollection = new ServiceCollection();
@@ -28,9 +28,10 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
             serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             serviceCollection.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
+            serviceCollection.AddSingleton(service => new WhiteLabelManager(service));
             serviceCollection.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
-                return new DefaultUniqueIdentityManager(WhiteLabelManager.CurrentWhiteLabel);
+                return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
             StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:6041");
             serviceCollection.AddTransient<IBaseUnitOfWork, UnitOfWork>();

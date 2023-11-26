@@ -8,7 +8,6 @@ using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.ServiceContracts;
-using System.Text;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
@@ -22,9 +21,10 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.AddTransient<IUnitOfWork>((serviceProvider) => new UnitOfWork(serviceProvider));
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
+            app.Services.AddSingleton(service => new WhiteLabelManager(service));
             app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
-                return new DefaultUniqueIdentityManager(WhiteLabelManager.CurrentWhiteLabel);
+                return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
             StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:6041");
             app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);

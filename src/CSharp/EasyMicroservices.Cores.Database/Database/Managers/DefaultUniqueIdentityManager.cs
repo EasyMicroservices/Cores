@@ -29,20 +29,18 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <param name="baseUnitOfWork"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public async Task<bool> UpdateUniqueIdentity<TEntity>(IBaseUnitOfWork baseUnitOfWork, IContext context, TEntity entity)
+        public bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity)
         {
             if (entity is IUniqueIdentitySchema uniqueIdentitySchema)
             {
-                var whiteLabel = await baseUnitOfWork.InitializeWhiteLabel();
                 if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
-                    uniqueIdentitySchema.UniqueIdentity = whiteLabel.StartUniqueIdentity;
+                    uniqueIdentitySchema.UniqueIdentity = _whiteLabelInfo.StartUniqueIdentity;
                 var ids = uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty() ? null : DecodeUniqueIdentity(uniqueIdentitySchema.UniqueIdentity);
-                if (TableIds.TryGetValue(GetContextTableName<TEntity>(context.ContextType, whiteLabel.MicroserviceId), out long tableId))
+                if (TableIds.TryGetValue(GetContextTableName<TEntity>(context.ContextType, _whiteLabelInfo.MicroserviceId), out long tableId))
                 {
                     if (entity is IIdSchema<long> longIdSchema)
                     {
@@ -52,6 +50,10 @@ namespace EasyMicroservices.Cores.Database.Managers
                     {
                         uniqueIdentitySchema.UniqueIdentity = ids.IsEmpty() ? GenerateUniqueIdentity(tableId, intIdSchema.Id) : GenerateUniqueIdentity(ids, tableId, intIdSchema.Id);
                     }
+                }
+                else
+                {
+
                 }
                 return true;
             }
