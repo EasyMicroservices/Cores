@@ -365,7 +365,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             _InitializeWhiteLabel = async (serviceProvider) =>
             {
                 if (!WhiteLabelManager.IsInitialized)
-                   return await new WhiteLabelManager(serviceProvider).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
+                    return await new WhiteLabelManager(serviceProvider).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
                 return WhiteLabelManager.CurrentWhiteLabel;
             };
             return Task.CompletedTask;
