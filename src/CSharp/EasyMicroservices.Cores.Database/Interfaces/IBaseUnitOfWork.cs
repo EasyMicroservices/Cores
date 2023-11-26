@@ -1,7 +1,9 @@
 ﻿using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using System;
+using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Interfaces
 {
@@ -28,7 +30,11 @@ namespace EasyMicroservices.Cores.Interfaces
         /// </summary>
         /// <returns></returns>
         IUniqueIdentityManager GetUniqueIdentityManager();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task<WhiteLabelInfo> InitializeWhiteLabel();
         /// <summary>
         /// 
         /// </summary>

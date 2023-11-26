@@ -31,9 +31,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(baseUnitOfWork)
         {
             _easyReadableQueryable = easyReadableQueryable;
         }
@@ -42,9 +41,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <param name="easyWriteableQueryable"></param>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public IdSchemaDatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public IdSchemaDatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(baseUnitOfWork)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
         }
@@ -54,9 +52,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWriteableQueryable"></param>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(mapperProvider, uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(baseUnitOfWork)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
             _easyReadableQueryable = easyReadableQueryable;
@@ -113,7 +110,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             {
                 if (result.Result is IIdSchema<TId> schema)
                     return schema.Id;
-                return _mapperProvider.Map<TId>(result.Result);
+                return MapperProvider.Map<TId>(result.Result);
             }
             return result.ToContract<TId>();
         }

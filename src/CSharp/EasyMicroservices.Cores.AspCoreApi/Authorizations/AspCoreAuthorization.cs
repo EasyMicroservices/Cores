@@ -3,6 +3,7 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using EasyMicroservices.Utilities.Collections.Generic;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -26,9 +27,14 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// </summary>
         public AspCoreAuthorization(IBaseUnitOfWork baseUnitOfWork)
         {
+            BaseUnitOfWork = baseUnitOfWork;
             UniqueIdentityManager = baseUnitOfWork.GetUniqueIdentityManager();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public IBaseUnitOfWork BaseUnitOfWork { get; }
         /// <summary>
         /// 
         /// </summary>
@@ -37,7 +43,6 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// 
         /// </summary>
         public static string AuthenticationRouteAddress { get; set; }
-
         /// <summary>
         /// 
         /// </summary>
@@ -46,12 +51,26 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// <exception cref="NotImplementedException"></exception>
         public async Task<MessageContract> CheckIsAuthorized(HttpContext httpContext)
         {
+            try
+            {
+                var result = await httpContext.AuthenticateAsync("Bearer");
+                await httpContext.SignInAsync("Bearer", result.Principal);
+            }
+            catch (Exception exxx)
+            {
+                var qq = exxx;
+            }
             var hasPermission = await HasPermission(httpContext);
             if (!hasPermission.IsSuccess)
                 return hasPermission.ToContract();
             else if (!hasPermission.Result)
                 return (FailedReasonType.AccessDenied, "Sorry, you cannot call this service, you have not enough permissions!");
             return true;
+        }
+
+        async Task<string> GetMicroserviceName()
+        {
+            return (await BaseUnitOfWork.InitializeWhiteLabel()).MicroserviceName;
         }
 
         static ConcurrentDictionary<string, ICollection<ServicePermissionContract>> CachedPermissions { get; set; } = new();
@@ -61,7 +80,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             var servicePermissionClient = new Authentications.GeneratedServices.ServicePermissionClient(AuthenticationRouteAddress, new System.Net.Http.HttpClient());
             var permissionsResult = await servicePermissionClient.GetAllPermissionsByAsync(new Authentications.GeneratedServices.ServicePermissionRequestContract()
             {
-                MicroserviceName = UniqueIdentityManager.MicroserviceName,
+                MicroserviceName = await GetMicroserviceName(),
                 RoleName = roleName
             });
             if (permissionsResult.IsSuccess)
@@ -105,7 +124,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
                         return fetchDataResult.ToContract<bool>();
                 }
             }
-            return roleClaims.Any(role => TreeDictionary.TryGetValue(new object[] { role.Value, UniqueIdentityManager.MicroserviceName, controllerName, actionName }, out IList<object> permissions)
+            string microserviceName = await GetMicroserviceName();
+            return roleClaims.Any(role => TreeDictionary.TryGetValue([role.Value, microserviceName, controllerName, actionName], out IList<object> permissions)
                  && permissions.LastOrDefault() is bool value && value);
         }
     }

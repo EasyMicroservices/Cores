@@ -11,7 +11,7 @@ using System.Text;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public class AuthorizationRolePermissionsTests : BasicTests
+    public abstract class AuthorizationRolePermissionsTests : BasicTests
     {
         public override int AppPort => 4566;
         public AuthorizationRolePermissionsTests() : base()

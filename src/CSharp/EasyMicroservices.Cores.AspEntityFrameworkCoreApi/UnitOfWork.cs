@@ -3,7 +3,7 @@ using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
-using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Database.EntityFrameworkCore.Providers;
 using EasyMicroservices.Database.Interfaces;
@@ -17,7 +17,6 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
@@ -150,7 +149,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetLogic<TEntity, TId>()
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), this));
         }
 
         /// <summary>
@@ -164,7 +163,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), this));
         }
 
 
@@ -177,7 +176,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetReadableLogic<TEntity, TId>()
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), this));
         }
 
         /// <summary>
@@ -191,7 +190,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetMapper(), GetUniqueIdentityManager()));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), this));
         }
 
         /// <summary>
@@ -327,18 +326,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <summary>
         /// 
         /// </summary>
-        public static string DefaultUniqueIdentity { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public static long MicroserviceId { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public static string MicroserviceName { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
         public static IUniqueIdentityManager UniqueIdentityManager { get; set; }
         /// <summary>
         /// 
@@ -350,6 +337,20 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return ServiceProvider.GetService<IUniqueIdentityManager>();
         }
 
+        static Func<IServiceProvider, Task<WhiteLabelInfo>> _InitializeWhiteLabel;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task<WhiteLabelInfo> InitializeWhiteLabel()
+        {
+            if (ServiceProvider == null)
+                throw new ObjectDisposedException(nameof(ServiceProvider));
+            _InitializeWhiteLabel.ThrowIfNull(nameof(InitializeWhiteLabel));
+            return await _InitializeWhiteLabel(ServiceProvider);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -357,25 +358,31 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <param name="whiteLableRoute"></param>
         /// <param name="dbContextTypes"></param>
         /// <returns></returns>
-        public virtual Task Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        public virtual Task InitializeWhiteLabel(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
             if (ServiceProvider == null)
                 throw new ObjectDisposedException(nameof(ServiceProvider));
-            return new WhiteLabelManager(ServiceProvider).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
+            _InitializeWhiteLabel = async (serviceProvider) =>
+            {
+                if (!WhiteLabelManager.IsInitialized)
+                   return await new WhiteLabelManager(serviceProvider).Initialize(microserviceName, whiteLableRoute, dbContextTypes);
+                return WhiteLabelManager.CurrentWhiteLabel;
+            };
+            return Task.CompletedTask;
         }
 
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
           where TResponseContract : class
           where TEntity : class
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), GetMapper(), GetUniqueIdentityManager()));
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this));
         }
 
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> GetInternalContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>()
           where TResponseContract : class
           where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), GetMapper(), GetUniqueIdentityManager()));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this));
         }
 
         /// <summary>

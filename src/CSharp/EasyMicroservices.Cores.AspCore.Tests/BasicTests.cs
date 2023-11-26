@@ -1,12 +1,12 @@
 ﻿using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
-using EasyMicroservices.Cores.Tests.Laboratories;
+using EasyMicroservices.Cores.Tests.Fixtures;
 using EasyMicroservices.ServiceContracts;
 using Newtonsoft.Json;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
-    public class BasicTests : WhiteLabelLaboratoryTest
+    public abstract class BasicTests : WhiteLabelLaboratoryFixture
     {
         public BasicTests()
         {
@@ -21,7 +21,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             {
                 try
                 {
-                    await OnInitialize();
                     await Startup.Run(AppPort, serviceCollection, null);
                 }
                 catch (Exception ex)

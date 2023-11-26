@@ -20,9 +20,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public LongIdDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyReadableQueryable, mapperProvider, uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public LongIdDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(easyReadableQueryable, baseUnitOfWork)
         {
         }
 
@@ -30,9 +29,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <param name="easyWriteableQueryable"></param>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public LongIdDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyWriteableQueryable, mapperProvider, uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public LongIdDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(easyWriteableQueryable, baseUnitOfWork)
         {
         }
 
@@ -41,9 +39,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWriteableQueryable"></param>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public LongIdDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager) : base(easyReadableQueryable, easyWriteableQueryable, mapperProvider, uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public LongIdDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(easyReadableQueryable, easyWriteableQueryable, baseUnitOfWork)
         {
         }
     }

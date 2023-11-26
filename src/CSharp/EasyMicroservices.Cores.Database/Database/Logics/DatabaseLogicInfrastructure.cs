@@ -26,25 +26,18 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <summary>
         /// 
         /// </summary>
-        internal protected readonly IMapperProvider _mapperProvider;
+        internal protected readonly IMapperProvider MapperProvider;
         readonly IUniqueIdentityManager _uniqueIdentityManager;
+        readonly IBaseUnitOfWork _baseUnitOfWork;
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="mapperProvider"></param>
-        /// <param name="uniqueIdentityManager"></param>
-        public DatabaseLogicInfrastructure(IMapperProvider mapperProvider, IUniqueIdentityManager uniqueIdentityManager)
+        /// <param name="baseUnitOfWork"></param>
+        public DatabaseLogicInfrastructure(IBaseUnitOfWork baseUnitOfWork)
         {
-            _mapperProvider = mapperProvider;
-            _uniqueIdentityManager = uniqueIdentityManager;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public DatabaseLogicInfrastructure(IUniqueIdentityManager uniqueIdentityManager)
-        {
-            _uniqueIdentityManager = uniqueIdentityManager;
+            _baseUnitOfWork = baseUnitOfWork;
+            MapperProvider = baseUnitOfWork.GetMapper();
+            _uniqueIdentityManager = baseUnitOfWork.GetUniqueIdentityManager();
         }
 
         /// <summary>
@@ -741,7 +734,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 }
             }
             await easyWritableQueryable.SaveChangesAsync();
-            if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
+            if (await _uniqueIdentityManager.UpdateUniqueIdentity(_baseUnitOfWork, easyWritableQueryable.Context, result.Entity))
             {
                 await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
@@ -774,7 +767,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             bool anyUpdate = false;
             foreach (var item in result)
             {
-                if (_uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
+                if (await _uniqueIdentityManager.UpdateUniqueIdentity(_baseUnitOfWork, easyWritableQueryable.Context, item.Entity))
                 {
                     anyUpdate = true;
                 }
@@ -836,7 +829,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             if (typeof(TFrom) == typeof(TTo))
                 return items.Cast<TTo>().ToList();
-            var result = await _mapperProvider.MapToListAsync<TTo>(items);
+            var result = await MapperProvider.MapToListAsync<TTo>(items);
             ValidateMappedResult(ref result);
             return result;
         }
@@ -852,7 +845,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             if (typeof(TFrom) == typeof(TTo))
                 return (TTo)(object)item;
-            var result = await _mapperProvider.MapAsync<TTo>(item);
+            var result = await MapperProvider.MapAsync<TTo>(item);
             ValidateMappedResult(ref result);
             return result;
         }
