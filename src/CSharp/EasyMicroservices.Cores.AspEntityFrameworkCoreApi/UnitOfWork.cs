@@ -12,6 +12,7 @@ using EasyMicroservices.Mapper.CompileTimeMapper.Providers;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -366,7 +367,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             {
                 var whiteLabelManager = serviceProvider.GetService<WhiteLabelManager>();
                 if (!whiteLabelManager.IsInitialized)
-                    return await whiteLabelManager.Initialize(microserviceName, whiteLableRoute, dbContextTypes);
+                   return await whiteLabelManager.Initialize(serviceProvider.GetService<IHttpContextAccessor>(), microserviceName, whiteLableRoute, dbContextTypes);
                 return whiteLabelManager.CurrentWhiteLabel;
             };
             return Task.CompletedTask;

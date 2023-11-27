@@ -1,7 +1,9 @@
 ﻿using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Models;
+using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -28,10 +30,6 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
         }
 
         private readonly IServiceProvider _serviceProvider;
-        /// <summary>
-        /// 
-        /// </summary>
-        public HttpClient HttpClient { get; set; } = new HttpClient();
         /// <summary>
         /// 
         /// </summary>
@@ -69,11 +67,12 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="httpContext"></param>
         /// <param name="microserviceName"></param>
         /// <param name="whiteLableRoute"></param>
         /// <param name="dbContextTypes"></param>
         /// <returns></returns>
-        public async Task<WhiteLabelInfo> Initialize(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        public async Task<WhiteLabelInfo> Initialize(IHttpContextAccessor httpContext, string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
         {
             try
             {
@@ -85,11 +84,16 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                 Console.WriteLine($"WhiteLabelManager Initialize! {microserviceName} {whiteLableRoute}");
                 if (dbContextTypes.IsEmpty())
                     return CurrentWhiteLabel;
-                var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, HttpClient);
+                HttpClient httpClient = new HttpClient();
+                if (httpContext?.HttpContext != null && httpContext.HttpContext.Request.Headers.TryGetValue("Authorization", out var authorizationHeader))
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authorizationHeader.ToString().Replace("Bearer ", ""));
+                }
+                var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, httpClient);
                 var whiteLabels = await whiteLabelClient.GetAllAsync().AsCheckedResult(x => x.Result).ConfigureAwait(false);
                 var defaultUniqueIdentity = GetDefaultUniqueIdentity(whiteLabels, null);
 
-                var microserviceClient = new WhiteLables.GeneratedServices.MicroserviceClient(whiteLableRoute, HttpClient);
+                var microserviceClient = new WhiteLables.GeneratedServices.MicroserviceClient(whiteLableRoute, httpClient);
                 var microservices = await microserviceClient.GetAllAsync().ConfigureAwait(false);
                 var foundMicroservice = microservices.Result.FirstOrDefault(x => x.Name.Equals(microserviceName, StringComparison.OrdinalIgnoreCase));
                 if (foundMicroservice == null)
@@ -113,7 +117,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
                 var uniqueIdentityManager = new UnitOfWork(_serviceProvider).GetUniqueIdentityManager() as DefaultUniqueIdentityManager;
 
-                var microserviceContextTableClient = new WhiteLables.GeneratedServices.MicroserviceContextTableClient(whiteLableRoute, HttpClient);
+                var microserviceContextTableClient = new WhiteLables.GeneratedServices.MicroserviceContextTableClient(whiteLableRoute, httpClient);
                 var microserviceContextTables = await microserviceContextTableClient.GetAllAsync().ConfigureAwait(false);
 
                 HashSet<string> addedInWhitLabels = new HashSet<string>();
@@ -125,7 +129,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
                 foreach (var contextType in dbContextTypes)
                 {
-                    var contextTableClient = new WhiteLables.GeneratedServices.ContextTableClient(whiteLableRoute, HttpClient);
+                    var contextTableClient = new WhiteLables.GeneratedServices.ContextTableClient(whiteLableRoute, httpClient);
                     var contextTables = await contextTableClient.GetAllAsync().ConfigureAwait(false);
                     using var instanceOfContext = _serviceProvider.GetService(contextType) as DbContext;
                     string contextName = uniqueIdentityManager.GetContextName(contextType);

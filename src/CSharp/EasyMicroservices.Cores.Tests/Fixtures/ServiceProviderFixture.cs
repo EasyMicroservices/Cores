@@ -35,6 +35,7 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
             });
             StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:6041");
             serviceCollection.AddTransient<IBaseUnitOfWork, UnitOfWork>();
+            serviceCollection.AddHttpContextAccessor();
             ServiceProvider = serviceCollection.BuildServiceProvider();
             using (var scope = ServiceProvider.CreateAsyncScope())
             {
