@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
-    <Version>0.0.0.55</Version>
+    <Version>0.0.0.56</Version>
     <Description>ef core of Relational database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database,ef,efcore,Relational</PackageTags>
