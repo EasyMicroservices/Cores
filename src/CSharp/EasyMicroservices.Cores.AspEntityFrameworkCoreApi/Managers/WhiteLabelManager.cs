@@ -135,7 +135,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                     string contextName = uniqueIdentityManager.GetContextName(contextType);
                     foreach (var entityType in instanceOfContext.Model.GetEntityTypes())
                     {
-                        string tableName = entityType.ServiceOnlyConstructorBinding.RuntimeType.Name;
+                        string tableName = entityType.GetTableName();
                         var tableFullName = uniqueIdentityManager.GetContextTableName(foundMicroservice.Id, contextType.Name, tableName);
                         if (!addedInWhitLabels.Contains(tableFullName))
                         {
