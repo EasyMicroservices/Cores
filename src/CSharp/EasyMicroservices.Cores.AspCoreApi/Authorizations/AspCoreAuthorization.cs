@@ -1,5 +1,4 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
-using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using EasyMicroservices.Utilities.Collections.Generic;
@@ -46,15 +45,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// <exception cref="NotImplementedException"></exception>
         public async Task<MessageContract> CheckIsAuthorized(HttpContext httpContext)
         {
-            try
-            {
-                var result = await httpContext.AuthenticateAsync("Bearer");
-                await httpContext.SignInAsync("Bearer", result.Principal);
-            }
-            catch (Exception exxx)
-            {
-                var qq = exxx;
-            }
+            await httpContext.AuthenticateAsync("Bearer");
             var hasPermission = await HasPermission(httpContext);
             if (!hasPermission.IsSuccess)
                 return hasPermission.ToContract();
@@ -72,7 +63,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         static readonly ConcurrentTreeDictionary TreeDictionary = new ConcurrentTreeDictionary();
         async Task<MessageContract> FetchData(string roleName)
         {
-            var servicePermissionClient = new Authentications.GeneratedServices.ServicePermissionClient(AuthenticationRouteAddress, new System.Net.Http.HttpClient());
+            var httpClient = new System.Net.Http.HttpClient();
+            var servicePermissionClient = new Authentications.GeneratedServices.ServicePermissionClient(AuthenticationRouteAddress, httpClient);
             var permissionsResult = await servicePermissionClient.GetAllPermissionsByAsync(new Authentications.GeneratedServices.ServicePermissionRequestContract()
             {
                 MicroserviceName = await GetMicroserviceName(),
