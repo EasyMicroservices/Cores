@@ -372,6 +372,26 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="microserviceName"></param>
+        /// <param name="dbContextTypes"></param>
+        /// <returns></returns>
+        /// <exception cref="ObjectDisposedException"></exception>
+        public virtual void Initialize(string microserviceName, params Type[] dbContextTypes)
+        {
+            if (ServiceProvider == null)
+                throw new ObjectDisposedException(nameof(ServiceProvider));
+            _InitializeWhiteLabel = (serviceProvider) =>
+            {
+                return Task.FromResult(new WhiteLabelInfo()
+                {
+                    MicroserviceName = microserviceName
+                });
+            };
+        }
+
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>()
           where TResponseContract : class
           where TEntity : class

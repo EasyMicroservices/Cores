@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi.Authorizations;
+using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
@@ -7,10 +8,11 @@ using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -215,11 +217,30 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <typeparam name="TContext"></typeparam>
         /// <param name="app"></param>
         /// <param name="useGlobalExceptionHandling"></param>
-        /// <param name="useAuthorization"></param>
         /// <returns></returns>
-        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false, bool useAuthorization = false)
+        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false)
             where TContext : RelationalCoreContext
         {
+            var useAuth = app.Configuration["Authorization:Use"];
+            var useAuthorization = useAuth.HasValue() && useAuth.Equals("true", StringComparison.OrdinalIgnoreCase);
+            if (useAuthorization)
+            {
+                app.Services.AddScoped<IAuthorization, AspCoreAuthorization>();
+                app.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = app.Configuration["Authorization:JWT:Issuer"],
+                            ValidAudience = app.Configuration["Authorization:JWT:Audience"],
+                            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(app.Configuration["Authorization:Jwt:Key"]))
+                        };
+                    });
+            }
             var build = app.Build();
             var webApp = await Use(build, useGlobalExceptionHandling, useAuthorization);
             return await Use<TContext>(webApp, useGlobalExceptionHandling, useAuthorization);
@@ -237,7 +258,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             webApplication.UseRouting();
             if (useAuthorization)
                 webApplication.UseAuthentication();
-
             if (useGlobalExceptionHandling)
             {
                 webApplication.UseExceptionHandler();
