@@ -1,7 +1,5 @@
-﻿using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
-using EasyMicroservices.Cores.Database.Managers;
+﻿using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
-using EasyMicroservices.Cores.Tests.Fixtures;
 using EasyMicroservices.ServiceContracts;
 using Newtonsoft.Json;
 
@@ -38,6 +36,14 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/AuthorizeError");
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
+            AuthorizeAssert(result);
+        }
+
+        [Fact]
+        public async Task PostAuthorizeTest()
+        {
+            var data = await HttpClient.PostAsJsonAsync($"{GetBaseUrl()}/api/user/PostAuthorizeError", "");
+            var result = JsonConvert.DeserializeObject<MessageContract>(await data.Content.ReadAsStringAsync());
             AuthorizeAssert(result);
         }
 

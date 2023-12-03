@@ -24,6 +24,13 @@ namespace EasyMicroservices.Cores.AspCore.Tests.Controllers
             return true;
         }
 
+        [Authorize]
+        [HttpPost]
+        public MessageContract PostAuthorizeError(string value)
+        {
+            return true;
+        }
+
         [HttpGet]
         public MessageContract CheckHasAccess()
         {
