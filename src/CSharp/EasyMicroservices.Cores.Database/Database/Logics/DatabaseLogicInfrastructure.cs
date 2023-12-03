@@ -37,11 +37,13 @@ namespace EasyMicroservices.Cores.Database.Logics
             _baseUnitOfWork = baseUnitOfWork;
             MapperProvider = baseUnitOfWork.GetMapper();
         }
+
         async Task<IUniqueIdentityManager> GetIUniqueIdentityManager()
         {
             await _baseUnitOfWork.InitializeWhiteLabel();
             return _baseUnitOfWork.GetUniqueIdentityManager();
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -57,6 +59,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<IEasyReadableQueryableAsync<TEntity>> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
+            if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+                return easyReadableQueryable;
             var uniqueIdentityManager = await GetIUniqueIdentityManager();
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
@@ -737,12 +741,16 @@ namespace EasyMicroservices.Cores.Database.Logics
                 }
             }
             await easyWritableQueryable.SaveChangesAsync();
-            var uniqueIdentityManager = await GetIUniqueIdentityManager();
-            if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
+            if (typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
-                await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
-                await easyWritableQueryable.SaveChangesAsync();
+                var uniqueIdentityManager = await GetIUniqueIdentityManager();
+                if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
+                {
+                    await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
+                    await easyWritableQueryable.SaveChangesAsync();
+                }
             }
+
             return result.Entity;
         }
 
@@ -769,12 +777,15 @@ namespace EasyMicroservices.Cores.Database.Logics
             }
             await easyWritableQueryable.SaveChangesAsync();
             bool anyUpdate = false;
-            var uniqueIdentityManager = await GetIUniqueIdentityManager();
-            foreach (var item in result)
+            if (typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
-                if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
+                var uniqueIdentityManager = await GetIUniqueIdentityManager();
+                foreach (var item in result)
                 {
-                    anyUpdate = true;
+                    if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
+                    {
+                        anyUpdate = true;
+                    }
                 }
             }
             if (anyUpdate)
