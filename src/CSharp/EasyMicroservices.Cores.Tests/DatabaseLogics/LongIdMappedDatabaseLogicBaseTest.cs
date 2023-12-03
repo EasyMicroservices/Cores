@@ -122,18 +122,35 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.Equal(user.Result, foundUser.Result.Id);
             Assert.Equal(addUser.UserName, foundUser.Result.UserName);
             Assert.NotEmpty(foundUser.Result.UniqueIdentity);
+            CheckUniqueIdentity(foundUser.Result.UniqueIdentity);
             var allUsers = await logic.GetAll();
             Assert.Contains(allUsers.Result, x => x.Id == user.Result);
             var allFilterUsers = await logic.Filter(new FilterRequestContract()
             {
                 IsDeleted = false
             });
+            CheckUniqueIdentity(allFilterUsers.Result.Select(x=>x.UniqueIdentity));
             Assert.True(allFilterUsers.Result.All(x => allUsers.Result.Any(i => x.Id == i.Id)));
             Assert.True(allFilterUsers.TotalCount > 0);
             var ids = DefaultUniqueIdentityManager.DecodeUniqueIdentity(foundUser.Result.UniqueIdentity);
             Assert.Equal(ids.Last(), foundUser.Result.Id);
             Assert.Equal(TableContextId, ids[^2]);
             return foundUser.Result;
+        }
+
+        void CheckUniqueIdentity(string uniqueIdentity)
+        {
+            Assert.False(uniqueIdentity.Contains("-0-"));
+            Assert.False(uniqueIdentity.EndsWith("-0"));
+            Assert.False(uniqueIdentity.StartsWith("0"));
+        }
+
+        void CheckUniqueIdentity(IEnumerable<string> uniqueIdentities)
+        {
+            foreach (var item in uniqueIdentities)
+            {
+                CheckUniqueIdentity(item);
+            }
         }
 
         [Fact]
@@ -214,6 +231,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 UniqueIdentity = user.Result.UniqueIdentity,
                 UserId = userId
             });
+            CheckUniqueIdentity(addedProfile.Result.UniqueIdentity);
             return addedProfile.Result;
         }
 
@@ -239,6 +257,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             {
                 Id = added.Id
             });
+            CheckUniqueIdentity(found.Result.UniqueIdentity);
             Assert.NotNull(found.Result.ModificationDateTime);
             Assert.Equal(found.Result.CreationDateTime, added.CreationDateTime);
             Assert.True(found.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
@@ -259,6 +278,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 UniqueIdentity = added.UniqueIdentity,
                 UserName = default
             });
+            CheckUniqueIdentity(updateResult.Result.UniqueIdentity);
             Assert.NotNull(updateResult.Result.ModificationDateTime);
             Assert.Equal(updateResult.Result.CreationDateTime, added.CreationDateTime);
             Assert.True(updateResult.Result.CreationDateTime > DateTime.Now.AddMinutes(-5));
@@ -374,6 +394,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 UniqueIdentity = added.UniqueIdentity
             });
             Assert.Equal(found.Result.UserName, userName);
+            CheckUniqueIdentity(found.Result.UniqueIdentity);
 
             var foundAll = await logic.GetAllByUniqueIdentity(new GetUniqueIdentityRequestContract()
             {
@@ -390,6 +411,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             {
                 UniqueIdentity = added.UniqueIdentity
             });
+            CheckUniqueIdentity(foundAllProfiles.Result.Select(x=>x.UniqueIdentity));
             Assert.Contains(foundAllProfiles.Result, x => x.FirstName.StartsWith("Ali"));
             Assert.Equal(foundAllProfiles.Result.Count, 10);
 
@@ -398,6 +420,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 UniqueIdentity = added.UniqueIdentity
             }, default, q => q.Where(x => x.FirstName == "Ali5"));
             Assert.Contains(foundAllProfiles.Result, x => x.FirstName == "Ali5");
+            CheckUniqueIdentity(onlyUniqueIdentity.Result.UniqueIdentity);
         }
 
         [Theory]
@@ -595,16 +618,19 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.True(allResult.HasItems);
             Assert.True(chilren.All(x => allResult.Result.Any(y => y.Name == x)));
             Assert.True(allResult.Result.Any(y => y.Name == parentName));
+            CheckUniqueIdentity(allResult.Result.Select(x => x.UniqueIdentity));
 
             var onlyChildrenResult = await logic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChilren);
             Assert.True(onlyChildrenResult.HasItems);
             Assert.True(chilren.All(x => onlyChildrenResult.Result.Any(y => y.Name == x)));
             Assert.True(!onlyChildrenResult.Result.Any(y => y.Name == parentName));
+            CheckUniqueIdentity(onlyChildrenResult.Result.Select(x => x.UniqueIdentity));
 
             var onlyParentResult = await logic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyParent);
             Assert.True(onlyParentResult.HasItems);
             Assert.True(chilren.All(x => !onlyParentResult.Result.Any(y => y.Name == x)));
             Assert.True(onlyParentResult.Result.Any(y => y.Name == parentName));
+            CheckUniqueIdentity(onlyParentResult.Result.Select(x => x.UniqueIdentity));
         }
 
         [Theory]
@@ -657,11 +683,13 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.True(onlyChildrenResult.HasItems);
             Assert.True(chilren.All(x => onlyChildrenResult.Result.Any(y => y.Name == "Subcject" + x)));
             Assert.True(!onlyChildrenResult.Result.Any(y => y.Name == "Subcject" + parentName));
+            CheckUniqueIdentity(onlyChildrenResult.Result.Select(x => x.UniqueIdentity));
 
             var onlyParentResult = await subjectlogic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyParent);
             Assert.True(onlyParentResult.HasItems);
             Assert.True(chilren.All(x => !onlyParentResult.Result.Any(y => y.Name == "Subcject" + x)));
             Assert.True(onlyParentResult.Result.Any(y => y.Name == "Subcject" + parentName));
+            CheckUniqueIdentity(onlyParentResult.Result.Select(x => x.UniqueIdentity));
         }
     }
 }
