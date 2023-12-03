@@ -54,10 +54,10 @@ namespace EasyMicroservices.Cores.Database.Logics
                 throw new NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
         }
 
-        private IEasyReadableQueryableAsync<TEntity> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
+        private async Task<IEasyReadableQueryableAsync<TEntity>> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
-            var uniqueIdentityManager = _baseUnitOfWork.GetUniqueIdentityManager();
+            var uniqueIdentityManager = await GetIUniqueIdentityManager();
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
                 uniqueIdentity += "-";
@@ -253,7 +253,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
             where TContract : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
+            IEasyReadableQueryableAsync<TEntity> queryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
             var entityResult = await GetBy(queryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToContract<TContract>();
@@ -289,8 +289,8 @@ namespace EasyMicroservices.Cores.Database.Logics
 
             if (filterRequest.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
-                queryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
-                countQueryable = UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
+                queryable = await UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
+                countQueryable = await UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
             }
             if (filterRequest.FromCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
             {
@@ -411,7 +411,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
             where TContract : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
+            IEasyReadableQueryableAsync<TEntity> queryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
             var entityResult = await GetAll(queryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToAnotherListContract<TContract>();
