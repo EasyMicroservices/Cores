@@ -13,6 +13,10 @@ namespace EasyMicroservices.Cores.Clients
         /// <param name="settings"></param>
         public CoreSerializerSettings(JsonSerializerSettings settings)
         {
+            settings.Error = (sender, e) =>
+            {
+                e.ErrorContext.Handled = true;
+            };
             this.ContractResolver = new CoreContractResolver();
         }
     }
