@@ -12,7 +12,7 @@
     <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.15" />
     <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.6" />
     <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.3" />
-    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.6" />
+    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.8" />
     <PackageReference Include="EasyMicroservices.Tests" Version="0.0.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
