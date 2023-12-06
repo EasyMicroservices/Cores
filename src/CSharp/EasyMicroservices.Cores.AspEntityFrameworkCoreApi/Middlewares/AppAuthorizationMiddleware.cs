@@ -100,7 +100,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares
         {
             context.Response.ContentType = MediaTypeNames.Application.Json;
             context.Response.StatusCode = (int)HttpStatusCode.OK;
-            MessageContract response = exception is InvalidResultOfMessageContractException ex ? ex.MessageContract : exception;
+            MessageContract response;
+            if (exception is InvalidResultOfMessageContractException ex)
+            {
+                response = ex.MessageContract;
+                response.Error.StackTrace.Add(ex.Message);
+                response.Error.StackTrace.AddRange(ex.StackTrace.ToListStackTrace());
+            }
+            else
+                response = exception;
             if (exception.Message.Contains("Authenti", StringComparison.OrdinalIgnoreCase) && response.Error.FailedReasonType != FailedReasonType.AccessDenied)
                 response.Error.FailedReasonType = FailedReasonType.SessionAccessDenied;
             response.Error.ServiceDetails.MethodName = context.Request.Path.ToString();

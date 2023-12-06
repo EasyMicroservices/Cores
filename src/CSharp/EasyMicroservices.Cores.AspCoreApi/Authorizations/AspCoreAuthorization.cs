@@ -101,7 +101,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             string actionName = httpContext.Request.RouteValues["action"].ToString();
             List<Claim> roleClaims = httpContext.User.FindAll(ClaimTypes.Role).ToList();
             if (roleClaims.Count == 0)
-                return (FailedReasonType.AccessDenied, "There is no claim role founded! did you forgot to use services.AddAuthentication? or did you set Bearer for authorize?");
+                return (FailedReasonType.AccessDenied, $"There is no claim role founded! did you forgot to use services.AddAuthentication? or did you set Bearer for authorize? controllerName: {controllerName} actionName: {actionName}");
             if (!roleClaims.All(x => CachedPermissions.ContainsKey(x.Value)))
             {
                 foreach (var role in roleClaims)
