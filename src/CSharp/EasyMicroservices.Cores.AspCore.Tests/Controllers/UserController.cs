@@ -64,6 +64,15 @@ namespace EasyMicroservices.Cores.AspCore.Tests.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
+        public MessageContract<string> AsCheckedResult()
+        {
+            MessageContract<string> msg = FailedReasonType.Incorrect;
+            msg.GetCheckedResult();
+            return "success";
+        }
+
+        [HttpGet]
         public MessageContract InternalError()
         {
             throw new Exception("Internal Error!");

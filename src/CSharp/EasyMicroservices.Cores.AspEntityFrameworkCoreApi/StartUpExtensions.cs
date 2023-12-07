@@ -10,6 +10,7 @@ using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -211,15 +212,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return app.Build();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="app"></param>
-        /// <param name="useGlobalExceptionHandling"></param>
-        /// <returns></returns>
-        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false)
-            where TContext : RelationalCoreContext
+        static bool PreBuild(WebApplicationBuilder app)
         {
             var useAuth = app.Configuration["Authorization:Use"];
             var useAuthorization = useAuth.HasValue() && useAuth.Equals("true", StringComparison.OrdinalIgnoreCase);
@@ -241,7 +234,50 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                         };
                     });
             }
+            return useAuthorization;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="app"></param>
+        /// <param name="useGlobalExceptionHandling"></param>
+        /// <returns></returns>
+        public static async Task<WebApplication> Build<TContext>(this WebApplicationBuilder app, bool useGlobalExceptionHandling = false)
+            where TContext : RelationalCoreContext
+        {
+            var useAuthorization = PreBuild(app);
             var build = app.Build();
+            var webApp = await Use(build, useGlobalExceptionHandling, useAuthorization);
+            return await Use<TContext>(webApp, useGlobalExceptionHandling, useAuthorization);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="app"></param>
+        /// <param name="corsSettings"></param>
+        /// <param name="useGlobalExceptionHandling"></param>
+        /// <returns></returns>
+        public static async Task<WebApplication> BuildWithUseCors<TContext>(this WebApplicationBuilder app, Action<CorsPolicyBuilder> corsSettings, bool useGlobalExceptionHandling = false)
+            where TContext : RelationalCoreContext
+        {
+            var useAuthorization = PreBuild(app);
+            var build = app.Build();
+            build.UseCors(options =>
+            {
+                if (corsSettings != null)
+                    corsSettings(options);
+                else
+                {
+                    options.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                }
+            });
             var webApp = await Use(build, useGlobalExceptionHandling, useAuthorization);
             return await Use<TContext>(webApp, useGlobalExceptionHandling, useAuthorization);
         }
