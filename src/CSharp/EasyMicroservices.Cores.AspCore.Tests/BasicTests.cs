@@ -40,6 +40,17 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         }
 
         [Fact]
+        public async Task AsCheckedResult()
+        {
+            var data = await HttpClient.GetStringAsync($"{GetBaseUrl()}/api/user/AsCheckedResult");
+            var result = JsonConvert.DeserializeObject<MessageContract<string>>(data);
+            if (result.Error.FailedReasonType == FailedReasonType.SessionAccessDenied)
+                return;
+            Assert.True(result.Error.FailedReasonType == FailedReasonType.Incorrect);
+            Assert.True(result.Error.StackTrace.Any(x => x.Contains("AsCheckedResult")));
+        }
+
+        [Fact]
         public async Task PostAuthorizeTest()
         {
             var data = await HttpClient.PostAsJsonAsync($"{GetBaseUrl()}/api/user/PostAuthorizeError", "");
