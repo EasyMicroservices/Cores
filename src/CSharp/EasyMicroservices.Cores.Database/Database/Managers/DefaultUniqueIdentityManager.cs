@@ -25,6 +25,7 @@ namespace EasyMicroservices.Cores.Database.Managers
 
         readonly WhiteLabelInfo _whiteLabelInfo;
         Dictionary<string, long> TableIds { get; set; } = new Dictionary<string, long>();
+        Dictionary<Type, string> TableNames { get; set; } = new Dictionary<Type, string>();
         /// <summary>
         /// 
         /// </summary>
@@ -59,6 +60,16 @@ namespace EasyMicroservices.Cores.Database.Managers
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="name"></param>
+        public void AddTableName(Type type,string name)
+        {
+            TableNames.Add(type, name);
         }
 
         /// <summary>
@@ -154,7 +165,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <returns></returns>
         public string GetContextTableName<TEntity>(Type contextType, long microserviceId)
         {
-            return GetContextTableName(microserviceId, GetContextName(contextType), typeof(TEntity).Name);
+            return GetContextTableName(microserviceId, GetContextName(contextType), GetTableName(typeof(TEntity)));
         }
 
         /// <summary>
@@ -174,7 +185,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <returns></returns>
         public string GetTableName(Type tableType)
         {
-            return tableType.Name;
+            return TableNames[tableType];
         }
 
         /// <summary>
