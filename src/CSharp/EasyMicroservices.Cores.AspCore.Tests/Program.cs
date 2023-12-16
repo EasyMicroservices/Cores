@@ -2,6 +2,7 @@
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
@@ -18,7 +19,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.Builder<MyTestContext>();
             app.Services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
-            app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder>(serviceProvider => new DatabaseBuilder());
+            app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
             app.Services.AddSingleton(service => new WhiteLabelManager(service));
             app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
@@ -31,11 +32,18 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         }
     }
 
-    public class DatabaseBuilder : IEntityFrameworkCoreDatabaseBuilder
+    public class DatabaseBuilder : EntityFrameworkCoreDatabaseBuilder
     {
-        public void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public DatabaseBuilder(IConfiguration configuration) : base(configuration)
         {
-            optionsBuilder.UseInMemoryDatabase("Test DB");
+        }
+
+        public override void OnConfiguring(DbContextOptionsBuilder optionsBuilder, string name)
+        {
+            if (name == "InMemoryDatabase")
+                optionsBuilder.UseInMemoryDatabase("Test DB");
+            else
+                optionsBuilder.UseInMemoryDatabase("Test DB");
         }
     }
 }

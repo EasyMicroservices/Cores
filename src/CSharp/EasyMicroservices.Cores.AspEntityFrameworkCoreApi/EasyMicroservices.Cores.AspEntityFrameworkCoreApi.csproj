@@ -17,11 +17,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="0.0.0.6" />
-    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="0.0.0.8" />
-    <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="0.0.0.3" />
+    <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="*" />
+    <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="*" />
+    <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    <PackageReference Include="EasyMicroservices.WhiteLabelsMicroservice.Clients" Version="0.0.0.11" />
+    <PackageReference Include="EasyMicroservices.WhiteLabelsMicroservice.Clients" Version="*" />
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net7.0' ">

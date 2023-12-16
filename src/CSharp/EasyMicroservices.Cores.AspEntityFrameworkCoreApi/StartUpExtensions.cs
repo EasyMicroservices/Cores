@@ -82,15 +82,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return services;
         }
 
-        //static string GetUniqueIdentityFromHttpContext(HttpContext httpContext)
-        //{
-        //    httpContext.ThrowIfNull(nameof(httpContext));
-        //    var uniqueIdentity = httpContext.User.FindFirst(nameof(IUniqueIdentitySchema.UniqueIdentity));
-        //    if (uniqueIdentity == null || uniqueIdentity.Value.IsNullOrEmpty())
-        //        return UnitOfWork.DefaultUniqueIdentity;
-        //    return uniqueIdentity.Value;
-        //}
-
         /// <summary>
         /// 
         /// </summary>

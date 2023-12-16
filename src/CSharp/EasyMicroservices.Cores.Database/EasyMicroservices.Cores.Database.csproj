@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.17" />
-    <PackageReference Include="EasyMicroservices.Mapper" Version="0.0.0.5" />
-    <PackageReference Include="EasyMicroservices.ServiceContracts" Version="0.0.0.21" />
-    <PackageReference Include="EasyMicroservices.Utilities" Version="0.0.0.13" />
+    <PackageReference Include="EasyMicroservices.Database" Version="*" />
+    <PackageReference Include="EasyMicroservices.Mapper" Version="*" />
+    <PackageReference Include="EasyMicroservices.ServiceContracts" Version="*" />
+    <PackageReference Include="EasyMicroservices.Utilities" Version="*" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.AuthenticationsMicroservice.Clients" Version="0.0.0.17" />
+    <PackageReference Include="EasyMicroservices.AuthenticationsMicroservice.Clients" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
