@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.AspCoreApi.Authorizations;
+﻿using EasyMicroservices.ContentsMicroservice.Clients.Helpers;
+using EasyMicroservices.Cores.AspCoreApi.Authorizations;
 using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
@@ -20,6 +21,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -79,6 +81,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             {
                 option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
             });
+            services.AddSingleton<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(service.GetService<IConfiguration>().GetValue<string>("RootAddresses:Content"), new HttpClient()));
+            services.AddSingleton<ContentLanguageHelper>();
+            services.AddSingleton<IContentResolver, InternalContentResolver>();
             return services;
         }
 

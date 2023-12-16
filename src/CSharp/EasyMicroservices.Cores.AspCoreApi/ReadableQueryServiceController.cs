@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Contracts.Requests;
+﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
@@ -19,20 +20,22 @@ namespace EasyMicroservices.Cores.AspCoreApi
     /// <typeparam name="TId"></typeparam>
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class ReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId> : ControllerBase
-        where TResponseContract : class
-        where TEntity : class
-        where TFilterContract : FilterRequestContract
+    public class ReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId> :
+        ControllerBase, IReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId, IdRequestContract<TId>, UniqueIdentityRequestContract>
+            where TResponseContract : class
+            where TEntity : class
+            where TFilterContract : FilterRequestContract
     {
         /// <summary>
         /// 
         /// </summary>
-        protected virtual IContractReadableLogic<TEntity, TResponseContract, TId> ContractLogic { get; private set; }
+        public virtual IContractReadableLogic<TEntity, TResponseContract, TId> ContractLogic { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        protected virtual IBaseUnitOfWork UnitOfWork { get; }
+        public virtual IBaseUnitOfWork UnitOfWork { get; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -68,7 +71,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TId> request, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TId> request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetById(request, OnGetQuery(), cancellationToken);
         }
@@ -80,7 +83,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(UniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetByUniqueIdentity(request, request.Type, OnGetQuery(), cancellationToken);
         }
@@ -115,7 +118,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(GetUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
+        public virtual Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(UniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetAllByUniqueIdentity(request, request.Type, OnGetAllQuery(), cancellationToken);
         }
@@ -124,7 +127,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// 
         /// </summary>
         /// <returns></returns>
-        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery()
+        public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery()
         {
             return null;
         }
@@ -133,7 +136,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// 
         /// </summary>
         /// <returns></returns>
-        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
+        public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
         {
             return null;
         }

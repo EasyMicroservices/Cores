@@ -67,6 +67,6 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// <summary>
         /// en-US, fa-IR
         /// </summary>
-        public string Language { get; set; }
+        public string LanguageShortName { get; set; }
     }
 }

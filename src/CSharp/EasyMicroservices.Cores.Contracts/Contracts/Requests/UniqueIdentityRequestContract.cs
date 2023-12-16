@@ -6,7 +6,7 @@ namespace EasyMicroservices.Cores.Contracts.Requests
     /// <summary>
     /// 
     /// </summary>
-    public class GetUniqueIdentityRequestContract : IUniqueIdentitySchema
+    public class UniqueIdentityRequestContract : IUniqueIdentitySchema
     {
         /// <summary>
         /// 
@@ -21,9 +21,9 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// 
         /// </summary>
         /// <param name="uniqueIdentity"></param>
-        public static implicit operator GetUniqueIdentityRequestContract(string uniqueIdentity)
+        public static implicit operator UniqueIdentityRequestContract(string uniqueIdentity)
         {
-            return new GetUniqueIdentityRequestContract()
+            return new UniqueIdentityRequestContract()
             {
                 UniqueIdentity = uniqueIdentity
             };

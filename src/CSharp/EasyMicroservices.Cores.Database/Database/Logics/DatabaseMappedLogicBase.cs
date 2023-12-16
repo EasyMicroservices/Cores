@@ -3,9 +3,9 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
-using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -76,7 +76,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TResponseContract> contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TResponseContract> contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }
@@ -119,10 +119,14 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TResponseContract>> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
         {
-            var result = await Add(_easyWriteableQueryable, request, cancellationToken);
-            return result;
+            var result = await AddBulk(_easyWriteableQueryable, request, cancellationToken);
+            if (!result)
+                return result.ToListContract<TResponseContract>();
+            var mapped = await MapAsync<List<TResponseContract>, List<TEntity>>(result.Result);
+            ValidateMappedResult(ref mapped);
+            return mapped;
         }
 
         /// <summary>
@@ -186,7 +190,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }

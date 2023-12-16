@@ -74,7 +74,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         [HttpPost]
         public virtual Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
         {
-            return WritableContractLogic.AddBulk(request, cancellationToken);
+            return WritableContractLogic.AddBulk(request, cancellationToken).ToContract();
         }
 
         /// <summary>

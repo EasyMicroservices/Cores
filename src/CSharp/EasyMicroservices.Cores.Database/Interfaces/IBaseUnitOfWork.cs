@@ -38,6 +38,11 @@ namespace EasyMicroservices.Cores.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        IContentResolver GetContentResolver();
+        /// <summary>
+        /// 
+        /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongLogic<TEntity>()
