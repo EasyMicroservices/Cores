@@ -1,8 +1,6 @@
 ﻿using EasyMicroservices.ContentsMicroservice.Clients.Helpers;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
-using System;
-using System.Collections;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi;

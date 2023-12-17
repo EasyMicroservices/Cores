@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Managers
 {
@@ -67,7 +66,7 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// </summary>
         /// <param name="type"></param>
         /// <param name="name"></param>
-        public void AddTableName(Type type,string name)
+        public void AddTableName(Type type, string name)
         {
             TableNames.Add(type, name);
         }

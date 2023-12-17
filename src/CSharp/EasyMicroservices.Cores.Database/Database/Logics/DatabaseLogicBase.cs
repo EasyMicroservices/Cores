@@ -1,8 +1,6 @@
 ﻿using EasyMicroservices.Cores.Contracts.Requests;
-using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
-using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
 using System.Linq;
@@ -224,7 +222,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract> HardDeleteBy(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return HardDeleteBy(_easyWriteableQueryable, predicate, cancellationToken);
+            return HardDeleteBy<TEntity, TId>(_easyWriteableQueryable, predicate, cancellationToken);
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ using EasyMicroservices.Mapper.CompileTimeMapper.Interfaces;
 using EasyMicroservices.Mapper.CompileTimeMapper.Providers;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
+using EasyMicroservices.Serialization.Interfaces;
 using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
@@ -416,6 +418,28 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
           where TEntity : class
         {
             return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ITextSerializationProvider GetTextSerialization()
+        {
+            return ServiceProvider.GetService<ITextSerializationProvider>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> GetCurrentUserUniqueIdentity()
+        {
+            await InitializeWhiteLabel();
+            var httpContext =  ServiceProvider.GetService<IHttpContextAccessor>()?.HttpContext;
+            if (httpContext != null)
+                return httpContext.User.FindFirst(nameof(IUniqueIdentitySchema.UniqueIdentity))?.Value;
+            return null;
         }
 
         /// <summary>

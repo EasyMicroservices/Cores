@@ -5,7 +5,9 @@ using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
 using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.EntityFrameworkCore;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
@@ -123,6 +125,17 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                     }
                 });
             });
+            return services;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection UseActivityChangeLog(this IServiceCollection services)
+        {
+            ActivityChangeLogLogic.UseActivityChangeLog = true;
             return services;
         }
 
