@@ -3,9 +3,9 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
-using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -77,7 +77,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
             return await GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, idRequest, func, cancellationToken);
@@ -122,9 +122,22 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TId>> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
         {
-            return AddBulk(_easyWriteableQueryable, request, cancellationToken);
+            var result = await AddBulk(_easyWriteableQueryable, request, cancellationToken);
+            if (result)
+            {
+                List<TId> items = new List<TId>();
+                foreach (var item in result.Result)
+                {
+                    if (item is IIdSchema<TId> schema)
+                        items.Add(schema.Id);
+                    else
+                        items.Add(MapperProvider.Map<TId>(item));
+                }
+                return items;
+            }
+            return result.ToListContract<TId>();
         }
 
         /// <summary>
@@ -182,7 +195,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="idRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetById(GetIdRequestContract<TId> idRequest, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TId> idRequest, CancellationToken cancellationToken = default)
         {
             return GetById<TEntity, TResponseContract, TId>(_easyReadableQueryable, idRequest, null, cancellationToken);
         }

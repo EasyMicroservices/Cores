@@ -103,7 +103,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<MessageContract<TEntity>> GetById<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetIdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+        protected async Task<MessageContract<TEntity>> GetById<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
@@ -230,7 +230,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task<MessageContract<TContract>> GetById<TEntity, TContract, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetIdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+        protected async Task<MessageContract<TContract>> GetById<TEntity, TContract, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
             where TContract : class
         {
@@ -762,7 +762,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="entities"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> AddBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TEntity>> AddBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
@@ -793,7 +793,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), false, true, true, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
             }
-            return true;
+            return result.Select(x => x.Entity).ToList();
         }
 
         /// <summary>
@@ -822,7 +822,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, CreateBulkRequestContract<TContract> request, CancellationToken cancellationToken = default)
+        public async Task<ListMessageContract<TEntity>> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, CreateBulkRequestContract<TContract> request, CancellationToken cancellationToken = default)
            where TEntity : class
         {
             var entities = await MapToListAsync<TEntity, TContract>(request.Items);

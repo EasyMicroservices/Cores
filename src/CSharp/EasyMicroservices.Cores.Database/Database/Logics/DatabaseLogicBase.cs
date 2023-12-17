@@ -61,7 +61,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="idRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetById(GetIdRequestContract<TId> idRequest, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TEntity>> GetById(IdRequestContract<TId> idRequest, CancellationToken cancellationToken = default)
         {
             return await GetById(_easyReadableQueryable, idRequest, null, cancellationToken);
         }
@@ -73,7 +73,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetById(GetIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TEntity>> GetById(IdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = null;
             if (query != null)

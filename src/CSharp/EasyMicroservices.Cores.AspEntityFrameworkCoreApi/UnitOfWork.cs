@@ -3,6 +3,7 @@ using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Database.EntityFrameworkCore.Providers;
@@ -64,6 +65,16 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             if (context == null)
                 throw new Exception("RelationalCoreContext is null, please add your context to RelationalCoreContext as Transit or Scope.\r\nExample : services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<YourDbContext>());");
             return AddDisposable(new EntityFrameworkCoreDatabaseProvider(context));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public IContentResolver GetContentResolver()
+        {
+            return ServiceProvider.GetService<IContentResolver>();
         }
 
         /// <summary>

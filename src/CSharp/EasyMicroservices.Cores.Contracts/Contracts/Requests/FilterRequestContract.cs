@@ -1,5 +1,7 @@
-﻿using EasyMicroservices.Cores.DataTypes;
+﻿using EasyMicroservices.Cores.Contracts.Common;
+using EasyMicroservices.Cores.DataTypes;
 using System;
+using System.Collections.Generic;
 
 namespace EasyMicroservices.Cores.Contracts.Requests
 {
@@ -57,11 +59,7 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// <summary>
         /// 
         /// </summary>
-        public string SortColumnNames { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsDescending { get; set; }
+        public List<SortColumnStrategyContract> SortColumnNames { get; set; }
         /// <summary>
         /// text to search
         /// </summary>
@@ -69,6 +67,6 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// <summary>
         /// en-US, fa-IR
         /// </summary>
-        public string Language { get; set; }
+        public string LanguageShortName { get; set; }
     }
 }

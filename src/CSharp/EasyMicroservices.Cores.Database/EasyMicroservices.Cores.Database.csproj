@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1;net45;net6.0;net8.0</TargetFrameworks>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
-    <Version>0.0.0.64</Version>
+    <Version>0.0.0.65</Version>
     <Description>core of database.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database</PackageTags>
@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Database" Version="0.0.0.17" />
-    <PackageReference Include="EasyMicroservices.Mapper" Version="0.0.0.5" />
-    <PackageReference Include="EasyMicroservices.ServiceContracts" Version="0.0.0.21" />
-    <PackageReference Include="EasyMicroservices.Utilities" Version="0.0.0.13" />
+    <PackageReference Include="EasyMicroservices.Database" Version="*" />
+    <PackageReference Include="EasyMicroservices.Mapper" Version="*" />
+    <PackageReference Include="EasyMicroservices.ServiceContracts" Version="*" />
+    <PackageReference Include="EasyMicroservices.Utilities" Version="*" />
   </ItemGroup>
 
   <ItemGroup>
