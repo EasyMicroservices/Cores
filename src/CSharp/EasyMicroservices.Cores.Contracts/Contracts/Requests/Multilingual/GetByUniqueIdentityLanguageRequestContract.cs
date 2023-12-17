@@ -2,7 +2,7 @@
 /// <summary>
 /// 
 /// </summary>
-public class UniqueIdentityLanguageRequestContract : UniqueIdentityRequestContract
+public class GetByUniqueIdentityLanguageRequestContract : GetByUniqueIdentityRequestContract
 {
     /// <summary>
     /// 
@@ -13,9 +13,9 @@ public class UniqueIdentityLanguageRequestContract : UniqueIdentityRequestContra
     /// 
     /// </summary>
     /// <param name="uniqueIdentity"></param>
-    public static implicit operator UniqueIdentityLanguageRequestContract(string uniqueIdentity)
+    public static implicit operator GetByUniqueIdentityLanguageRequestContract(string uniqueIdentity)
     {
-        return new UniqueIdentityLanguageRequestContract()
+        return new GetByUniqueIdentityLanguageRequestContract()
         {
             UniqueIdentity = uniqueIdentity
         };
@@ -25,9 +25,9 @@ public class UniqueIdentityLanguageRequestContract : UniqueIdentityRequestContra
     /// 
     /// </summary>
     /// <param name="input"></param>
-    public static implicit operator UniqueIdentityLanguageRequestContract((string UniqueIdentity, string LanguageShortName) input)
+    public static implicit operator GetByUniqueIdentityLanguageRequestContract((string UniqueIdentity, string LanguageShortName) input)
     {
-        return new UniqueIdentityLanguageRequestContract()
+        return new GetByUniqueIdentityLanguageRequestContract()
         {
             UniqueIdentity = input.UniqueIdentity,
             LanguageShortName = input.LanguageShortName

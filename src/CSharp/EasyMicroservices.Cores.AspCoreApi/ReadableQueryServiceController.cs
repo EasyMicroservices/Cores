@@ -21,7 +21,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
     [ApiController]
     [Route("api/[controller]/[action]")]
     public class ReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId> :
-        ControllerBase, IReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId, IdRequestContract<TId>, UniqueIdentityRequestContract>
+        ControllerBase, IReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId, GetByIdRequestContract<TId>, GetByUniqueIdentityRequestContract>
             where TResponseContract : class
             where TEntity : class
             where TFilterContract : FilterRequestContract
@@ -71,7 +71,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TId> request, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetById(GetByIdRequestContract<TId> request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetById(request, OnGetQuery(), cancellationToken);
         }
@@ -83,7 +83,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(UniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetByUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetByUniqueIdentity(request, request.Type, OnGetQuery(), cancellationToken);
         }
@@ -118,7 +118,7 @@ namespace EasyMicroservices.Cores.AspCoreApi
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(UniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
+        public virtual Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(GetByUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetAllByUniqueIdentity(request, request.Type, OnGetAllQuery(), cancellationToken);
         }

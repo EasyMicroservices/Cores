@@ -76,7 +76,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TResponseContract> contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public virtual Task<MessageContract<TResponseContract>> GetById(GetByIdRequestContract<TResponseContract> contract, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
         {
             throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }
@@ -190,7 +190,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<MessageContract<TResponseContract>> GetById(IdRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
+        public Task<MessageContract<TResponseContract>> GetById(GetByIdRequestContract<TResponseContract> contract, CancellationToken cancellationToken = default)
         {
             throw new Exception("GetById is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
         }

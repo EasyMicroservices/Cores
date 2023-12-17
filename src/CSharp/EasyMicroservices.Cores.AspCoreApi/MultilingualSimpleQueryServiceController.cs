@@ -80,7 +80,7 @@ public class MultilingualSimpleQueryServiceController<TEntity, TFilterRequestCon
         if (!messageContract)
             return messageContract;
         var contentResolver = UnitOfWork.GetContentResolver();
-        var addedItem = await GetById(new Contracts.Requests.Multilingual.IdLanguageRequestContract<TId> { Id = messageContract })
+        var addedItem = await GetById(new Contracts.Requests.Multilingual.GetByIdLanguageRequestContract<TId> { Id = messageContract })
                     .AsCheckedResult();
         foreach (var request in requests)
         {
@@ -97,7 +97,7 @@ public class MultilingualSimpleQueryServiceController<TEntity, TFilterRequestCon
         var contentResolver = UnitOfWork.GetContentResolver();
         foreach (var item in messageContract.Result)
         {
-            var addedItem = await GetById(new Contracts.Requests.Multilingual.IdLanguageRequestContract<TId> { Id = item })
+            var addedItem = await GetById(new Contracts.Requests.Multilingual.GetByIdLanguageRequestContract<TId> { Id = item })
                     .AsCheckedResult();
             foreach (var request in requests)
             {

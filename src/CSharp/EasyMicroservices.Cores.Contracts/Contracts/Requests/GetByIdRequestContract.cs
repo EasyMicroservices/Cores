@@ -6,7 +6,7 @@ namespace EasyMicroservices.Cores.Contracts.Requests
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class IdRequestContract<T> : IIdSchema<T>
+    public class GetByIdRequestContract<T> : IIdSchema<T>
     {
         /// <summary>
         /// 
@@ -16,9 +16,9 @@ namespace EasyMicroservices.Cores.Contracts.Requests
         /// 
         /// </summary>
         /// <param name="id"></param>
-        public static implicit operator IdRequestContract<T>(T id)
+        public static implicit operator GetByIdRequestContract<T>(T id)
         {
-            return new IdRequestContract<T>()
+            return new GetByIdRequestContract<T>()
             {
                 Id = id
             };

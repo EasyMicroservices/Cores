@@ -23,7 +23,7 @@ namespace EasyMicroservices.Cores.AspCoreApi;
 [ApiController]
 [Route("api/[controller]/[action]")]
 public class MultilingualReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TLanguageResponseContract, TId> :
-    ControllerBase, IReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId, IdLanguageRequestContract<TId>, UniqueIdentityLanguageRequestContract>
+    ControllerBase, IReadableQueryServiceController<TEntity, TFilterContract, TResponseContract, TId, GetByIdLanguageRequestContract<TId>, GetByUniqueIdentityLanguageRequestContract>
             where TResponseContract : class
             where TLanguageResponseContract : class
             where TEntity : class
@@ -104,7 +104,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
-    public virtual async Task<MessageContract<TResponseContract>> GetById(IdLanguageRequestContract<TId> request, CancellationToken cancellationToken = default)
+    public virtual async Task<MessageContract<TResponseContract>> GetById(GetByIdLanguageRequestContract<TId> request, CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetById(request, OnGetQuery(), cancellationToken);
         return await ResolveContentLanguage(result, request.LanguageShortName);
@@ -117,7 +117,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<MessageContract<TLanguageResponseContract>> GetByIdAllLanguage(IdRequestContract<TId> request, CancellationToken cancellationToken = default)
+    public async Task<MessageContract<TLanguageResponseContract>> GetByIdAllLanguage(GetByIdRequestContract<TId> request, CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetById(request, OnGetQuery(), cancellationToken);
         return await ResolveContentAllLanguage(result);
@@ -130,7 +130,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
-    public virtual async Task<MessageContract<TResponseContract>> GetByUniqueIdentity(UniqueIdentityLanguageRequestContract request, CancellationToken cancellationToken = default)
+    public virtual async Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetByUniqueIdentityLanguageRequestContract request, CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetByUniqueIdentity(request, request.Type, OnGetQuery(), cancellationToken);
         return await ResolveContentLanguage(result, request.LanguageShortName);
@@ -143,7 +143,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<MessageContract<TLanguageResponseContract>> GetByUniqueIdentityAllLanguage(UniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
+    public async Task<MessageContract<TLanguageResponseContract>> GetByUniqueIdentityAllLanguage(GetByUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetByUniqueIdentity(request, request.Type, OnGetQuery(), cancellationToken);
         return await ResolveContentAllLanguage(result);
@@ -206,7 +206,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
-    public virtual async Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(UniqueIdentityLanguageRequestContract request, CancellationToken cancellationToken = default)
+    public virtual async Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(GetByUniqueIdentityLanguageRequestContract request, CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetAllByUniqueIdentity(request, request.Type, OnGetAllQuery(), cancellationToken);
         return await ResolveContentLanguage(result, request.LanguageShortName);
@@ -218,7 +218,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<MessageContract<TLanguageResponseContract>> GetAllByUniqueIdentityAllLanguage(UniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
+    public async Task<MessageContract<TLanguageResponseContract>> GetAllByUniqueIdentityAllLanguage(GetByUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetAllByUniqueIdentity(request, request.Type, OnGetAllQuery(), cancellationToken);
         return await ResolveContentAllLanguage(result);
