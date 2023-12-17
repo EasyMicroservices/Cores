@@ -1,4 +1,6 @@
-﻿using EasyMicroservices.Cores.EntityFrameworkCore;
+﻿using EasyMicroservices.Cores.Database.Entities;
+using EasyMicroservices.Cores.Database.Logics;
+using EasyMicroservices.Cores.EntityFrameworkCore;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +10,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
@@ -51,10 +51,32 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         /// 
         /// </summary>
         /// <param name="modelBuilder"></param>
+        void InitActivityLog(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ActivityChangeLogEntity>(entity =>
+            {
+                entity.HasIndex(x => x.TableName);
+                entity.HasIndex(x => x.RecordIdentity);
+                entity.HasIndex(x => x.Type);
+
+                entity.HasIndex(x => x.RequesterUniqueIdentity);
+                entity.Property(x => x.RequesterUniqueIdentity)
+                .UseCollation("SQL_Latin1_General_CP1_CS_AS");
+
+                entity.ToTable("ActivityChangeLogs");
+            });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             InternalOnModelCreating(modelBuilder);
+            if (ActivityChangeLogLogic.UseActivityChangeLog)
+                InitActivityLog(modelBuilder);
         }
 
         void InternalOnModelCreating(ModelBuilder modelBuilder)
@@ -172,77 +194,6 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
             var result = new List<Type> { type };
             result.AddRange(GetAllBases(type.BaseType));
             return result.ToArray();
-        }
-
-        string[] GetSimplifyPropertyName(string name)
-        {
-            if (IrregularVerbs.TryGetValue(name, out string value))
-                return new string[] { value };
-            string entity = "es";
-            if (name.EndsWith(entity))
-                return GetEndOfCollectionNames(name[..^entity.Length]);
-            else if (name.EndsWith("s"))
-                return new string[] { name[..^1] };
-            return new string[] { name };
-        }
-
-        static readonly Dictionary<string, string> IrregularVerbs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "Man" , "Men" },
-            { "Child" , "Children" },
-            { "Parent" , "Children" },
-            { "Tooth" , "Teeth" },
-            { "Foot" , "Feet" },
-            { "Person" , "People" },
-            { "Leaf" , "Leaves" },
-            { "Mouse" , "Mice" },
-            { "Goose" , "Geese" },
-            { "Half" , "Halves" },
-            { "Knife" , "Knives" },
-            { "Wife" , "Wives" },
-            { "Life" , "Lives" },
-            { "Elf" , "Elves" },
-            { "Loaf" , "Loaves" },
-            { "Potato" , "Potatoes" },
-            { "Tomato" , "Tomatoes" },
-            { "Cactus" , "Cacti" },
-            { "Focus" , "Foci" },
-            { "Fungus" , "Fungi" },
-            { "Nucleus" , "Nuclei" },
-            { "Syllabus" , "Syllabuses" },
-            { "Analysis" , "Analyses" },
-            { "Diagnosis" , "Diagnoses" },
-            { "Oasis" , "Oases" },
-            { "Thesis" , "Theses" },
-            { "Crisis" , "Crises" },
-            { "Phenomenon" , "Phenomena" },
-            { "Criterion" , "Criteria" },
-            { "Datum" , "Data" },
-        };
-        string[] GetEndOfCollectionNames(string name)
-        {
-            List<string> names = new List<string>
-            {
-                name
-            };
-            if (name.Length < 2)
-                return names.ToArray();
-            if (name.EndsWith('i'))
-                names.Add(name[..^1] + "y");
-            if (name.EndsWith('v'))
-            {
-                names.Add(name[..^1] + "f");
-                names.Add(name[..^1] + "fe");
-            }
-            return names.ToArray();
-        }
-
-        string GetSimplifyClassName(string name)
-        {
-            string entity = "Entity";
-            if (name.EndsWith(entity))
-                return name[..^entity.Length];
-            return name;
         }
     }
 }

@@ -40,5 +40,11 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="uniqueIdentity"></param>
         /// <returns></returns>
         string GetLastTableUniqueIdentity(string uniqueIdentity);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tableType"></param>
+        /// <returns></returns>
+        string GetTableName(Type tableType);
     }
 }

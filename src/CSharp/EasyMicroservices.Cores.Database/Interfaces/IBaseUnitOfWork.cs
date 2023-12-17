@@ -2,6 +2,7 @@
 using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
+using EasyMicroservices.Serialization.Interfaces;
 using System;
 using System.Threading.Tasks;
 
@@ -29,7 +30,17 @@ namespace EasyMicroservices.Cores.Interfaces
         /// 
         /// </summary>
         /// <returns></returns>
+        ITextSerializationProvider GetTextSerialization();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         IUniqueIdentityManager GetUniqueIdentityManager();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task<string> GetCurrentUserUniqueIdentity();
         /// <summary>
         /// 
         /// </summary>

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -481,7 +482,21 @@ namespace EasyMicroservices.Cores.Database.Logics
             await easyWritableQueryable.SaveChangesAsync();
             foreach (var entity in items)
                 await easyWritableQueryable.Context.Reload(entity.Entity, cancellationToken);
-            return items.Where(x => x.Entity is TEntity).Select(x => x.Entity).Cast<TEntity>().ToList();
+
+            var respone = items.Where(x => x.Entity is TEntity).Select(x => x.Entity).Cast<TEntity>().ToList();
+            //going to update
+            if (doSkipDelete)
+            {
+                if (ActivityChangeLogLogic.UseActivityChangeLog)
+                {
+                    ActivityChangeLogType logType = entities.Count > 1 ? ActivityChangeLogType.UpdateBulk : ActivityChangeLogType.Update;
+                    await ActivityChangeLogLogic.ChangeLogAsync<TEntity, long>(respone.Select(x => ((IIdSchema<long>)x).Id).ToList(),
+                    _baseUnitOfWork,
+                    logType,
+                        cancellationToken);
+                }
+            }
+            return respone;
         }
 
         void UpdateOnlyChangedValue<TEntity>(IContext context, TEntity entity)
@@ -562,15 +577,10 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="deleteRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> HardDeleteById<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteById<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, DeleteRequestContract<TId> deleteRequest, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
-                return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
-
-            var result = await easyWritableQueryable.RemoveAllAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), cancellationToken);
-            await easyWritableQueryable.SaveChangesAsync();
-            return true;
+            return HardDeleteById<TEntity, TEntity, TId>(easyWritableQueryable, deleteRequest, cancellationToken);
         }
 
         /// <summary>
@@ -588,6 +598,11 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
                 return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
+
+            await ActivityChangeLogLogic.ChangeLogAsync<TEntity, TId>(deleteRequest.Id,
+                _baseUnitOfWork,
+                ActivityChangeLogType.HardDelete,
+                cancellationToken);
 
             var result = await easyWritableQueryable.RemoveAllAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
@@ -609,6 +624,11 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
                 return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
 
+            await ActivityChangeLogLogic.ChangeLogAsync<TEntity, TId>(deleteRequest.Ids,
+                _baseUnitOfWork,
+                ActivityChangeLogType.HardDeleteBulk,
+                cancellationToken);
+
             var result = await easyWritableQueryable.RemoveAllAsync(x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
@@ -621,9 +641,22 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> HardDeleteBy<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> HardDeleteBy<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
             where TEntity : class
         {
+            if (ActivityChangeLogLogic.UseActivityChangeLog)
+            {
+                IEasyReadableQueryableAsync<TEntity> queryable = _baseUnitOfWork.GetReadableOf<TEntity>();
+                var all = await GetAll(_baseUnitOfWork.GetReadableOf<TEntity>(),
+                    (q) => q.ConvertToReadable(queryable.Where(predicate)),
+                    cancellationToken).AsCheckedResult();
+
+                await ActivityChangeLogLogic.ChangeLogAsync<TEntity, TId>(all.Select(x => ((IIdSchema<TId>)x).Id).ToList(),
+                    _baseUnitOfWork,
+                    ActivityChangeLogType.HardDeleteBulk,
+                    cancellationToken);
+            }
+
             var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
@@ -634,13 +667,26 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> HardDeleteBy<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> HardDeleteBy<TEntity, TContract, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
            where TEntity : class
         {
+            if (ActivityChangeLogLogic.UseActivityChangeLog)
+            {
+                IEasyReadableQueryableAsync<TEntity> queryable = _baseUnitOfWork.GetReadableOf<TEntity>();
+                var all = await GetAll(_baseUnitOfWork.GetReadableOf<TEntity>(),
+                    (q) => q.ConvertToReadable(queryable.Where(predicate)),
+                    cancellationToken).AsCheckedResult();
+
+                await ActivityChangeLogLogic.ChangeLogAsync<TEntity, TId>(all.Select(x => ((IIdSchema<TId>)x).Id).ToList(),
+                    _baseUnitOfWork,
+                    ActivityChangeLogType.HardDeleteBulk,
+                    cancellationToken);
+            }
             var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
@@ -661,7 +707,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
                 return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
 
-            return await SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), deleteRequest.IsDelete, query, cancellationToken);
+            return await SoftDeleteBy<TEntity, TId>(easyReadableQueryable, easyWritableQueryable, x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), deleteRequest.IsDelete, query, cancellationToken);
         }
 
         /// <summary>
@@ -679,13 +725,14 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (!typeof(IIdSchema<TId>).IsAssignableFrom(typeof(TEntity)))
                 return (FailedReasonType.OperationFailed, $"You cannot call GetById when your entity is not inheritance from IIdSchema<TId>! Please use it for {typeof(TEntity)}");
 
-            return await SoftDeleteBy(easyReadableQueryable, easyWritableQueryable, x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id), deleteRequest.IsDelete, query, cancellationToken);
+            return await SoftDeleteBy<TEntity, TId>(easyReadableQueryable, easyWritableQueryable, x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id), deleteRequest.IsDelete, query, cancellationToken);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TId"></typeparam>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="predicate"></param>
@@ -693,12 +740,21 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> SoftDeleteBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, bool isDelete, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract> SoftDeleteBy<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, bool isDelete, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var getResult = await GetAllBy(easyReadableQueryable, predicate, query, false, cancellationToken);
             if (!getResult)
                 return getResult;
+            if (ActivityChangeLogLogic.UseActivityChangeLog)
+            {
+                ActivityChangeLogType logType = getResult.TotalCount > 1 ? ActivityChangeLogType.SoftDeleteBulk : ActivityChangeLogType.SoftDelete;
+                await ActivityChangeLogLogic.ChangeLogAsync<TEntity, TId>(getResult.Result.Select(x => ((IIdSchema<TId>)x).Id).ToList(),
+                    _baseUnitOfWork,
+                    logType,
+                    cancellationToken);
+            }
+
             foreach (var item in getResult.Result)
             {
                 if (item is ISoftDeleteSchema softDeleteSchema)
@@ -750,7 +806,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                     await easyWritableQueryable.SaveChangesAsync();
                 }
             }
-
+            await ActivityChangeLogLogic.AddAsync(result.Entity, _baseUnitOfWork);
             return result.Entity;
         }
 
@@ -793,7 +849,9 @@ namespace EasyMicroservices.Cores.Database.Logics
                 await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), false, true, true, cancellationToken);
                 await easyWritableQueryable.SaveChangesAsync();
             }
-            return result.Select(x => x.Entity).ToList();
+            var response = result.Select(x => x.Entity).ToList();
+            await ActivityChangeLogLogic.AddBuldAsync(response, _baseUnitOfWork);
+            return response;
         }
 
         /// <summary>

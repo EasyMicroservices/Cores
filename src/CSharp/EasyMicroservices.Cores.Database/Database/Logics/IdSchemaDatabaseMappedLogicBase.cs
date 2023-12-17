@@ -299,7 +299,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <returns></returns>
         public Task<MessageContract> SoftDeleteBy(Expression<Func<TEntity, bool>> predicate, bool isDelete, CancellationToken cancellationToken = default)
         {
-            return SoftDeleteBy(_easyReadableQueryable, _easyWriteableQueryable, predicate, isDelete, null, cancellationToken);
+            return SoftDeleteBy<TEntity, TId>(_easyReadableQueryable, _easyWriteableQueryable, predicate, isDelete, null, cancellationToken);
         }
 
         /// <summary>

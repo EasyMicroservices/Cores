@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Interfaces;
+﻿using EasyMicroservices.Cores.Database.Entities;
+using EasyMicroservices.Cores.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
