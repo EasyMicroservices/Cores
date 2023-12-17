@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class IdLanguageRequestContract<T> : IdRequestContract<T>
+public class GetByIdLanguageRequestContract<T> : GetByIdRequestContract<T>
 {
     /// <summary>
     /// 
@@ -13,9 +13,9 @@ public class IdLanguageRequestContract<T> : IdRequestContract<T>
     /// 
     /// </summary>
     /// <param name="id"></param>
-    public static implicit operator IdLanguageRequestContract<T>(T id)
+    public static implicit operator GetByIdLanguageRequestContract<T>(T id)
     {
-        return new IdLanguageRequestContract<T>()
+        return new GetByIdLanguageRequestContract<T>()
         {
             Id = id
         };
@@ -25,9 +25,9 @@ public class IdLanguageRequestContract<T> : IdRequestContract<T>
     /// 
     /// </summary>
     /// <param name="input"></param>
-    public static implicit operator IdLanguageRequestContract<T>((T Id, string LanguageShortName) input)
+    public static implicit operator GetByIdLanguageRequestContract<T>((T Id, string LanguageShortName) input)
     {
-        return new IdLanguageRequestContract<T>()
+        return new GetByIdLanguageRequestContract<T>()
         {
             Id = input.Id,
             LanguageShortName = input.LanguageShortName

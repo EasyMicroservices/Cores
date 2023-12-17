@@ -24,7 +24,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="idRequest"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TResultSchema>> GetById(IdRequestContract<TId> idRequest, CancellationToken cancellationToken = default);
+        Task<MessageContract<TResultSchema>> GetById(GetByIdRequestContract<TId> idRequest, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
@@ -64,7 +64,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="query"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<MessageContract<TContract>> GetById(IdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
+        Task<MessageContract<TContract>> GetById(GetByIdRequestContract<TId> idRequest, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
