@@ -185,13 +185,5 @@ namespace EasyMicroservices.Cores.Interfaces
         /// <returns></returns>
         IEasyWritableQueryableAsync<TEntity> GetWritableOf<TEntity>()
              where TEntity : class;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
-        IEasyReadableQueryableAsync<TEntity> GetReadableQueryable<TEntity>()
-            where TEntity : class;
     }
 }
