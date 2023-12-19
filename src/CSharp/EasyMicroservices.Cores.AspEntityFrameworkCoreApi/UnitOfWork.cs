@@ -244,17 +244,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
-        public virtual IEasyReadableQueryableAsync<TEntity> GetReadableQueryable<TEntity>()
-            where TEntity : class
-        {
-            return AddDisposable(GetDatabase().GetReadableOf<TEntity>());
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <typeparam name="TCreateRequestContract"></typeparam>
         /// <returns></returns>
