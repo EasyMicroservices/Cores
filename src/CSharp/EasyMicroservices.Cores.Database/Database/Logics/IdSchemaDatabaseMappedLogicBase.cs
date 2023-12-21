@@ -96,6 +96,16 @@ namespace EasyMicroservices.Cores.Database.Logics
             return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, func, cancellationToken);
         }
 
+        TId MapToTId<T>(T result)
+        {
+            if (result is IIdSchema<TId> schema)
+                return schema.Id;
+            else if (result is TId tid)
+                return tid;
+            else if ((typeof(TId) == typeof(long) || typeof(TId) == typeof(int)) && result?.GetType() != typeof(string) && (result?.GetType()?.IsClass).GetValueOrDefault())
+                throw new Exception($"I think you cannot convert TId from type {typeof(TId).Name} to type {result?.GetType()?.Name}, maybe you don't need to use LongLogic?");
+            return MapperProvider.Map<TId>(result);
+        }
 
         /// <summary>
         /// 
@@ -107,11 +117,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             var result = await Add(_easyWriteableQueryable, contract, cancellationToken);
             if (result)
-            {
-                if (result.Result is IIdSchema<TId> schema)
-                    return schema.Id;
-                return MapperProvider.Map<TId>(result.Result);
-            }
+                return MapToTId(result.Result);
             return result.ToContract<TId>();
         }
 
@@ -130,10 +136,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 List<TId> items = new List<TId>();
                 foreach (var item in result.Result)
                 {
-                    if (item is IIdSchema<TId> schema)
-                        items.Add(schema.Id);
-                    else
-                        items.Add(MapperProvider.Map<TId>(item));
+                    items.Add(MapToTId(item));
                 }
                 return items;
             }

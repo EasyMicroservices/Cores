@@ -99,6 +99,14 @@ namespace EasyMicroservices.Cores.Interfaces
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        IContractLogic<TEntity, TEntity, TEntity, TEntity, TEntity> GetLogic<TEntity>()
+           where TEntity : class;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <typeparam name="TId"></typeparam>
         /// <returns></returns>
