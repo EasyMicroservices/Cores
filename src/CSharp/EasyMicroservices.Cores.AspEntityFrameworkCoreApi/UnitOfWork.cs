@@ -121,6 +121,17 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public IContractLogic<TEntity, TEntity, TEntity, TEntity, TEntity> GetLogic<TEntity>() where TEntity : class
+        {
+            return GetInternalContractLogic<TEntity, TEntity, TEntity, TEntity, TEntity>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <returns></returns>
         public virtual IContractLogic<TEntity, TContract, TContract, TContract, long> GetLongContractLogic<TEntity, TContract>()
