@@ -2,9 +2,6 @@
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,16 +69,4 @@ public interface IReadableQueryServiceController<TEntity, TFilterContract, TResp
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<ListMessageContract<TResponseContract>> GetAllByUniqueIdentity(TUniqueIdentityRequestContract request, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    protected Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    protected Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery();
 }

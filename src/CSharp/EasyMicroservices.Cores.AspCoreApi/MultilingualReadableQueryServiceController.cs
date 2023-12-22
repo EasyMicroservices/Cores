@@ -228,7 +228,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// 
     /// </summary>
     /// <returns></returns>
-    public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery()
+    protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery()
     {
         return null;
     }
@@ -237,7 +237,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// 
     /// </summary>
     /// <returns></returns>
-    public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
+    protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
     {
         return null;
     }

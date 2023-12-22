@@ -126,7 +126,7 @@ public class MultilingualSimpleQueryServiceController<TEntity, TFilterRequestCon
         if (!messageContract)
             return messageContract;
         var contentResolver = UnitOfWork.GetContentResolver();
-        await contentResolver.UpdateToContentLanguage(requests.Where(x=> GetUniqueIdentity(x).HasValue()));
+        await contentResolver.UpdateToContentLanguage(requests.Where(x => GetUniqueIdentity(x).HasValue()));
         return messageContract;
     }
 
