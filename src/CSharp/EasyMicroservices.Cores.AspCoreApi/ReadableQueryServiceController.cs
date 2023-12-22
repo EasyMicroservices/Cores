@@ -124,19 +124,19 @@ namespace EasyMicroservices.Cores.AspCoreApi
         }
 
         /// <summary>
-        /// 
+        /// do not make it public you will break 
         /// </summary>
         /// <returns></returns>
-        public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery()
+        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetQuery()
         {
             return null;
         }
 
         /// <summary>
-        /// 
+        ///  do not make it public you will break 
         /// </summary>
         /// <returns></returns>
-        public virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
+        protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
         {
             return null;
         }
