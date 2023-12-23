@@ -141,7 +141,8 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
                             {
                                 entityTypeBuilder.HasOne(property.Name)
                                     .WithMany(findCollection.Name)
-                                    .HasForeignKey(findForeignKey.Name);
+                                    .HasForeignKey(findForeignKey.Name)
+                                    .OnDelete(DeleteBehavior.Restrict);
                                 stringBuilder.AppendLine($"{property.Name}-{findCollection.Name}-{findForeignKey.Name}");
                             }
                         }
