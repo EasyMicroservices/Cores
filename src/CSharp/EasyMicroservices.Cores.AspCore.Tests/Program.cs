@@ -16,7 +16,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             string microserviceName = "TestExample";
             var app = StartUpExtensions.Create<MyTestContext>(args);
-            app.Services.Builder<MyTestContext>();
+            app.Services.Builder<MyTestContext>(microserviceName);
             app.Services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
@@ -25,7 +25,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             {
                 return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
-            StartUpExtensions.AddWhiteLabel(microserviceName, "RootAddresses:WhiteLabel");
+            //StartUpExtensions.AddWhiteLabel(microserviceName, "RootAddresses:WhiteLabel");
             var build = await app.Build<MyTestContext>();
             build.MapControllers();
             build.Run();

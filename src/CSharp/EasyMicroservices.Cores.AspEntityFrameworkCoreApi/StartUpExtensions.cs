@@ -7,7 +7,6 @@ using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
-using EasyMicroservices.Cores.EntityFrameworkCore;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
@@ -49,12 +48,13 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <param name="services"></param>
+        /// <param name="yourMicroserviceName"></param>
         /// <param name="swaggerOptions"></param>
         /// <returns></returns>
-        public static IServiceCollection Builder<TContext>(this IServiceCollection services, Action<SwaggerGenOptions> swaggerOptions = default)
+        public static IServiceCollection Builder<TContext>(this IServiceCollection services,string yourMicroserviceName, Action<SwaggerGenOptions> swaggerOptions = default)
             where TContext : RelationalCoreContext
         {
-
+            MicroserviceName = yourMicroserviceName;
             // Add services to the container.
             //builder.Services.AddAuthorization();
             services.AddControllers();
@@ -83,7 +83,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             {
                 option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
             });
-            services.AddSingleton<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(service.GetService<IConfiguration>().GetValue<string>("RootAddresses:Content"), new HttpClient()));
+            services.AddSingleton<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(GetContentAddress(service.GetService<IConfiguration>())?.Address, new HttpClient()));
             services.AddSingleton<ContentLanguageHelper>();
             services.AddSingleton<IContentResolver, InternalContentResolver>();
             return services;
@@ -165,52 +165,20 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
-                if (WhiteLabelRoute.HasValue() || WhiteLabelConfigName.HasValue())
+                var whiteLabel = GetWhiteLabelAddress(config);
+                if (whiteLabel != null)
                 {
                     using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                    await uow.InitializeWhiteLabel(MicroserviceName, config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
+                    await uow.InitializeWhiteLabel(MicroserviceName, whiteLabel.Address, typeof(TContext)).ConfigureAwait(false);
                 }
-                if (AuthenticationConfigName.HasValue())
-                    AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);
+                    AspCoreAuthorization.AuthenticationRouteAddress = GetAuthenticationServiceAddress(config)?.Address;
             }
             var build = app.Build();
             app.Run(build);
         }
 
         private static string MicroserviceName = default;
-        private static string WhiteLabelConfigName = default;
-        private static string WhiteLabelRoute = default;
-        private static string AuthenticationConfigName = default;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="microserviceName"></param>
-        /// <param name="configName"></param>
-        public static void AddWhiteLabel(string microserviceName, string configName)
-        {
-            MicroserviceName = microserviceName;
-            WhiteLabelConfigName = configName;
-        }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="configName"></param>
-        public static void AddAuthentication(string configName)
-        {
-            AuthenticationConfigName = configName;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="microserviceName"></param>
-        /// <param name="whiteLabelRoute"></param>
-        public static void AddWhiteLabelRoute(string microserviceName, string whiteLabelRoute)
-        {
-            MicroserviceName = microserviceName;
-            WhiteLabelRoute = whiteLabelRoute;
-        }
         /// <summary>
         /// 
         /// </summary>
@@ -341,15 +309,45 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);
                 using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>() as UnitOfWork;
-                if (WhiteLabelRoute.HasValue() || WhiteLabelConfigName.HasValue())
-                {
-                    var value = WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName);
-                    await uow.InitializeWhiteLabel(MicroserviceName, WhiteLabelRoute ?? config.GetValue<string>(WhiteLabelConfigName), typeof(TContext)).ConfigureAwait(false);
-                }
-                if (AuthenticationConfigName.HasValue())
-                    AspCoreAuthorization.AuthenticationRouteAddress = config.GetValue<string>(AuthenticationConfigName);
+                var whiteLabel = GetWhiteLabelAddress(config);
+                if (whiteLabel != null)
+                    await uow.InitializeWhiteLabel(MicroserviceName, whiteLabel.Address, typeof(TContext)).ConfigureAwait(false);
+                AspCoreAuthorization.AuthenticationRouteAddress = GetAuthenticationServiceAddress(config)?.Address;
             }
             return webApplication;
+        }
+
+        static ServiceAddressInfo GetAuthenticationServiceAddress(IConfiguration config)
+        {
+            return GetAddress(config, "Authentication");
+        }
+
+        static ServiceAddressInfo GetWhiteLabelAddress(IConfiguration config)
+        {
+            return GetAddress(config, "WhiteLabel");
+        }
+
+        static ServiceAddressInfo GetContentAddress(IConfiguration config)
+        {
+            return GetAddress(config, "Content");
+        }
+
+        static ServiceAddressInfo GetAddress(IConfiguration config, string name)
+        {
+            return GetServiceAddresses(config)
+                ?.Where(x => x.Name.HasValue())
+                .FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static List<ServiceAddressInfo> ManualServiceAddresses { get; set; }
+        static List<ServiceAddressInfo> GetServiceAddresses(IConfiguration config)
+        {
+            if (ManualServiceAddresses != null)
+                return ManualServiceAddresses;
+            return config.GetSection("ServiceAddresses").Get<List<ServiceAddressInfo>>();
         }
     }
 }

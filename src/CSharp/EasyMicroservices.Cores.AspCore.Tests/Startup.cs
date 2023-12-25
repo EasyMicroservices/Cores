@@ -17,7 +17,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
             string microserviceName = "TestExample";
             var app = StartUpExtensions.Create<MyTestContext>(null);
-            app.Services.Builder<MyTestContext>();
+            app.Services.Builder<MyTestContext>(microserviceName);
             app.Services.AddTransient<IUnitOfWork>((serviceProvider) => new UnitOfWork(serviceProvider));
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
@@ -26,7 +26,14 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             {
                 return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
-            StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:6041");
+            StartUpExtensions.ManualServiceAddresses = new List<ServiceAddressInfo>()
+            {
+                new ServiceAddressInfo()
+                {
+                    Name = "WhiteLabel",
+                    Address = $"http://localhost:6041"
+                }
+            };
             app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);
             app.WebHost.UseUrls($"http://localhost:{port}");
             return app;
