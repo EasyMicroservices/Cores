@@ -74,6 +74,8 @@ public class DatabaseConfig
     /// <returns></returns>
     public bool IsSqlServer()
     {
+        if (!ProviderName.HasValue())
+            return false;
         return ProviderName.Equals("SqlServer", System.StringComparison.OrdinalIgnoreCase);
     }
 
@@ -83,6 +85,8 @@ public class DatabaseConfig
     /// <returns></returns>
     public bool IsInMemory()
     {
+        if (!ProviderName.HasValue())
+            return false;
         return ProviderName.Equals("InMemory", System.StringComparison.OrdinalIgnoreCase);
     }
 }
