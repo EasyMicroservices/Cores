@@ -16,7 +16,7 @@ public class BaseFixture
     {
         string microserviceName = "TestExample";
         WebApplicationBuilder app = StartUpExtensions.Create<MyTestContext>(null);
-        app.Services.Builder<MyTestContext>();
+        app.Services.Builder<MyTestContext>(microserviceName);
         app.Services.AddTransient<IUnitOfWork>((serviceProvider) => new UnitOfWork(serviceProvider));
         app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
         app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
@@ -27,7 +27,14 @@ public class BaseFixture
         });
         changeCollection?.Invoke(app.Services);
         await BaseWhiteLabelFixture.Run(whiteLabelPort);
-        StartUpExtensions.AddWhiteLabelRoute(microserviceName, $"http://localhost:{whiteLabelPort}");
+        StartUpExtensions.ManualServiceAddresses = new List<ServiceAddressInfo>()
+            {
+                new ServiceAddressInfo()
+                {
+                    Name = "WhiteLabel",
+                    Address = $"http://localhost:{whiteLabelPort}"
+                }
+            };
         app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);
         app.WebHost.UseUrls($"http://localhost:{port}");
         var build = await app.Build<MyTestContext>(true);
