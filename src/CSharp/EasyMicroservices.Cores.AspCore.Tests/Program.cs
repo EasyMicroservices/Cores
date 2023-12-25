@@ -38,9 +38,9 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         {
         }
 
-        public override void OnConfiguring(DbContextOptionsBuilder optionsBuilder, string name)
+        public override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (name == "InMemoryDatabase")
+            if (GetEntity().IsInMemory())
                 optionsBuilder.UseInMemoryDatabase("Test DB");
             else
                 optionsBuilder.UseInMemoryDatabase("Test DB");

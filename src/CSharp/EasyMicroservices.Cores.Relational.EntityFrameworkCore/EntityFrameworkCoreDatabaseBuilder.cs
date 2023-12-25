@@ -1,6 +1,9 @@
 ﻿using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 /// <summary>
@@ -25,15 +28,61 @@ public abstract class EntityFrameworkCoreDatabaseBuilder : IEntityFrameworkCoreD
     /// 
     /// </summary>
     /// <param name="optionsBuilder"></param>
-    public void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public abstract void OnConfiguring(DbContextOptionsBuilder optionsBuilder);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public DatabaseConfig GetEntity()
     {
-        OnConfiguring(optionsBuilder, Configuration.GetSection("Database:ProviderName").Value);
+        return GetDatabases()?
+            .Where(x => x.Name.HasValue())
+            .FirstOrDefault(x => x.Name.Equals("Entity", System.StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="optionsBuilder"></param>
-    /// <param name="name"></param>
-    public abstract void OnConfiguring(DbContextOptionsBuilder optionsBuilder, string name);
+    /// <returns></returns>
+    public virtual List<DatabaseConfig> GetDatabases()
+    {
+        return Configuration?.GetSection("Databases")?.Get<List<DatabaseConfig>>();
+    }
+}
+
+/// <summary>
+/// 
+/// </summary>
+public class DatabaseConfig
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Name { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string ProviderName { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    public string ConnectionString { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public bool IsSqlServer()
+    {
+        return ProviderName.Equals("SqlServer", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public bool IsInMemory()
+    {
+        return ProviderName.Equals("InMemory", System.StringComparison.OrdinalIgnoreCase);
+    }
 }
