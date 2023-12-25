@@ -1,6 +1,7 @@
 ﻿using EasyMicroservices.ContentsMicroservice.Clients.Helpers;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
@@ -12,10 +13,10 @@ internal class InternalContentResolver : IContentResolver
         _contentLanguageHelper = contentLanguageHelper;
     }
 
-    public Task AddToContentLanguage(params object[] item)
+    public async Task AddToContentLanguage(params object[] items)
     {
-        return _contentLanguageHelper.AddToContentLanguage(item)
-            .AsCheckedResult();
+        await Task.WhenAll((await _contentLanguageHelper.AddToContentLanguage(items))
+            .Select(x => x.AsCheckedResult()));
     }
 
     public Task ResolveContentAllLanguage(object contract)
