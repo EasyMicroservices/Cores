@@ -29,10 +29,10 @@ namespace EasyMicroservices.Cores.Clients
         /// <returns></returns>
         protected Task<HttpRequestMessage> CreateHttpRequestMessageAsync(CancellationToken cancellationToken)
         {
-            var requestMesasge = new HttpRequestMessage();
+            var requestMessage = new HttpRequestMessage();
             if (BearerToken != null)
-                requestMesasge.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", BearerToken);
-            return Task.FromResult(requestMesasge);
+                requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", BearerToken);
+            return Task.FromResult(requestMessage);
         }
     }
 }
