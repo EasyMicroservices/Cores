@@ -15,8 +15,8 @@ internal class InternalContentResolver : IContentResolver
 
     public async Task AddToContentLanguage(params object[] items)
     {
-        await Task.WhenAll((await _contentLanguageHelper.AddToContentLanguage(items))
-            .Select(x => x.AsCheckedResult()));
+        await Task.WhenAll(_contentLanguageHelper.AddToContentLanguage(items));
+            //.Select(x => x.AsCheckedResult())); ; ;
     }
 
     public Task ResolveContentAllLanguage(object contract)
