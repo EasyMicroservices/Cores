@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -62,6 +61,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
                 return easyReadableQueryable;
+            if (uniqueIdentity.IsNullOrEmpty())
+                uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
             var uniqueIdentityManager = await GetIUniqueIdentityManager();
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
@@ -799,8 +800,9 @@ namespace EasyMicroservices.Cores.Database.Logics
             await easyWritableQueryable.SaveChangesAsync();
             if (typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
+                var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
                 var uniqueIdentityManager = await GetIUniqueIdentityManager();
-                if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, result.Entity))
+                if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, result.Entity))
                 {
                     await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
                     await easyWritableQueryable.SaveChangesAsync();
@@ -835,10 +837,11 @@ namespace EasyMicroservices.Cores.Database.Logics
             bool anyUpdate = false;
             if (typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
+                var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
                 var uniqueIdentityManager = await GetIUniqueIdentityManager();
                 foreach (var item in result)
                 {
-                    if (uniqueIdentityManager.UpdateUniqueIdentity(easyWritableQueryable.Context, item.Entity))
+                    if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, item.Entity))
                     {
                         anyUpdate = true;
                     }

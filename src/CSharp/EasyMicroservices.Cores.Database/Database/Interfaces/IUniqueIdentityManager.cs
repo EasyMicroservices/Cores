@@ -1,8 +1,5 @@
-﻿using EasyMicroservices.Cores.Interfaces;
-using EasyMicroservices.Cores.Models;
-using EasyMicroservices.Database.Interfaces;
+﻿using EasyMicroservices.Database.Interfaces;
 using System;
-using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Interfaces
 {
@@ -15,10 +12,11 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// update unique identity
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="currentUserUniqueIdentity"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
-        bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity);
+        bool UpdateUniqueIdentity<TEntity>(string currentUserUniqueIdentity, IContext context, TEntity entity);
         /// <summary>
         /// 
         /// </summary>
