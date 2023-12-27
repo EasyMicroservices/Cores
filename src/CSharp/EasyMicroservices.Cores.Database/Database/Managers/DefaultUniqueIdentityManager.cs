@@ -29,14 +29,17 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="currentUserUniqueIdentity"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public bool UpdateUniqueIdentity<TEntity>(IContext context, TEntity entity)
+        public bool UpdateUniqueIdentity<TEntity>(string currentUserUniqueIdentity, IContext context, TEntity entity)
         {
             if (entity is IUniqueIdentitySchema uniqueIdentitySchema)
             {
+                if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
+                    uniqueIdentitySchema.UniqueIdentity = currentUserUniqueIdentity;
                 if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
                     uniqueIdentitySchema.UniqueIdentity = _whiteLabelInfo.StartUniqueIdentity;
                 var ids = uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty() ? null : DecodeUniqueIdentity(uniqueIdentitySchema.UniqueIdentity);
