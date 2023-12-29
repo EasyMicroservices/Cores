@@ -812,12 +812,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
                 return entityEntries;
-            var find = entityEntries.Where(x => x is IUniqueIdentitySchema).Cast<IUniqueIdentitySchema>().FirstOrDefault(x => x.UniqueIdentity.HasValue());
+            var find = entityEntries.Select(x => x.Entity).Where(x => x is IUniqueIdentitySchema).Cast<IUniqueIdentitySchema>().FirstOrDefault(x => x.UniqueIdentity.HasValue());
             if (find == null)
                 return entityEntries;
             foreach (var item in entityEntries)
             {
-                if (item is IUniqueIdentitySchema uniqueIdentity)
+                if (item.Entity is IUniqueIdentitySchema uniqueIdentity && uniqueIdentity.UniqueIdentity.IsNullOrEmpty())
                 {
                     uniqueIdentity.UniqueIdentity = find.UniqueIdentity;
                 }
