@@ -808,6 +808,23 @@ namespace EasyMicroservices.Cores.Database.Logics
 
         #region Add
 
+        IEntityEntry[] FixUniqueIdentity<TEntity>(IEntityEntry[] entityEntries)
+        {
+            if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+                return entityEntries;
+            var find = entityEntries.Where(x => x is IUniqueIdentitySchema).Cast<IUniqueIdentitySchema>().FirstOrDefault(x => x.UniqueIdentity.HasValue());
+            if (find == null)
+                return entityEntries;
+            foreach (var item in entityEntries)
+            {
+                if (item is IUniqueIdentitySchema uniqueIdentity)
+                {
+                    uniqueIdentity.UniqueIdentity = find.UniqueIdentity;
+                }
+            }
+            return entityEntries;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -820,7 +837,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
-            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
+            foreach (var entityEntry in FixUniqueIdentity<TEntity>(easyWritableQueryable.Context.GetTrackerEntities().ToArray()))
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                     continue;
@@ -856,7 +873,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
-            foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
+            foreach (var entityEntry in FixUniqueIdentity<TEntity>(easyWritableQueryable.Context.GetTrackerEntities().ToArray()))
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                     continue;
