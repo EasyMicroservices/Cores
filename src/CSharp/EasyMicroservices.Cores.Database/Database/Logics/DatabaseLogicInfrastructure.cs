@@ -808,21 +808,23 @@ namespace EasyMicroservices.Cores.Database.Logics
 
         #region Add
 
-        IEntityEntry[] FixUniqueIdentity<TEntity>(IEntityEntry[] entityEntries)
+        void FixUniqueIdentity<TEntity>(IContext context, IEntityEntry[] entityEntries)
         {
             if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
-                return entityEntries;
+                return;
             var find = entityEntries.Select(x => x.Entity).Where(x => x is IUniqueIdentitySchema).Cast<IUniqueIdentitySchema>().FirstOrDefault(x => x.UniqueIdentity.HasValue());
             if (find == null)
-                return entityEntries;
+                return;
             foreach (var item in entityEntries)
             {
                 if (item.Entity is IUniqueIdentitySchema uniqueIdentity && uniqueIdentity.UniqueIdentity.IsNullOrEmpty())
                 {
-                    uniqueIdentity.UniqueIdentity = find.UniqueIdentity;
+                    uniqueIdentity.UniqueIdentity = DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(find.UniqueIdentity, 1);
+                    var primaryKeys = context.GetPrimaryKeyValues(item.Entity.GetType(), uniqueIdentity);
+                    uniqueIdentity.UniqueIdentity += "-" + DefaultUniqueIdentityManager.GenerateUniqueIdentity((long)primaryKeys.First());
                 }
             }
-            return entityEntries;
+            return;
         }
 
         /// <summary>
@@ -837,7 +839,8 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
-            foreach (var entityEntry in FixUniqueIdentity<TEntity>(easyWritableQueryable.Context.GetTrackerEntities().ToArray()))
+            var allItems = easyWritableQueryable.Context.GetTrackerEntities().ToArray();
+            foreach (var entityEntry in allItems)
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                     continue;
@@ -853,6 +856,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 var uniqueIdentityManager = await GetIUniqueIdentityManager();
                 if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, result.Entity))
                 {
+                    FixUniqueIdentity<TEntity>(easyWritableQueryable.Context, allItems);
                     await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
                     await easyWritableQueryable.SaveChangesAsync();
                 }
@@ -873,7 +877,8 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
-            foreach (var entityEntry in FixUniqueIdentity<TEntity>(easyWritableQueryable.Context.GetTrackerEntities().ToArray()))
+            var allItems = easyWritableQueryable.Context.GetTrackerEntities().ToArray();
+            foreach (var entityEntry in allItems)
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                     continue;
@@ -895,6 +900,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                         anyUpdate = true;
                     }
                 }
+                FixUniqueIdentity<TEntity>(easyWritableQueryable.Context, allItems);
             }
             if (anyUpdate)
             {
