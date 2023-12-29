@@ -437,6 +437,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Id = added.Id
             });
             Assert.Equal(found.Result.Id, added.Id);
+            
             var deleted = await logic.HardDeleteById(new DeleteRequestContract<long>()
             {
                 Id = found.Result.Id
@@ -450,7 +451,7 @@ namespace EasyMicroservices.Cores.Tests.Database
         }
 
         [Theory]
-        [InlineData("Ali", new string[] { "Hossein", "HosseinA", "HosseinB", "HosseinC" })]
+        [InlineData("Ali", new string[] { "hdHossein", "hdHosseinA", "hdHosseinB", "hdHosseinC" })]
         public async Task HardDeleteBulkAsync(string name, string[] userNames)
         {
             await using var logic = GetContractLogic();
@@ -469,7 +470,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             {
                 Ids = ids
             });
-            Assert.True(deleted);
+            Assert.True(deleted,deleted.ToString());
             foreach (var item in ids)
             {
                 var found = await logic.GetById(new GetByIdRequestContract<long>()

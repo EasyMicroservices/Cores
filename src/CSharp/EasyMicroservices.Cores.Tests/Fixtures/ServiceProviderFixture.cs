@@ -4,6 +4,7 @@ using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.Database;
@@ -27,6 +28,7 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
             string microserviceName = "TestExample";
             serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
             serviceCollection.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
+            serviceCollection.AddTransient<RelationalCoreContext>(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             serviceCollection.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
             serviceCollection.AddSingleton(service => new WhiteLabelManager(service));
             serviceCollection.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>

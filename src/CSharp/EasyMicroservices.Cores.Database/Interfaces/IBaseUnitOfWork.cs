@@ -45,6 +45,11 @@ namespace EasyMicroservices.Cores.Interfaces
         /// 
         /// </summary>
         /// <returns></returns>
+        bool HasUniqueIdentityRole();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task<WhiteLabelInfo> InitializeWhiteLabel();
         /// <summary>
         /// 

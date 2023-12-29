@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Database.Interfaces;
@@ -59,11 +60,22 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<IEasyReadableQueryableAsync<TEntity>> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
+            bool hasUniqueIdentityRole = _baseUnitOfWork.HasUniqueIdentityRole();
             if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
-                return easyReadableQueryable;
-            if (uniqueIdentity.IsNullOrEmpty())
-                uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            {
+                if (!hasUniqueIdentityRole)
+                    (FailedReasonType.AccessDenied, $"type of {typeof(TEntity)} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!").ThrowsIfFails();
+                else
+                    return easyReadableQueryable;
+            }
             var uniqueIdentityManager = await GetIUniqueIdentityManager();
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            if (uniqueIdentity.IsNullOrEmpty())
+                uniqueIdentity = currentUserUniqueIdentity;
+            else if (!hasUniqueIdentityRole && DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(uniqueIdentity, 2) != DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(currentUserUniqueIdentity, 2))
+                (FailedReasonType.AccessDenied, "UniqueIdentity access level error!").ThrowsIfFails();
+            if (uniqueIdentity.IsNullOrEmpty() && hasUniqueIdentityRole)
+                return easyReadableQueryable;
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
                 uniqueIdentity += "-";
@@ -93,6 +105,13 @@ namespace EasyMicroservices.Cores.Database.Logics
             return queryable;
         }
 
+        private async Task<IEasyReadableQueryableAsync<TEntity>> SetTheUserUniqueIdentityToQuery<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable)
+            where TEntity : class
+        {
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            return await UniqueIdentityQueryMaker(easyReadableQueryable, currentUserUniqueIdentity, GetUniqueIdentityType.All);
+        }
+
         #region Get one
 
         /// <summary>
@@ -108,7 +127,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         protected async Task<MessageContract<TEntity>> GetById<TEntity, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetByIdRequestContract<TId> idRequest, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(easyReadableQueryable);
             if (query != null)
                 queryable = query(queryable);
 
@@ -139,7 +158,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract<TEntity>> GetBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Expression<Func<TEntity, bool>> predicate, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, bool doCheckIsDelete = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(easyReadableQueryable);
             if (query != null)
                 queryable = query(queryable);
 
@@ -165,7 +184,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<ListMessageContract<TEntity>> GetAllBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Expression<Func<TEntity, bool>> predicate, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, bool doCheckIsDelete = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(easyReadableQueryable);
             if (query != null)
                 queryable = query(queryable);
 
@@ -187,7 +206,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract<TEntity>> GetBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(easyReadableQueryable);
             if (query != null)
                 queryable = query(queryable);
 
@@ -295,9 +314,15 @@ namespace EasyMicroservices.Cores.Database.Logics
 
             if (filterRequest.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
-                queryable = await UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
-                countQueryable = await UniqueIdentityQueryMaker(easyReadableQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
+                queryable = await UniqueIdentityQueryMaker(queryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
+                countQueryable = await UniqueIdentityQueryMaker(countQueryable, filterRequest.UniqueIdentity, filterRequest.UniqueIdentityType.HasValue ? filterRequest.UniqueIdentityType.Value : GetUniqueIdentityType.All);
             }
+            else
+            {
+                queryable = await SetTheUserUniqueIdentityToQuery(queryable);
+                countQueryable = await SetTheUserUniqueIdentityToQuery(countQueryable);
+            }
+
             if (filterRequest.FromCreationDateTime.HasValue && typeof(IDateTimeSchema).IsAssignableFrom(typeof(TEntity)))
             {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IDateTimeSchema).CreationDateTime >= filterRequest.FromCreationDateTime));
@@ -371,7 +396,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         protected async Task<ListMessageContract<TEntity>> GetAll<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(easyReadableQueryable);
             if (query != null)
                 queryable = query(queryable);
 
@@ -458,6 +483,13 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             List<IEntityEntry> items = new List<IEntityEntry>();
+
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(_baseUnitOfWork.GetReadableOf<TEntity>());
+            var foundItems = await queryable.ConvertToReadable(queryable.Where(x => entities.Contains(x))).ToListAsync();
+            var dbContext = easyWritableQueryable.Context;
+            if (!entities.All(x => foundItems.Any(y => dbContext.GetPrimaryKeyValues(x).SequenceEqual(dbContext.GetPrimaryKeyValues(y)))))
+                return (FailedReasonType.AccessDenied, $"Some items you want to update not found!");
+
             var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
 
             foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
@@ -605,7 +637,11 @@ namespace EasyMicroservices.Cores.Database.Logics
                 ActivityChangeLogType.HardDelete,
                 cancellationToken);
 
-            var result = await easyWritableQueryable.RemoveAllAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), cancellationToken);
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(_baseUnitOfWork.GetReadableOf<TEntity>());
+            if (!await queryable.AnyAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id)))
+                return (FailedReasonType.NotFound, $"Item by id: {deleteRequest.Id} not found!");
+
+            var result = await easyWritableQueryable.RemoveAsync(x => ((IIdSchema<TId>)x).Id.Equals(deleteRequest.Id), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
         }
@@ -630,7 +666,12 @@ namespace EasyMicroservices.Cores.Database.Logics
                 ActivityChangeLogType.HardDeleteBulk,
                 cancellationToken);
 
-            var result = await easyWritableQueryable.RemoveAllAsync(x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id), cancellationToken);
+            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(_baseUnitOfWork.GetReadableOf<TEntity>());
+            if (!await queryable.AnyAsync(x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id)))
+                return (FailedReasonType.NotFound, $"Some of ids you sent not found!");
+
+            var itemsToDelete = await queryable.ConvertToReadable(queryable.Where(x => deleteRequest.Ids.Contains(((IIdSchema<TId>)x).Id))).ToListAsync();
+            var result = await easyWritableQueryable.RemoveAllAsync(x => itemsToDelete.Contains(x), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
         }
@@ -642,25 +683,10 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="predicate"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract> HardDeleteBy<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public Task<MessageContract> HardDeleteBy<TEntity, TId>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            if (ActivityChangeLogLogic.UseActivityChangeLog)
-            {
-                IEasyReadableQueryableAsync<TEntity> queryable = _baseUnitOfWork.GetReadableOf<TEntity>();
-                var all = await GetAll(_baseUnitOfWork.GetReadableOf<TEntity>(),
-                    (q) => q.ConvertToReadable(queryable.Where(predicate)),
-                    cancellationToken).AsCheckedResult();
-
-                await ActivityChangeLogLogic.ChangeLogAsync<TEntity, TId>(all.Select(x => ((IIdSchema<TId>)x).Id).ToList(),
-                    _baseUnitOfWork,
-                    ActivityChangeLogType.HardDeleteBulk,
-                    cancellationToken);
-            }
-
-            var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
-            await easyWritableQueryable.SaveChangesAsync();
-            return true;
+            return HardDeleteBy<TEntity, TEntity, TId>(easyWritableQueryable, predicate, cancellationToken);
         }
 
         /// <summary>
@@ -688,7 +714,13 @@ namespace EasyMicroservices.Cores.Database.Logics
                     ActivityChangeLogType.HardDeleteBulk,
                     cancellationToken);
             }
-            var result = await easyWritableQueryable.RemoveAllAsync(predicate, cancellationToken);
+
+            IEasyReadableQueryableAsync<TEntity> tryQueryable = await SetTheUserUniqueIdentityToQuery(_baseUnitOfWork.GetReadableOf<TEntity>());
+            var items = await tryQueryable.ToListAsync();
+            if (items.Count == 0)
+                return (FailedReasonType.NotFound, $"Item by predicate not found!");
+
+            var result = await easyWritableQueryable.RemoveAllAsync(x => items.Contains(x), cancellationToken);
             await easyWritableQueryable.SaveChangesAsync();
             return true;
         }

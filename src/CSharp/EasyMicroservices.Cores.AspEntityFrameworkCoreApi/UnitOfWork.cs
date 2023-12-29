@@ -487,5 +487,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 }
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool HasUniqueIdentityRole()
+        {
+            var auth = GetAuthorization();
+            return auth == null;
+        }
     }
 }
