@@ -25,7 +25,6 @@ jobs:
           echo "Started Authentication Service with PID $AUTH_PID"
           cd ..
         shell: bash
-
       - name: Clone and run WhiteLabel
         run: |
           git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
