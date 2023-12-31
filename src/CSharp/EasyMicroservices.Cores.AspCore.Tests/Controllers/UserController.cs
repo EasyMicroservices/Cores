@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.AspCoreApi;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
@@ -52,6 +53,29 @@ namespace EasyMicroservices.Cores.AspCore.Tests.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new List<Claim>() { new Claim(ClaimTypes.Role, "EndUser") }),
+                Expires = DateTime.UtcNow.AddSeconds(1000),
+                Issuer = "https://github.com/easymicroservices",
+                Audience = "easymicroservices",
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return tokenString;
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public MessageContract<string> Login2([FromQuery] string role, [FromQuery] string uniqueIdentity)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes("VGhpc0lzQVNlY3JldEtleUZvckp3dEF1dGhlbnRpY2F0aW9u=");
+            var claims = new List<Claim>() { new Claim(ClaimTypes.Role, role) };
+            if (uniqueIdentity.HasValue())
+                claims.Add(new Claim(nameof(IUniqueIdentitySchema.UniqueIdentity), uniqueIdentity));
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddSeconds(1000),
                 Issuer = "https://github.com/easymicroservices",
                 Audience = "easymicroservices",

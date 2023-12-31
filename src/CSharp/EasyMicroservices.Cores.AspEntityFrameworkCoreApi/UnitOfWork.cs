@@ -15,13 +15,16 @@ using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.Serialization.Interfaces;
 using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 {
@@ -37,7 +40,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <summary>
         /// 
         /// </summary>
-        protected IServiceProvider ServiceProvider { get; set; }
+        public IServiceProvider ServiceProvider { get; protected set; }
         /// <summary>
         /// 
         /// </summary>
@@ -369,10 +372,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <param name="microserviceName"></param>
-        /// <param name="whiteLableRoute"></param>
+        /// <param name="whiteLabelRoute"></param>
         /// <param name="dbContextTypes"></param>
         /// <returns></returns>
-        public virtual Task InitializeWhiteLabel(string microserviceName, string whiteLableRoute, params Type[] dbContextTypes)
+        public virtual Task InitializeWhiteLabel(string microserviceName, string whiteLabelRoute, params Type[] dbContextTypes)
         {
             if (ServiceProvider == null)
                 throw new ObjectDisposedException(nameof(ServiceProvider));
@@ -380,7 +383,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             {
                 var whiteLabelManager = serviceProvider.GetService<WhiteLabelManager>();
                 if (!whiteLabelManager.IsInitialized)
-                   return await whiteLabelManager.Initialize(serviceProvider.GetService<IHttpContextAccessor>(), microserviceName, whiteLableRoute, dbContextTypes);
+                   return await whiteLabelManager.Initialize(serviceProvider.GetService<IHttpContextAccessor>(), microserviceName, whiteLabelRoute, dbContextTypes);
                 return whiteLabelManager.CurrentWhiteLabel;
             };
             return Task.CompletedTask;
@@ -449,7 +452,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual void Dispose()
         {
             InternalSyncDispose();
-            _ = InternalDispsose();
+            _ = InternalDispose();
             Disposables.Clear();
             ServiceProvider = null;
         }
@@ -461,12 +464,12 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual async ValueTask DisposeAsync()
         {
             InternalSyncDispose();
-            await InternalDispsose();
+            await InternalDispose();
             Disposables.Clear();
             ServiceProvider = null;
         }
 
-        async Task InternalDispsose()
+        async Task InternalDispose()
         {
             foreach (var item in Disposables)
             {
@@ -487,15 +490,56 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 }
             }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IConfiguration GetConfiguration()
+        {
+            return ServiceProvider.GetService<IConfiguration>();
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public virtual bool HasUniqueIdentityRole()
+        public virtual Task<bool> HasUniqueIdentityRole()
         {
             var auth = GetAuthorization();
-            return auth == null;
+            if (auth == null)
+                return Task.FromResult(true);
+
+            return auth.HasUnlimitedPermission(ServiceProvider.GetService<IHttpContextAccessor>()?.HttpContext);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static List<ServiceAddressInfo> ManualServiceAddresses { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public virtual List<ServiceAddressInfo> GetServiceAddresses(IConfiguration config)
+        {
+            if (ManualServiceAddresses != null)
+                return ManualServiceAddresses;
+            return config.GetSection("ServiceAddresses").Get<List<ServiceAddressInfo>>();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual ServiceAddressInfo GetServiceAddress(string name)
+        {
+            return GetServiceAddresses(GetConfiguration())
+                ?.Where(x => x.Name.HasValue())
+                .FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

@@ -25,4 +25,8 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   
+  <ItemGroup>
+    <PackageReference Include="EasyMicroservices.Utilities" Version="*" />
+  </ItemGroup>
+  
 </Project>

@@ -19,6 +19,13 @@ namespace EasyMicroservices.Cores.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        ServiceAddressInfo GetServiceAddress(string name);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <returns></returns>
         IDatabase GetDatabase();
         /// <summary>
@@ -45,7 +52,7 @@ namespace EasyMicroservices.Cores.Interfaces
         /// 
         /// </summary>
         /// <returns></returns>
-        bool HasUniqueIdentityRole();
+        Task<bool> HasUniqueIdentityRole();
         /// <summary>
         /// 
         /// </summary>

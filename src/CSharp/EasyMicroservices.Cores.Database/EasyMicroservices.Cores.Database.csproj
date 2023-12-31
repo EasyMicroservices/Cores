@@ -20,7 +20,6 @@
     <PackageReference Include="EasyMicroservices.Database" Version="*" />
     <PackageReference Include="EasyMicroservices.Mapper" Version="*" />
     <PackageReference Include="EasyMicroservices.ServiceContracts" Version="*" />
-    <PackageReference Include="EasyMicroservices.Utilities" Version="*" />
     <PackageReference Include="EasyMicroservices.Serialization" Version="*" />
   </ItemGroup>
 

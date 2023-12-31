@@ -57,14 +57,36 @@ namespace EasyMicroservices.Cores.Database.Logics
                 throw new NullReferenceException("the result was null when we mapped it to contract! something went wrong!");
         }
 
+        private async Task<MessageContract> CheckUniqueIdentityAccess(params IEntityEntry[] items)
+        {
+            bool hasUniqueIdentityRole = await _baseUnitOfWork.HasUniqueIdentityRole();
+
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            foreach (var item in items)
+            {
+                if (item.Entity is IUniqueIdentitySchema uniqueIdentitySchema)
+                {
+                    if (!hasUniqueIdentityRole && uniqueIdentitySchema.UniqueIdentity.HasValue() && !uniqueIdentitySchema.UniqueIdentity.StartsWith(currentUserUniqueIdentity))
+                        return (FailedReasonType.AccessDenied, "UniqueIdentity access level error!");
+                }
+                else
+                {
+                    if (!hasUniqueIdentityRole)
+                        return (FailedReasonType.AccessDenied, $"type of {item.Entity.GetType()} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!");
+                    return true;
+                }
+            }
+            return true;
+        }
+
         private async Task<IEasyReadableQueryableAsync<TEntity>> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
-            bool hasUniqueIdentityRole = _baseUnitOfWork.HasUniqueIdentityRole();
+            bool hasUniqueIdentityRole = await _baseUnitOfWork.HasUniqueIdentityRole();
             if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
                 if (!hasUniqueIdentityRole)
-                    (FailedReasonType.AccessDenied, $"type of {typeof(TEntity)} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!").ThrowsIfFails();
+                    ((MessageContract)(FailedReasonType.AccessDenied, $"type of {typeof(TEntity)} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!")).ThrowsIfFails();
                 else
                     return easyReadableQueryable;
             }
@@ -73,7 +95,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (uniqueIdentity.IsNullOrEmpty())
                 uniqueIdentity = currentUserUniqueIdentity;
             else if (!hasUniqueIdentityRole && DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(uniqueIdentity, 2) != DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(currentUserUniqueIdentity, 2))
-                (FailedReasonType.AccessDenied, "UniqueIdentity access level error!").ThrowsIfFails();
+                ((MessageContract)(FailedReasonType.AccessDenied, "UniqueIdentity access level error!")).ThrowsIfFails();
             if (uniqueIdentity.IsNullOrEmpty() && hasUniqueIdentityRole)
                 return easyReadableQueryable;
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
@@ -467,24 +489,26 @@ namespace EasyMicroservices.Cores.Database.Logics
         public Task<MessageContract<TEntity>> Update<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, bool updateOnlyChangedValue, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            return InternalUpdate(easyWritableQueryable, entity, updateOnlyChangedValue, false, true, cancellationToken);
+            return InternalUpdate(easyWritableQueryable, entity, updateOnlyChangedValue, false, true, false, cancellationToken);
         }
 
-        private async Task<MessageContract<TEntity>> InternalUpdate<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, CancellationToken cancellationToken = default)
+        private async Task<MessageContract<TEntity>> InternalUpdate<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, bool isFromAdd = false, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var result = await InternalUpdateBulk(easyWritableQueryable, new List<TEntity>() { entity }, updateOnlyChangedValue, doSkipUpdate, doSkipDelete, cancellationToken);
+            var result = await InternalUpdateBulk(easyWritableQueryable, new List<TEntity>() { entity }, updateOnlyChangedValue, doSkipUpdate, doSkipDelete, isFromAdd, cancellationToken);
             if (!result)
                 return result.ToContract<TEntity>();
             return result.Result.First();
         }
 
-        private async Task<ListMessageContract<TEntity>> InternalUpdateBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, List<TEntity> entities, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, CancellationToken cancellationToken = default)
+        private async Task<ListMessageContract<TEntity>> InternalUpdateBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, List<TEntity> entities, bool updateOnlyChangedValue, bool doSkipUpdate = true, bool doSkipDelete = true, bool isFromAdd = false, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             List<IEntityEntry> items = new List<IEntityEntry>();
 
-            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(_baseUnitOfWork.GetReadableOf<TEntity>());
+            IEasyReadableQueryableAsync<TEntity> queryable = _baseUnitOfWork.GetReadableOf<TEntity>();
+            if (!isFromAdd)
+                queryable = await SetTheUserUniqueIdentityToQuery(queryable);
             var foundItems = await queryable.ConvertToReadable(queryable.Where(x => entities.Contains(x))).ToListAsync();
             var dbContext = easyWritableQueryable.Context;
             if (!entities.All(x => foundItems.Any(y => dbContext.GetPrimaryKeyValues(x).SequenceEqual(dbContext.GetPrimaryKeyValues(y)))))
@@ -596,7 +620,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var entities = await MapToListAsync<TEntity, TUpdateContract>(request.Items);
-            var result = await InternalUpdateBulk(easyWritableQueryable, entities, updateOnlyChangedValue, false, true, cancellationToken);
+            var result = await InternalUpdateBulk(easyWritableQueryable, entities, updateOnlyChangedValue, false, true, false, cancellationToken);
             return result;
         }
         #endregion
@@ -801,7 +825,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 else
                     return (FailedReasonType.OperationFailed, $"Your entity type {item.GetType().FullName} is not inheritance from ISoftDeleteSchema");
             }
-            return await InternalUpdateBulk(easyWritableQueryable, getResult.Result, false, true, false, cancellationToken);
+            return await InternalUpdateBulk(easyWritableQueryable, getResult.Result, false, true, false, false, cancellationToken);
         }
 
         #endregion
@@ -840,6 +864,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
             var allItems = easyWritableQueryable.Context.GetTrackerEntities().ToArray();
+            await CheckUniqueIdentityAccess(allItems).AsCheckedResult();
+
             foreach (var entityEntry in allItems)
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
@@ -857,7 +883,8 @@ namespace EasyMicroservices.Cores.Database.Logics
                 if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, result.Entity))
                 {
                     FixUniqueIdentity<TEntity>(easyWritableQueryable.Context, allItems);
-                    await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, cancellationToken);
+                    await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, true, cancellationToken)
+                        .AsCheckedResult();
                     await easyWritableQueryable.SaveChangesAsync();
                 }
             }
@@ -878,6 +905,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
             var allItems = easyWritableQueryable.Context.GetTrackerEntities().ToArray();
+            await CheckUniqueIdentityAccess(allItems).AsCheckedResult();
+
             foreach (var entityEntry in allItems)
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Added)
@@ -904,7 +933,8 @@ namespace EasyMicroservices.Cores.Database.Logics
             }
             if (anyUpdate)
             {
-                await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), false, true, true, cancellationToken);
+                await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), false, true, true, true, cancellationToken)
+                    .AsCheckedResult();
                 await easyWritableQueryable.SaveChangesAsync();
             }
             var response = result.Select(x => x.Entity).ToList();

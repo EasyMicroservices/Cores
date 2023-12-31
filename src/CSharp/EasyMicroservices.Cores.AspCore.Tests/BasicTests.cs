@@ -94,7 +94,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
 
         protected virtual void AssertTrue(MessageContract messageContract)
         {
-            Assert.True(messageContract);
+            Assert.True(messageContract, messageContract.Error?.ToString());
         }
 
         protected virtual void AssertFalse(MessageContract messageContract)

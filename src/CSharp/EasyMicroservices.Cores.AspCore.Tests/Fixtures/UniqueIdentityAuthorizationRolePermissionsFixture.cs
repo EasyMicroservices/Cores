@@ -10,16 +10,16 @@ using System.Text;
 
 namespace EasyMicroservices.Cores.AspCore.Tests.Fixtures;
 
-public class AuthorizationRolePermissionsFixture : IAsyncLifetime
+public class UniqueIdentityAuthorizationRolePermissionsFixture : IAsyncLifetime
 {
     public IServiceProvider ServiceProvider { get; private set; }
     public Task InitializeAsync()
     {
-        return BaseFixture.Init(4566, null, (services) =>
+        return BaseFixture.Init(4567, null, (services) =>
         {
             services.AddScoped<IAuthorization, AspCoreAuthorization>();
-            services.AddTransient<IUnitOfWork, AuthorizationUnitOfWork>();
-            services.AddTransient<IBaseUnitOfWork, AuthorizationUnitOfWork>();
+            services.AddTransient<IUnitOfWork, UniqueIdentityUnitOfWork>();
+            services.AddTransient<IBaseUnitOfWork, UniqueIdentityUnitOfWork>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -33,7 +33,7 @@ public class AuthorizationRolePermissionsFixture : IAsyncLifetime
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("VGhpc0lzQVNlY3JldEtleUZvckp3dEF1dGhlbnRpY2F0aW9u="))
                 };
             });
-        });
+        }, "UIDTestExample");
     }
 
     public Task DisposeAsync()
@@ -42,9 +42,9 @@ public class AuthorizationRolePermissionsFixture : IAsyncLifetime
     }
 }
 
-public class AuthorizationUnitOfWork : UnitOfWork
+public class UniqueIdentityUnitOfWork : UnitOfWork
 {
-    public AuthorizationUnitOfWork(IServiceProvider service) : base(service)
+    public UniqueIdentityUnitOfWork(IServiceProvider service) : base(service)
     {
     }
 
@@ -54,7 +54,7 @@ public class AuthorizationUnitOfWork : UnitOfWork
             return new ServiceAddressInfo()
             {
                 Name = name,
-                Address = "http://localhost:1045"
+                Address = "http://localhost:1044"
             };
         return base.GetServiceAddress(name);
     }

@@ -5,6 +5,7 @@ using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.ServiceContracts;
@@ -26,7 +27,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             {
                 return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
-            StartUpExtensions.ManualServiceAddresses = new List<ServiceAddressInfo>()
+            UnitOfWork.ManualServiceAddresses = new List<ServiceAddressInfo>()
             {
                 new ServiceAddressInfo()
                 {
@@ -54,6 +55,11 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         public Task<MessageContract> CheckIsAuthorized(HttpContext httpContext)
         {
             return Task.FromResult<MessageContract>((FailedReasonType.SessionAccessDenied, "AppAuthorization"));
+        }
+
+        public Task<bool> HasUnlimitedPermission(HttpContext httpContext)
+        {
+            return Task.FromResult(false);
         }
     }
 }
