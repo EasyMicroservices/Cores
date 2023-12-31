@@ -12,7 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Clone and run prerequisite repository
-        run:  git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
+        run:  |
+          git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice/
           dotnet run
         shell: bash
