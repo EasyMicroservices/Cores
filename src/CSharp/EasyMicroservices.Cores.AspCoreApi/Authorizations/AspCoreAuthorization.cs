@@ -95,7 +95,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             }
         }
 
-        async Task<MessageContract<bool>> HasPermission(HttpContext httpContext)
+        MessageContract<bool> IsAnonymousMethodCalling(HttpContext httpContext)
         {
             var endpoints = httpContext.GetEndpoint();
             if (endpoints == null)
@@ -106,7 +106,14 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             if (controllerActionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any() ||
                 controllerActionDescriptor.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any())
                 return true;
+            return false;
+        }
 
+        async Task<MessageContract<bool>> HasPermission(HttpContext httpContext)
+        {
+            var isAnonymousMethodCalling = IsAnonymousMethodCalling(httpContext);
+            if (!isAnonymousMethodCalling.IsSuccess)
+                return isAnonymousMethodCalling;
             string controllerName = httpContext.Request.RouteValues["controller"].ToString();
             string actionName = httpContext.Request.RouteValues["action"].ToString();
             List<Claim> roleClaims = httpContext.User.FindAll(ClaimTypes.Role).ToList();
@@ -137,6 +144,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         {
             if (httpContext == null)
                 return false;
+            else if (IsAnonymousMethodCalling(httpContext).Result)
+                return true;
             List<Claim> roleClaims = httpContext.User.FindAll(ClaimTypes.Role).ToList();
             if (roleClaims.Count == 0)
                 return false;
