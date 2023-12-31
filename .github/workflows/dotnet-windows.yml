@@ -13,16 +13,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: Clone and run Authentication
         run:  |
-          git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
-          cd Authentications-Microservice/
           dir
-          dotnet run --project ./Authentications-Microservice/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
-        shell: bash
-      - name: Clone and run WhiteLabel
-        run:  |
-          git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
-          cd WhiteLabels-Microservice/
-          dotnet run --project ./EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj
+          git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
+          dir
+          cd Authentications-Microservice/EasyMicroservices.AuthenticationsMicroservice.WebApi
+          dir
+          dotnet run --project ./EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
+          cd ..
         shell: bash
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
