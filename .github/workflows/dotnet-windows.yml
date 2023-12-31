@@ -18,7 +18,7 @@ jobs:
           dir
           cd Authentications-Microservice
           dir
-          dotnet run --project Authentications-Microservice/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
+          dotnet run --project Authentications-Microservice/src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
           cd ..
         shell: bash
       - name: Setup .NET
