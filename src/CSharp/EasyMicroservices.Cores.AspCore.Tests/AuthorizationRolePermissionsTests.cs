@@ -105,7 +105,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             }
             HttpClient CurrentHttpClient = new HttpClient();
             var loginResult = await CurrentHttpClient.GetFromJsonAsync<MessageContract<string>>($"{GetBaseUrl()}/api/user/login");
-            Assert.True(loginResult);
+            Assert.True(loginResult, loginResult.Error?.ToString());
             CurrentHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Result);
             var data = await CurrentHttpClient.GetFromJsonAsync<MessageContract>($"{GetBaseUrl()}/api/user/CheckHasNoAccess");
             AssertTrue(data);

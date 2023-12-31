@@ -114,6 +114,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             var isAnonymousMethodCalling = IsAnonymousMethodCalling(httpContext);
             if (!isAnonymousMethodCalling.IsSuccess)
                 return isAnonymousMethodCalling;
+            else if (isAnonymousMethodCalling.Result)
+                return true;
             string controllerName = httpContext.Request.RouteValues["controller"].ToString();
             string actionName = httpContext.Request.RouteValues["action"].ToString();
             List<Claim> roleClaims = httpContext.User.FindAll(ClaimTypes.Role).ToList();
