@@ -15,6 +15,7 @@ jobs:
         run:  |
           git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice/
+          dir
           dotnet run --project ./Authentications-Microservice/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
         shell: bash
       - name: Clone and run WhiteLabel
