@@ -1,7 +1,6 @@
-﻿using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
+namespace EasyMicroservices.Cores.Models;
 /// <summary>
 /// 
 /// </summary>

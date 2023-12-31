@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EasyMicroservices.Laboratory" Version="*" />
+    <PackageReference Include="EasyMicroservices.Laboratory" Version="0.0.0.16" />
     <PackageReference Include="EasyMicroservices.Mapper.CompileTimeMapper" Version="*" />
     <PackageReference Include="EasyMicroservices.Mapper.SerializerMapper" Version="*" />
     <PackageReference Include="EasyMicroservices.Serialization.Newtonsoft.Json" Version="*" />

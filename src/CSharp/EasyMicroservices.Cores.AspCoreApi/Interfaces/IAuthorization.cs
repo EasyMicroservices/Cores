@@ -15,5 +15,11 @@ namespace EasyMicroservices.Cores.AspCoreApi.Interfaces
         /// <param name="httpContext"></param>
         /// <returns></returns>
         Task<MessageContract> CheckIsAuthorized(HttpContext httpContext);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
+        Task<bool> HasUnlimitedPermission(HttpContext httpContext);
     }
 }

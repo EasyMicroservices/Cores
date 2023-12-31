@@ -1,14 +1,8 @@
 ﻿using EasyMicroservices.AuthenticationsMicroservice.VirtualServerForTests;
 using EasyMicroservices.AuthenticationsMicroservice.VirtualServerForTests.TestResources;
 using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
-using EasyMicroservices.Cores.AspCoreApi.Authorizations;
-using EasyMicroservices.Cores.AspCoreApi.Interfaces;
-using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.ServiceContracts;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Net.Http.Headers;
-using System.Text;
 
 namespace EasyMicroservices.Cores.AspCore.Tests
 {
@@ -45,7 +39,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         public async Task WriterRoleTest(string microserviceName, string roleName, string serviceName, string methodName, bool result)
         {
             int portNumber = 1045;
-            AspCoreAuthorization.AuthenticationRouteAddress = $"http://localhost:{portNumber}";
             await AuthenticationVirtualTestManager.OnInitialize(portNumber);
             var resources = AuthenticationResource.GetResources(microserviceName, new Dictionary<string, List<TestServicePermissionContract>>()
             {
@@ -89,7 +82,6 @@ namespace EasyMicroservices.Cores.AspCore.Tests
         public async Task ReaderRoleTest(string microserviceName, string roleName, string serviceName)
         {
             int portNumber = 1045;
-            AspCoreAuthorization.AuthenticationRouteAddress = $"http://localhost:{portNumber}";
             await AuthenticationVirtualTestManager.OnInitialize(portNumber);
             var resources = AuthenticationResource.GetResources(microserviceName, new Dictionary<string, List<TestServicePermissionContract>>()
             {

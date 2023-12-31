@@ -9,9 +9,13 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ServicePermissionContract = Authentications.GeneratedServices.ServicePermissionContract;
 namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
@@ -33,10 +37,6 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         /// 
         /// </summary>
         public IBaseUnitOfWork BaseUnitOfWork { get; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public static string AuthenticationRouteAddress { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -63,8 +63,16 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
         static readonly ConcurrentTreeDictionary TreeDictionary = new ConcurrentTreeDictionary();
         async Task<MessageContract> FetchData(string roleName)
         {
+            var authenticationRouteAddress = BaseUnitOfWork.GetServiceAddress("Authentication")?.Address;
             var httpClient = new System.Net.Http.HttpClient();
-            var servicePermissionClient = new Authentications.GeneratedServices.ServicePermissionClient(AuthenticationRouteAddress, httpClient);
+            var servicePermissionClient = new Authentications.GeneratedServices.ServicePermissionClient(authenticationRouteAddress, httpClient);
+            //StringContent content = new StringContent(JsonSerializer.Serialize(new Authentications.GeneratedServices.ServicePermissionRequestContract()
+            //{
+            //    MicroserviceName = await GetMicroserviceName(),
+            //    RoleName = roleName
+            //}), Encoding.UTF8, "application/json");
+            //var ress = await httpClient.PostAsync($"{authenticationRouteAddress}/api/servicepermission/GetAllPermissionsBy", content);
+            //var dd = await ress.Content.ReadAsStringAsync();
             var permissionsResult = await servicePermissionClient.GetAllPermissionsByAsync(new Authentications.GeneratedServices.ServicePermissionRequestContract()
             {
                 MicroserviceName = await GetMicroserviceName(),
@@ -93,6 +101,8 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             if (endpoints == null)
                 return true;
             var controllerActionDescriptor = httpContext.GetEndpoint().Metadata.GetMetadata<ControllerActionDescriptor>();
+            if (controllerActionDescriptor == null)
+                return (FailedReasonType.Nothing, "controllerActionDescriptor is null or empty, did you sent correct route to me?");
             if (controllerActionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any() ||
                 controllerActionDescriptor.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any())
                 return true;
@@ -112,8 +122,35 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
                 }
             }
             string microserviceName = await GetMicroserviceName();
+            var qq = TreeDictionary.TryGetValue(["Owner", microserviceName, controllerName, actionName], out IList<object> permissions);
+
             return roleClaims.Any(role => TreeDictionary.TryGetValue([role.Value, microserviceName, controllerName, actionName], out IList<object> permissions)
                  && permissions.LastOrDefault() is bool value && value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
+        public async Task<bool> HasUnlimitedPermission(HttpContext httpContext)
+        {
+            if (httpContext == null)
+                return false;
+            List<Claim> roleClaims = httpContext.User.FindAll(ClaimTypes.Role).ToList();
+            if (roleClaims.Count == 0)
+                return false;
+            if (!roleClaims.All(x => CachedPermissions.ContainsKey(x.Value)))
+            {
+                foreach (var role in roleClaims)
+                {
+                    var fetchDataResult = await FetchData(role.Value);
+                    if (!fetchDataResult)
+                        return false;
+                }
+            }
+            return roleClaims.Any(role => TreeDictionary.TryGetValue([role.Value, null, null, null], out IList<object> permissions)
+                  && permissions.LastOrDefault() is bool value && value);
         }
     }
 }
