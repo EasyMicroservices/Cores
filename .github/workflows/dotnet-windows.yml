@@ -14,34 +14,43 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version:  |
-            6.0.x
-            7.0.x
-            8.0.x
-        env:
-            DOTNET_INSTALL_DIR: /usr/share/dotnet
-            NUGET_CERT_REVOCATION_MODE: offline
+          dotnet-version: '6.0.x'
+
       - name: Clone and run Authentication
         run:  |
           git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
+          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj &
+          AUTH_PID=$!
+          echo "Started Authentication Service with PID $AUTH_PID"
           cd ..
         shell: bash
-        shell: bash
+
       - name: Clone and run WhiteLabel
-        run:  |
+        run: |
           git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
           cd WhiteLabels-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj
+          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj &
+          WHITELABEL_PID=$!
+          echo "Started WhiteLabel Service with PID $WHITELABEL_PID"
           cd ..
         shell: bash
+
       - name: Restore dependencies
         run: dotnet restore ./src/CSharp/EasyMicroservices.Cores.sln
+
       - name: Build
         run: dotnet build ./src/CSharp/EasyMicroservices.Cores.sln --no-restore
+
       - name: Test
-        run:  |
+        run: |
           dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal -f net6.0
           dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal -f net7.0
           dotnet test ./src/CSharp/EasyMicroservices.Cores.sln --no-build --verbosity normal -f net8.0
+
+      - name: Cleanup
+        if: always() 
+        run:          echo "Shutting down Authentication Service with PID $AUTH_PID"
+          kill $AUTH_PID echo "Authentication Service shutdown failed"
+          echo "Shutting down WhiteLabel Service with PID $WHITELABEL_PID"
+          kill $WHITELABEL_PID echo "WhiteLabel Service shutdown failed"
