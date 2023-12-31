@@ -11,6 +11,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Clone and run prerequisite repository
+        run:  git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
+          cd Authentications-Microservice/
+          dotnet run
+        shell: bash
+      - name: Clone and run prerequisite repository
+        run:  git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
+          cd WhiteLabels-Microservice/
+          dotnet run
+        shell: bash
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -19,6 +29,7 @@ jobs:
             7.0.x
             8.0.x
         env:
+            DOTNET_INSTALL_DIR: /usr/share/dotnet
             NUGET_CERT_REVOCATION_MODE: offline
       - name: Restore dependencies
         run: dotnet restore ./src/CSharp/EasyMicroservices.Cores.sln
