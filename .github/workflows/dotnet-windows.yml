@@ -11,16 +11,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Clone and run prerequisite repository
+      - name: Clone and run Authentication
         run:  |
           git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice/
-          dotnet run
+          dotnet run --project ./EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj
         shell: bash
-      - name: Clone and run prerequisite repository
-        run:  git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
+      - name: Clone and run WhiteLabel
+        run:  |
+          git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
           cd WhiteLabels-Microservice/
-          dotnet run
+          dotnet run --project ./EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj
         shell: bash
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
