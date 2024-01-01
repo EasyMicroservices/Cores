@@ -79,6 +79,24 @@ namespace EasyMicroservices.Cores.Database.Logics
             return true;
         }
 
+
+        private async Task<MessageContract> HasUniqueIdentityPermission<TEntity>(string uniqueIdentity)
+            where TEntity : class
+        {
+            bool hasUniqueIdentityRole = await _baseUnitOfWork.HasUniqueIdentityRole();
+            if (hasUniqueIdentityRole)
+                return true;
+            if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+                return (FailedReasonType.AccessDenied, $"type of {typeof(TEntity)} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!");
+
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            if (uniqueIdentity.IsNullOrEmpty() && !hasUniqueIdentityRole)
+                return (FailedReasonType.AccessDenied, $"With the UniqueIdentity: {currentUserUniqueIdentity} you have not access, please send me your UniqueIdentity!");
+            else if (!uniqueIdentity.StartsWith(currentUserUniqueIdentity))
+                return (FailedReasonType.AccessDenied, $"With the UniqueIdentity: {currentUserUniqueIdentity} you have not access, You sent me: {uniqueIdentity}!");
+            return true;
+        }
+
         private async Task<IEasyReadableQueryableAsync<TEntity>> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
@@ -223,12 +241,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="query"></param>
+        /// <param name="doNeedSetUniqueIdentityQuery"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> GetBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+        public async Task<MessageContract<TEntity>> GetBy<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, bool doNeedSetUniqueIdentityQuery = true, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = await SetTheUserUniqueIdentityToQuery(easyReadableQueryable);
+            IEasyReadableQueryableAsync<TEntity> queryable = doNeedSetUniqueIdentityQuery ? await SetTheUserUniqueIdentityToQuery(easyReadableQueryable) : easyReadableQueryable;
             if (query != null)
                 queryable = query(queryable);
 
@@ -300,8 +319,14 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
             where TContract : class
         {
-            IEasyReadableQueryableAsync<TEntity> queryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
-            var entityResult = await GetBy(queryable, query, cancellationToken);
+            var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(request.UniqueIdentity);
+            if (!uniqueIdentityPermission)
+                return uniqueIdentityPermission.ToContract<TContract>();
+            if (request.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+            {
+                easyReadableQueryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
+            }
+            var entityResult = await GetBy(easyReadableQueryable, query, false, cancellationToken);
             if (!entityResult)
                 return entityResult.ToContract<TContract>();
             var result = await MapAsync<TContract, TEntity>(entityResult.Result);

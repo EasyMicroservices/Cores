@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
+using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using EasyMicroservices.ServiceContracts;
 using System.Net.Http.Headers;
@@ -79,6 +80,38 @@ public class UniqueIdentityTests : IClassFixture<UniqueIdentityAuthorizationRole
             Assert.True(result.Error.FailedReasonType == FailedReasonType.AccessDenied, result.Error.ToString());
         }
 
+    }
+
+    [Theory]
+    [InlineData("Owner", "User", "GetByUniqueIdentity", "1-2", "1-2", "1-2", "{}", true)]
+    [InlineData("Owner", "User", "GetByUniqueIdentity", "1-2", "1-2", "1-2", @"{""UniqueIdentity"":""1-2-3-4""}", true)]
+    [InlineData("Owner", "User", "GetByUniqueIdentity", "1-2", "3-4", "1-2", @"{""UniqueIdentity"":""3-4""}", true)]
+    [InlineData("Moderator", "User", "GetByUniqueIdentity", "1-2", "3-4", "1-2", @"{""UniqueIdentity"":""3-4""}", false)]
+    [InlineData("Moderator", "User", "GetByUniqueIdentity", "3-4", "3-4", "3-4", @"{""UniqueIdentity"":""3-4""}", true)]
+    [InlineData("Moderator", "User", "GetByUniqueIdentity", "1-2", "1-2", "1-2", @"{""UniqueIdentity"":""1-2""}", true)]
+    public async Task GetByUniqueIdentityAsync(string roleName, string controller, string method,string userUniqueIdentity, string fromUniqueIdentity, string toUniqueIdentity, string data, bool canHaveAccess)
+    {
+        var model = JsonSerializer.Deserialize<DataModel>(data);
+        model.Id = await AddAsync(roleName, controller, "Add", fromUniqueIdentity, data, true);
+        HttpClient currentHttpClient = new HttpClient();
+        await Login(currentHttpClient, roleName, userUniqueIdentity);
+        var apiResult = await currentHttpClient.PostAsJsonAsync($"{GetBaseUrl()}/api/{controller}/{method}", new GetByUniqueIdentityRequestContract()
+        {
+            UniqueIdentity = fromUniqueIdentity,
+            Type = DataTypes.GetUniqueIdentityType.All
+        });
+        var response = await apiResult.Content.ReadAsStringAsync();
+        var result = Newtonsoft.Json.JsonConvert.DeserializeObject<MessageContract<UserEntity>>(response);
+        if (canHaveAccess)
+        {
+            Assert.True(result, result.Error?.ToString());
+            Assert.True(result.Result.UniqueIdentity.StartsWith(fromUniqueIdentity));
+        }
+        else
+        {
+            Assert.False(result, "User has access, expect: no access!");
+            Assert.True(result.Error.FailedReasonType == FailedReasonType.NotFound || result.Error.FailedReasonType == FailedReasonType.AccessDenied, result.Error.ToString());
+        }
     }
 
     class DataModel
