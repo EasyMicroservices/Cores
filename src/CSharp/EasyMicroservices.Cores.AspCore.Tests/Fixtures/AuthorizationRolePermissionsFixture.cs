@@ -54,7 +54,7 @@ public class AuthorizationUnitOfWork : UnitOfWork
             return new ServiceAddressInfo()
             {
                 Name = name,
-                Address = "http://localhost:1045"
+                Address = "http://localhost:1044"
             };
         return base.GetServiceAddress(name);
     }

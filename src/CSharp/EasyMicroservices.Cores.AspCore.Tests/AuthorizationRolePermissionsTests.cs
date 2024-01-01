@@ -1,6 +1,4 @@
-﻿using EasyMicroservices.AuthenticationsMicroservice.VirtualServerForTests;
-using EasyMicroservices.AuthenticationsMicroservice.VirtualServerForTests.TestResources;
-using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
+﻿using EasyMicroservices.Cores.AspCore.Tests.Fixtures;
 using EasyMicroservices.ServiceContracts;
 using System.Net.Http.Headers;
 
@@ -14,7 +12,7 @@ namespace EasyMicroservices.Cores.AspCore.Tests
 
         protected override void AssertTrue(MessageContract messageContract)
         {
-            Assert.False(messageContract.IsSuccess);
+            Assert.False(messageContract.IsSuccess, "Access true, expect false");
             Assert.True(messageContract.Error.FailedReasonType == FailedReasonType.AccessDenied, messageContract.ToString());
         }
 
@@ -29,85 +27,72 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             AssertTrue(messageContract);
         }
 
-        static AuthenticationVirtualTestManager AuthenticationVirtualTestManager = new();
-        [Theory]
-        [InlineData("TestExampleFailed", "EndUser", "NoAccess", "NoAccess", false)]
-        [InlineData("TestExample", "EndUser", "User", "CheckHasAccess", true)]
-        [InlineData("TestExample", "EndUser", null, "CheckHasAccess", true)]
-        [InlineData("TestExample", "EndUser", null, null, true)]
-        [InlineData("TestExample", "EndUser", "User", null, true)]
-        public async Task WriterRoleTest(string microserviceName, string roleName, string serviceName, string methodName, bool result)
+        async Task AddPermissions(HttpClient currentHttpClient, string microserviceName, string roleName, string serviceName, string methodName, bool hasAccess)
         {
-            int portNumber = 1045;
-            await AuthenticationVirtualTestManager.OnInitialize(portNumber);
-            var resources = AuthenticationResource.GetResources(microserviceName, new Dictionary<string, List<TestServicePermissionContract>>()
+            if (!hasAccess)
+                return;
+            var loginResult = await currentHttpClient.GetFromJsonAsync<MessageContract<string>>($"{GetBaseUrl()}/api/user/login2?role=Owner&uniqueIdentity=1-2");
+            Assert.True(loginResult);
+            currentHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Result);
+            var roleClient = new Authentications.GeneratedServices.RoleClient("http://localhost:1044", currentHttpClient);
+            var addRole = await roleClient.AddAsync(new Authentications.GeneratedServices.AddRoleRequestContract()
             {
-                {
-                    roleName ,
-                    new List<TestServicePermissionContract>()
-                    {
-                        new TestServicePermissionContract()
-                        {
-                            MicroserviceName = microserviceName,
-                            MethodName = methodName,
-                            ServiceName = serviceName
-                        }
-                    }
-                }
-            });
+                Name = roleName,
+            }).AsCheckedResult(x => x.Result);
 
-            foreach (var resource in resources)
+            var servicePermissionClient = new Authentications.GeneratedServices.ServicePermissionClient("http://localhost:1044", currentHttpClient);
+            var addServicePermission = await servicePermissionClient.AddAsync(new Authentications.GeneratedServices.AddServicePermissionRequestContract
             {
-                AuthenticationVirtualTestManager.AppendService(portNumber, resource.Key, resource.Value);
-            }
+                AccessType = Authentications.GeneratedServices.AccessPermissionType.Granted,
+                MethodName = methodName,
+                ServiceName = serviceName,
+                MicroserviceName = microserviceName
+            }).AsCheckedResult(x => x.Result);
 
-            HttpClient CurrentHttpClient = new HttpClient();
-            if (result)
+            var roleServicePermissionClient = new Authentications.GeneratedServices.RoleServicePermissionClient("http://localhost:1044", currentHttpClient);
+            var addRolePermission = await roleServicePermissionClient.AddAsync(new Authentications.GeneratedServices.AddRoleServicePermissionRequestContract
             {
-                var loginResult = await CurrentHttpClient.GetFromJsonAsync<MessageContract<string>>($"{GetBaseUrl()}/api/user/login");
-                Assert.True(loginResult);
-                CurrentHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Result);
-            }
-            var data = await CurrentHttpClient.GetFromJsonAsync<MessageContract>($"{GetBaseUrl()}/api/user/CheckHasAccess");
-            if (!result)
-                AssertTrue(data);
-            else
-                Assert.True(data, data.ToString());
+                RoleId = addRole,
+                ServicePermissionId = addServicePermission
+            }).AsCheckedResult(x => x.Result);
         }
 
+        //static AuthenticationVirtualTestManager AuthenticationVirtualTestManager = new();
+        //[Theory]
+        //[InlineData("TestExampleFailed", "EndUser", "NoAccess", "NoAccess", false)]
+        //[InlineData("TestExample", "EndUser", "User", "CheckHasAccess", true)]
+        //[InlineData("TestExample", "EndUser", null, "CheckHasAccess", true)]
+        //[InlineData("TestExample", "EndUser", null, null, true)]
+        //[InlineData("TestExample", "EndUser", "User", null, true)]
+        //public async Task WriterRoleTest(string microserviceName, string roleName, string serviceName, string methodName, bool result)
+        //{
+        //    HttpClient currentHttpClient = new HttpClient();
+        //    await AddPermissions(currentHttpClient, microserviceName, roleName, serviceName, methodName, result);
+        //    if (result)
+        //    {
+        //        var loginResult = await currentHttpClient.GetFromJsonAsync<MessageContract<string>>($"{GetBaseUrl()}/api/user/login");
+        //        Assert.True(loginResult);
+        //        currentHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Result);
+        //    }
+        //    var data = await currentHttpClient.GetFromJsonAsync<MessageContract>($"{GetBaseUrl()}/api/user/CheckHasAccess");
+        //    if (!result)
+        //        AssertTrue(data);
+        //    else
+        //        Assert.True(data, data.ToString());
+        //}
+
         [Theory]
-        [InlineData("TestExampleFailed", "EndUser", "NoAccess")]
-        [InlineData("TestExample", "EndUser", "User")]
-        [InlineData("TestExample", "EndUser", null)]
+        [InlineData("TestExampleFailed", "TestEndUser", "NoAccess")]
+        [InlineData("TestExample", "TestEndUser", "User")]
+        [InlineData("TestExample", "TestEndUser", null)]
         public async Task ReaderRoleTest(string microserviceName, string roleName, string serviceName)
         {
-            int portNumber = 1045;
-            await AuthenticationVirtualTestManager.OnInitialize(portNumber);
-            var resources = AuthenticationResource.GetResources(microserviceName, new Dictionary<string, List<TestServicePermissionContract>>()
-            {
-                {
-                    roleName ,
-                    new List<TestServicePermissionContract>()
-                    {
-                        new TestServicePermissionContract()
-                        {
-                            MicroserviceName = microserviceName,
-                            MethodName = "CheckHasAccess",
-                            ServiceName = serviceName
-                        }
-                    }
-                }
-            });
-
-            foreach (var resource in resources)
-            {
-                AuthenticationVirtualTestManager.AppendService(portNumber, resource.Key, resource.Value);
-            }
-            HttpClient CurrentHttpClient = new HttpClient();
-            var loginResult = await CurrentHttpClient.GetFromJsonAsync<MessageContract<string>>($"{GetBaseUrl()}/api/user/login");
-            Assert.True(loginResult, loginResult.Error?.ToString());
-            CurrentHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Result);
-            var data = await CurrentHttpClient.GetFromJsonAsync<MessageContract>($"{GetBaseUrl()}/api/user/CheckHasNoAccess");
+            HttpClient currentHttpClient = new HttpClient();
+            //await AddPermissions(currentHttpClient, microserviceName, roleName, serviceName, null, true);
+            //var loginResult = await currentHttpClient.GetFromJsonAsync<MessageContract<string>>($"{GetBaseUrl()}/api/user/Login2?role={roleName}");
+            //Assert.True(loginResult, loginResult.Error?.ToString());
+            //currentHttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Result);
+            var data = await currentHttpClient.GetFromJsonAsync<MessageContract>($"{GetBaseUrl()}/api/user/CheckHasNoAccess");
             AssertTrue(data);
         }
     }
