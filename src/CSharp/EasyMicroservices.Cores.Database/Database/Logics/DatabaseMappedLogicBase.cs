@@ -6,8 +6,10 @@ using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -96,6 +98,17 @@ namespace EasyMicroservices.Cores.Database.Logics
             return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, func, cancellationToken);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TResponseContract>> GetBy(GetByRequestContract<TResponseContract> request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        {
+            throw new Exception("GetBy is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this GetById method");
+        }
 
         /// <summary>
         /// 

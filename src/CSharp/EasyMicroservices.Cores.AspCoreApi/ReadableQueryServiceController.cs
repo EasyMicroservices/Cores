@@ -2,6 +2,7 @@
 using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -86,6 +87,18 @@ namespace EasyMicroservices.Cores.AspCoreApi
         public virtual Task<MessageContract<TResponseContract>> GetByUniqueIdentity(GetByUniqueIdentityRequestContract request, CancellationToken cancellationToken = default)
         {
             return ContractLogic.GetByUniqueIdentity(request, request.Type, OnGetQuery(), cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public virtual Task<MessageContract<TResponseContract>> GetBy(GetByRequestContract<TId> request, CancellationToken cancellationToken = default)
+        {
+            return ContractLogic.GetBy(request, OnGetQuery(), cancellationToken);
         }
 
         /// <summary>
