@@ -96,6 +96,19 @@ namespace EasyMicroservices.Cores.Database.Logics
             return await GetBy<TEntity, TResponseContract>(_easyReadableQueryable, predicate, func, cancellationToken);
         }
 
+        /// <summary>
+        /// /
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task<MessageContract<TResponseContract>> GetBy(GetByRequestContract<TId> request, Func<IQueryable<TEntity>, IQueryable<TEntity>> query = default, CancellationToken cancellationToken = default)
+        {
+            Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> func = UpdateFunctionQuery(query);
+            return GetBy<TEntity, TResponseContract, TId>(_easyReadableQueryable, request, func, cancellationToken);
+        }
+
         TId MapToTId<T>(T result)
         {
             if (result is IIdSchema<TId> schema)

@@ -211,6 +211,39 @@ namespace EasyMicroservices.Cores.Database.Logics
             return result;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <typeparam name="TId"></typeparam>
+        /// <param name="easyReadableQueryable"></param>
+        /// <param name="request"></param>
+        /// <param name="query"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<MessageContract<TContract>> GetBy<TEntity, TContract, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetByRequestContract<TId> request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(request.UniqueIdentity);
+            if (!uniqueIdentityPermission)
+                return uniqueIdentityPermission.ToContract<TContract>();
+            if (!request.Id.Equals(default(TId)))
+            {
+                easyReadableQueryable = easyReadableQueryable.ConvertToReadable(easyReadableQueryable.Where(x => ((IIdSchema<TId>)x).Id.Equals(request.Id)));
+            }
+            if (request.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+            {
+                easyReadableQueryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, request.UniqueIdentityType ?? GetUniqueIdentityType.All);
+            }
+            var entityResult = await GetBy(easyReadableQueryable, query, false, cancellationToken);
+            if (!entityResult)
+                return entityResult.ToContract<TContract>();
+            var result = await MapAsync<TContract, TEntity>(entityResult.Result);
+            return result;
+        }
+
         /// <summary>
         /// 
         /// </summary>
