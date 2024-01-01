@@ -100,22 +100,12 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<IEasyReadableQueryableAsync<TEntity>> UniqueIdentityQueryMaker<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, string uniqueIdentity, GetUniqueIdentityType type)
             where TEntity : class
         {
-            bool hasUniqueIdentityRole = await _baseUnitOfWork.HasUniqueIdentityRole();
-            if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
-            {
-                if (!hasUniqueIdentityRole)
-                    ((MessageContract)(FailedReasonType.AccessDenied, $"type of {typeof(TEntity)} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!")).ThrowsIfFails();
-                else
-                    return easyReadableQueryable;
-            }
+            await HasUniqueIdentityPermission<TEntity>(uniqueIdentity).AsCheckedResult();
+            if (uniqueIdentity.IsNullOrEmpty())
+                return easyReadableQueryable;
             var uniqueIdentityManager = await GetIUniqueIdentityManager();
             var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
-            if (uniqueIdentity.IsNullOrEmpty())
-                uniqueIdentity = currentUserUniqueIdentity;
-            else if (!hasUniqueIdentityRole && DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(uniqueIdentity, 2) != DefaultUniqueIdentityManager.CutUniqueIdentityFromEnd(currentUserUniqueIdentity, 2))
-                ((MessageContract)(FailedReasonType.AccessDenied, "UniqueIdentity access level error!")).ThrowsIfFails();
-            if (uniqueIdentity.IsNullOrEmpty() && hasUniqueIdentityRole)
-                return easyReadableQueryable;
+
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
                 uniqueIdentity += "-";
@@ -148,8 +138,11 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<IEasyReadableQueryableAsync<TEntity>> SetTheUserUniqueIdentityToQuery<TEntity>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable)
             where TEntity : class
         {
-            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
-            return await UniqueIdentityQueryMaker(easyReadableQueryable, currentUserUniqueIdentity, GetUniqueIdentityType.All);
+            var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(null);
+            string uniqueIdentity = default;
+            if (!uniqueIdentityPermission)
+                uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            return await UniqueIdentityQueryMaker(easyReadableQueryable, uniqueIdentity, GetUniqueIdentityType.All);
         }
 
         #region Get one
@@ -226,9 +219,6 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract<TContract>> GetBy<TEntity, TContract, TId>(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, GetByRequestContract<TId> request, Func<IEasyReadableQueryableAsync<TEntity>, IEasyReadableQueryableAsync<TEntity>> query = default, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(request.UniqueIdentity);
-            if (!uniqueIdentityPermission)
-                return uniqueIdentityPermission.ToContract<TContract>();
             if (!request.Id.Equals(default(TId)))
             {
                 easyReadableQueryable = easyReadableQueryable.ConvertToReadable(easyReadableQueryable.Where(x => ((IIdSchema<TId>)x).Id.Equals(request.Id)));
@@ -236,6 +226,12 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (request.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
                 easyReadableQueryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, request.UniqueIdentityType ?? GetUniqueIdentityType.All);
+            }
+            else
+            {
+                var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(request.UniqueIdentity);
+                if (!uniqueIdentityPermission)
+                    return uniqueIdentityPermission.ToContract<TContract>();
             }
             var entityResult = await GetBy(easyReadableQueryable, query, false, cancellationToken);
             if (!entityResult)
@@ -352,12 +348,15 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
             where TContract : class
         {
-            var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(request.UniqueIdentity);
-            if (!uniqueIdentityPermission)
-                return uniqueIdentityPermission.ToContract<TContract>();
             if (request.UniqueIdentity.HasValue() && typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
                 easyReadableQueryable = await UniqueIdentityQueryMaker(easyReadableQueryable, request.UniqueIdentity, type);
+            }
+            else
+            {
+                var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(request.UniqueIdentity);
+                if (!uniqueIdentityPermission)
+                    return uniqueIdentityPermission.ToContract<TContract>();
             }
             var entityResult = await GetBy(easyReadableQueryable, query, false, cancellationToken);
             if (!entityResult)
