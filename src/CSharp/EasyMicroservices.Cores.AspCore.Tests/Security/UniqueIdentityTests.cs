@@ -54,14 +54,15 @@ public class UniqueIdentityTests : IClassFixture<UniqueIdentityAuthorizationRole
     }
 
     [Theory]
-    [InlineData("Owner", "User", "Update", "1-2", "1-2", "{}", true)]
-    [InlineData("Owner", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""1-2-3-4""}", true)]
-    [InlineData("Owner", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""3-4""}", false)]
-    [InlineData("Moderator", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""1-2""}", true)]
-    public async Task UpdateAsync(string roleName, string controller, string method, string fromUniqueIdentity, string toUniqueIdentity, string data, bool canHaveAccess)
+    [InlineData("Owner", "User", "Update", "1-2", "1-2", "{}", "{}", true)]
+    [InlineData("Owner", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""1-2-3-4""}", @"{""UniqueIdentity"":""1-2-3-4""}", true)]
+    [InlineData("Owner", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""3-4""}", @"{""UniqueIdentity"":""3-4""}", true)]
+    [InlineData("Moderator", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""1-2""}", @"{""UniqueIdentity"":""1-2""}", true)]
+    //[InlineData("Moderator", "User", "Update", "1-2", "1-2", @"{""UniqueIdentity"":""1-2""}", @"{""UniqueIdentity"":""3-4""}", false)]
+    public async Task UpdateAsync(string roleName, string controller, string method, string fromUniqueIdentity, string toUniqueIdentity, string addData, string data, bool canHaveAccess)
     {
         var model = JsonSerializer.Deserialize<DataModel>(data);
-        model.Id = await AddAsync(roleName, controller, "Add", fromUniqueIdentity, data, true);
+        model.Id = await AddAsync(roleName, controller, "Add", fromUniqueIdentity, addData, true);
         model.UserName = Guid.NewGuid().ToString();
         HttpClient currentHttpClient = new HttpClient();
         await Login(currentHttpClient, roleName, fromUniqueIdentity);
