@@ -3,6 +3,7 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.ServiceContracts;
@@ -29,12 +30,15 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         internal protected readonly IMapperProvider MapperProvider;
         readonly IBaseUnitOfWork _baseUnitOfWork;
+        readonly LogicOptions _logicOptions;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="baseUnitOfWork"></param>
-        public DatabaseLogicInfrastructure(IBaseUnitOfWork baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public DatabaseLogicInfrastructure(IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default)
         {
+            _logicOptions = logicOptions;
             _baseUnitOfWork = baseUnitOfWork;
             MapperProvider = baseUnitOfWork.GetMapper();
         }
@@ -61,7 +65,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             bool hasUniqueIdentityRole = await _baseUnitOfWork.HasUniqueIdentityRole();
 
-            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
             foreach (var item in items)
             {
                 if (item.Entity is IUniqueIdentitySchema uniqueIdentitySchema)
@@ -83,13 +87,15 @@ namespace EasyMicroservices.Cores.Database.Logics
         private async Task<MessageContract> HasUniqueIdentityPermission<TEntity>(string uniqueIdentity)
             where TEntity : class
         {
+            if (_logicOptions.UniqueIdentityStrategy == UniqueIdentityStrategy.Full)
+                return true;
             bool hasUniqueIdentityRole = await _baseUnitOfWork.HasUniqueIdentityRole();
             if (hasUniqueIdentityRole)
                 return true;
             if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
                 return (FailedReasonType.AccessDenied, $"type of {typeof(TEntity)} is not inheritance from IUniqueIdentitySchema and user has no UniqueIdentityRole access!");
 
-            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
             if (uniqueIdentity.IsNullOrEmpty() && !hasUniqueIdentityRole)
                 return (FailedReasonType.AccessDenied, $"With the UniqueIdentity: {currentUserUniqueIdentity} you have not access, please send me your UniqueIdentity!");
             else if (!uniqueIdentity.StartsWith(currentUserUniqueIdentity))
@@ -104,7 +110,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (uniqueIdentity.IsNullOrEmpty())
                 return easyReadableQueryable;
             var uniqueIdentityManager = await GetIUniqueIdentityManager();
-            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
 
             IEasyReadableQueryableAsync<TEntity> queryable = easyReadableQueryable;
             if (!uniqueIdentityManager.IsUniqueIdentityForThisTable<TEntity>(easyReadableQueryable.Context, uniqueIdentity))
@@ -141,7 +147,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var uniqueIdentityPermission = await HasUniqueIdentityPermission<TEntity>(null);
             string uniqueIdentity = default;
             if (!uniqueIdentityPermission)
-                uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+                uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
             return await UniqueIdentityQueryMaker(easyReadableQueryable, uniqueIdentity, GetUniqueIdentityType.All);
         }
 
@@ -935,7 +941,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             await easyWritableQueryable.SaveChangesAsync();
             if (typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
-                var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+                var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
                 var uniqueIdentityManager = await GetIUniqueIdentityManager();
                 if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, result.Entity))
                 {
@@ -977,7 +983,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             bool anyUpdate = false;
             if (typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
             {
-                var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity();
+                var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
                 var uniqueIdentityManager = await GetIUniqueIdentityManager();
                 foreach (var item in result)
                 {
