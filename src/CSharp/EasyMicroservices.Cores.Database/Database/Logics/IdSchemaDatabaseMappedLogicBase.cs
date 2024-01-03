@@ -2,6 +2,7 @@
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
@@ -32,7 +33,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="baseUnitOfWork"></param>
-        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default) : base(baseUnitOfWork, logicOptions)
         {
             _easyReadableQueryable = easyReadableQueryable;
         }
@@ -42,7 +44,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="baseUnitOfWork"></param>
-        public IdSchemaDatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public IdSchemaDatabaseMappedLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default) : base(baseUnitOfWork, logicOptions)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
         }
@@ -53,7 +56,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="baseUnitOfWork"></param>
-        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public IdSchemaDatabaseMappedLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default) : base(baseUnitOfWork, logicOptions)
         {
             _easyWriteableQueryable = easyWriteableQueryable;
             _easyReadableQueryable = easyReadableQueryable;

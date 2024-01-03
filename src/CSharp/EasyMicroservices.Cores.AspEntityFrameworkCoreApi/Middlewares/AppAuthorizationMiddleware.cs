@@ -58,6 +58,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares
                     httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
                     MessageContract response = FailedReasonType.SessionAccessDenied;
                     response.Error.ServiceDetails.MethodName = httpContext.Request.Path.ToString();
+                    response.Error.Details = $"StatusCode: {httpContext.Response.StatusCode}";
                     var json = JsonSerializer.Serialize(response);
                     await httpContext.Response.WriteAsync(json);
                 }

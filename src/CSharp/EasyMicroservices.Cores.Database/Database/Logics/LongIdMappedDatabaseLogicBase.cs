@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Database.Interfaces;
 
 namespace EasyMicroservices.Cores.Database.Logics
@@ -19,7 +20,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyReadableQueryable"></param>
         /// <param name="baseUnitOfWork"></param>
-        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(easyReadableQueryable, baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default) : base(easyReadableQueryable, baseUnitOfWork, logicOptions)
         {
         }
 
@@ -28,7 +30,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// </summary>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="baseUnitOfWork"></param>
-        public LongIdMappedDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(easyWriteableQueryable, baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default) : base(easyWriteableQueryable, baseUnitOfWork, logicOptions)
         {
         }
 
@@ -38,7 +41,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="easyReadableQueryable"></param>
         /// <param name="easyWriteableQueryable"></param>
         /// <param name="baseUnitOfWork"></param>
-        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork) : base(easyReadableQueryable, easyWriteableQueryable, baseUnitOfWork)
+        /// <param name="logicOptions"></param>
+        public LongIdMappedDatabaseLogicBase(IEasyReadableQueryableAsync<TEntity> easyReadableQueryable, IEasyWritableQueryableAsync<TEntity> easyWriteableQueryable, IBaseUnitOfWork baseUnitOfWork, LogicOptions logicOptions = default) : base(easyReadableQueryable, easyWriteableQueryable, baseUnitOfWork, logicOptions)
         {
 
         }
