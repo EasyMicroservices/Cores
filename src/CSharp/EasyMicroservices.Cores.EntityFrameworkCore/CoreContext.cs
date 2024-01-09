@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Database.Entities;
+using EasyMicroservices.Cores.EntityFrameworkCore.Builders;
 using EasyMicroservices.Cores.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,38 +19,7 @@ namespace EasyMicroservices.Cores.EntityFrameworkCore
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                if (typeof(IUniqueIdentitySchema).IsAssignableFrom(entityType.ClrType))
-                {
-                    modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(IUniqueIdentitySchema.UniqueIdentity));
-                }
-
-                if (typeof(IDateTimeSchema).IsAssignableFrom(entityType.ClrType))
-                {
-                    modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(IDateTimeSchema.CreationDateTime));
-                    modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(IDateTimeSchema.ModificationDateTime));
-                }
-
-                if (typeof(ISoftDeleteSchema).IsAssignableFrom(entityType.ClrType))
-                {
-                    modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(ISoftDeleteSchema.IsDeleted));
-                    modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(ISoftDeleteSchema.DeletedDateTime));
-                }
-
-                foreach (var property in entityType.ClrType.GetProperties())
-                {
-                    if (property.PropertyType == typeof(DateTime))
-                    {
-                        //Because your server's local times may be different
-                        DateTimeKind dateTimeKind = DateTimeKind.Utc;
-                        var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
-                           v => v, v => DateTime.SpecifyKind(v, dateTimeKind));
-                        modelBuilder.Entity(entityType.ClrType).Property(property.Name).HasConversion(dateTimeConverter);
-                    }
-                }
-            }
+            new CoreModelBuilder().OnModelCreating(modelBuilder);
         }
     }
 }
