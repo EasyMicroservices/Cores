@@ -20,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,6 +141,21 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return services;
         }
 
+
+        static void UseSwaggerUI(IConfiguration config,Func<Action<SwaggerUIOptions>,IApplicationBuilder> swagger)
+        {
+            var ui = config.GetSection("Swagger:SwaggerUI").Get<SwaggerUIConfigInfo>();
+            swagger(so =>
+            {
+                if (ui.Endpoints?.Length > 0)
+                {
+                    foreach (var item in ui.Endpoints)
+                    {
+                        so.SwaggerEndpoint(item.Url, item.Name);
+                    }
+                }
+            });
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -149,16 +165,22 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public static async Task Build<TContext>(this IApplicationBuilder app)
             where TContext : RelationalCoreContext
         {
-            app.UseDeveloperExceptionPage();
-            // Configure the HTTP request pipeline.
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.UseHttpsRedirection();
-            app.UseAuthorization();
-
             IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
+            app.UseDeveloperExceptionPage();
+
+            var useSwagger = config["Authorization:IsUse"];
+            var doUseSwagger = useSwagger.HasValue() && useSwagger.Equals("true", StringComparison.OrdinalIgnoreCase);
+            if (doUseSwagger)
+            {
+                app.UseSwagger();
+                UseSwaggerUI(config, app.UseSwaggerUI);
+            }
+
+            app.UseHttpsRedirection();
+            app.UseAuthorization();
+
             //app.MapControllers();
             //app.Run(build);
             using (var scope = app.ApplicationServices.CreateAsyncScope())
@@ -191,7 +213,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
         static bool PreBuild(WebApplicationBuilder app)
         {
-            var useAuth = app.Configuration["Authorization:Use"];
+            var useAuth = app.Configuration["Authorization:IsUse"];
             var useAuthorization = useAuth.HasValue() && useAuth.Equals("true", StringComparison.OrdinalIgnoreCase);
             if (useAuthorization)
             {
@@ -293,15 +315,20 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         {
             webApplication.UseMiddleware<AppAuthorizationMiddleware>();
 
-            // Configure the HTTP request pipeline.
-            webApplication.UseSwagger();
-            webApplication.UseSwaggerUI();
-
-            webApplication.UseHttpsRedirection();
-            webApplication.UseAuthorization();
             IConfiguration config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
+
+            var useSwagger = config["Authorization:IsUse"];
+            var doUseSwagger = useSwagger.HasValue() && useSwagger.Equals("true", StringComparison.OrdinalIgnoreCase);
+            if (doUseSwagger)
+            {
+                webApplication.UseSwagger();
+                UseSwaggerUI(config, webApplication.UseSwaggerUI);
+            }
+
+            webApplication.UseHttpsRedirection();
+            webApplication.UseAuthorization();
 
             using (var scope = webApplication.Services.CreateAsyncScope())
             {
