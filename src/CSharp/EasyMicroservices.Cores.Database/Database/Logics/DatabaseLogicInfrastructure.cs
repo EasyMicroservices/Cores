@@ -578,7 +578,8 @@ namespace EasyMicroservices.Cores.Database.Logics
                 return (FailedReasonType.AccessDenied, $"Some items you want to update not found!");
 
             var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
-            var uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
+            var currentUserUniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
+            var uniqueIdentityManager = await GetIUniqueIdentityManager();
 
             foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
             {
@@ -593,7 +594,10 @@ namespace EasyMicroservices.Cores.Database.Logics
                         }
                         if (entityEntry.Entity is IUniqueIdentitySchema uidschema)
                         {
-                            uidschema.UniqueIdentity = uniqueIdentity;
+                            if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, entityEntry.Entity))
+                            {
+                                FixUniqueIdentity(easyWritableQueryable.Context,typeof(TEntity), [entityEntry]);
+                            }
                         }
                     }
                     continue;
@@ -910,9 +914,9 @@ namespace EasyMicroservices.Cores.Database.Logics
 
         #region Add
 
-        void FixUniqueIdentity<TEntity>(IContext context, IEntityEntry[] entityEntries)
+        void FixUniqueIdentity(IContext context, Type entityType, IEntityEntry[] entityEntries)
         {
-            if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(typeof(TEntity)))
+            if (!typeof(IUniqueIdentitySchema).IsAssignableFrom(entityType))
                 return;
             var find = entityEntries.Select(x => x.Entity).Where(x => x is IUniqueIdentitySchema).Cast<IUniqueIdentitySchema>().FirstOrDefault(x => x.UniqueIdentity.HasValue());
             if (find == null)
@@ -926,7 +930,6 @@ namespace EasyMicroservices.Cores.Database.Logics
                     uniqueIdentity.UniqueIdentity += "-" + DefaultUniqueIdentityManager.GenerateUniqueIdentity((long)primaryKeys.First());
                 }
             }
-            return;
         }
 
         /// <summary>
@@ -960,7 +963,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 var uniqueIdentityManager = await GetIUniqueIdentityManager();
                 if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, result.Entity))
                 {
-                    FixUniqueIdentity<TEntity>(easyWritableQueryable.Context, allItems);
+                    FixUniqueIdentity(easyWritableQueryable.Context, typeof(TEntity), allItems);
                     await InternalUpdate(easyWritableQueryable, result.Entity, false, true, true, true, cancellationToken)
                         .AsCheckedResult();
                     await easyWritableQueryable.SaveChangesAsync();
@@ -1007,7 +1010,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                         anyUpdate = true;
                     }
                 }
-                FixUniqueIdentity<TEntity>(easyWritableQueryable.Context, allItems);
+                FixUniqueIdentity(easyWritableQueryable.Context, typeof(TEntity), allItems);
             }
             if (anyUpdate)
             {

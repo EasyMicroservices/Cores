@@ -11,12 +11,11 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <summary>
         /// update unique identity
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
         /// <param name="currentUserUniqueIdentity"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns>is need update database</returns>
-        bool UpdateUniqueIdentity<TEntity>(string currentUserUniqueIdentity, IContext context, TEntity entity);
+        bool UpdateUniqueIdentity(string currentUserUniqueIdentity, IContext context, object entity);
         /// <summary>
         /// 
         /// </summary>
