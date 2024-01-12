@@ -584,14 +584,21 @@ namespace EasyMicroservices.Cores.Database.Logics
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Modified
                     && entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Deleted)
-                    continue;
-                if (entityEntry.EntityState == EasyMicroservices.Database.DataTypes.EntityStateType.Added)
                 {
-                    if (entityEntry.Entity is IDateTimeSchema addschema)
-                        addschema.CreationDateTime = DateTime.Now;
-                    if (entityEntry.Entity is IUniqueIdentitySchema uidschema)
-                        uidschema.UniqueIdentity = uniqueIdentity;
+                    if (entityEntry.EntityState == EasyMicroservices.Database.DataTypes.EntityStateType.Added)
+                    {
+                        if (entityEntry.Entity is IDateTimeSchema addschema)
+                        {
+                            addschema.CreationDateTime = DateTime.Now;
+                        }
+                        if (entityEntry.Entity is IUniqueIdentitySchema uidschema)
+                        {
+                            uidschema.UniqueIdentity = uniqueIdentity;
+                        }
+                    }
+                    continue;
                 }
+
                 if (updateOnlyChangedValue)
                     UpdateOnlyChangedValue(easyWritableQueryable.Context, entityEntry.Entity);
                 if (entityEntry.Entity is IDateTimeSchema schema)
