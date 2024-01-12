@@ -28,13 +28,12 @@ namespace EasyMicroservices.Cores.Database.Managers
         /// <summary>
         /// 
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
         /// <param name="currentUserUniqueIdentity"></param>
         /// <param name="context"></param>
         /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public bool UpdateUniqueIdentity<TEntity>(string currentUserUniqueIdentity, IContext context, TEntity entity)
+        public bool UpdateUniqueIdentity(string currentUserUniqueIdentity, IContext context, object entity)
         {
             if (entity is IUniqueIdentitySchema uniqueIdentitySchema)
             {
@@ -43,7 +42,7 @@ namespace EasyMicroservices.Cores.Database.Managers
                 if (uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty())
                     uniqueIdentitySchema.UniqueIdentity = _whiteLabelInfo.StartUniqueIdentity;
                 var ids = uniqueIdentitySchema.UniqueIdentity.IsNullOrEmpty() ? null : DecodeUniqueIdentity(uniqueIdentitySchema.UniqueIdentity);
-                if (TableIds.TryGetValue(GetContextTableName<TEntity>(context.ContextType, _whiteLabelInfo.MicroserviceId), out long tableId))
+                if (TableIds.TryGetValue(GetContextTableName(context.ContextType, entity.GetType(), _whiteLabelInfo.MicroserviceId), out long tableId))
                 {
                     if (entity is IIdSchema<long> longIdSchema)
                     {
@@ -168,6 +167,15 @@ namespace EasyMicroservices.Cores.Database.Managers
         public string GetContextTableName<TEntity>(Type contextType, long microserviceId)
         {
             return GetContextTableName(microserviceId, GetContextName(contextType), GetTableName(typeof(TEntity)));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string GetContextTableName(Type contextType, Type tableType, long microserviceId)
+        {
+            return GetContextTableName(microserviceId, GetContextName(contextType), GetTableName(tableType));
         }
 
         /// <summary>
