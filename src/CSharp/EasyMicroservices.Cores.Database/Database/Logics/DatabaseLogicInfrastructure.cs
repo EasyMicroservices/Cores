@@ -578,12 +578,20 @@ namespace EasyMicroservices.Cores.Database.Logics
                 return (FailedReasonType.AccessDenied, $"Some items you want to update not found!");
 
             var result = await easyWritableQueryable.UpdateBulkAsync(entities, cancellationToken);
+            var uniqueIdentity = await _baseUnitOfWork.GetCurrentUserUniqueIdentity(_logicOptions);
 
             foreach (var entityEntry in easyWritableQueryable.Context.GetTrackerEntities().ToArray())
             {
                 if (entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Modified
                     && entityEntry.EntityState != EasyMicroservices.Database.DataTypes.EntityStateType.Deleted)
                     continue;
+                if (entityEntry.EntityState == EasyMicroservices.Database.DataTypes.EntityStateType.Added)
+                {
+                    if (entityEntry.Entity is IDateTimeSchema addschema)
+                        addschema.CreationDateTime = DateTime.Now;
+                    if (entityEntry.Entity is IUniqueIdentitySchema uidschema)
+                        uidschema.UniqueIdentity = uniqueIdentity;
+                }
                 if (updateOnlyChangedValue)
                     UpdateOnlyChangedValue(easyWritableQueryable.Context, entityEntry.Entity);
                 if (entityEntry.Entity is IDateTimeSchema schema)
