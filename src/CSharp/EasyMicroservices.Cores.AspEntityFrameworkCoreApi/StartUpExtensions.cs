@@ -170,7 +170,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             .Build();
             app.UseDeveloperExceptionPage();
 
-            var useSwagger = config["Authorization:IsUse"];
+            var useSwagger = config["Swagger:IsUse"];
             var doUseSwagger = useSwagger.HasValue() && useSwagger.Equals("true", StringComparison.OrdinalIgnoreCase);
             if (doUseSwagger)
             {
