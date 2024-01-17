@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Tests.Contracts.Common;
+using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities;
 using EasyMicroservices.ServiceContracts;
 using Newtonsoft.Json;
 
@@ -29,6 +30,15 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             var result = JsonConvert.DeserializeObject<MessageContract>(data);
             AssertTrue(result);
             return data;
+        }
+
+        [Fact]
+        public async Task<ListMessageContract<UpdateUserContract>> Filter()
+        {
+            var data = await HttpClient.PostAsJsonAsync($"{GetBaseUrl()}/api/user/filter", new object());
+            var result = JsonConvert.DeserializeObject<ListMessageContract<UpdateUserContract>>(await data.Content.ReadAsStringAsync());
+            AssertTrue(result);
+            return result;
         }
 
         [Fact]
@@ -84,6 +94,30 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             AssertTrue(users);
             if (users.IsSuccess)
                 Assert.True(users.Result.All(x => DefaultUniqueIdentityManager.DecodeUniqueIdentity(x.UniqueIdentity).Length > 2),
+                   JsonConvert.SerializeObject(users.Result));
+        }
+
+        [Fact]
+        public async Task AddUserEmptyUniqueIdentity()
+        {
+            var userName = "EmptyUID";
+            var data = await HttpClient.PostAsJsonAsync($"{GetBaseUrl()}/api/user/Add", new UpdateUserContract()
+            {
+                UserName = userName
+            });
+            var jsondata = await data.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<MessageContract>(jsondata);
+            AssertTrue(result);
+            var getAllRespone = await Get_EndpointsReturnSuccessAndCorrectContentType();
+            var users = JsonConvert.DeserializeObject<ListMessageContract<UpdateUserContract>>(getAllRespone);
+            AssertTrue(users);
+            if (users.IsSuccess)
+                Assert.True(users.Result.Any(x => x.UserName == userName),
+                   JsonConvert.SerializeObject(users.Result));
+            users = await Filter();
+            AssertTrue(users);
+            if (users.IsSuccess)
+                Assert.True(users.Result.Any(x => x.UserName == userName),
                    JsonConvert.SerializeObject(users.Result));
         }
 
