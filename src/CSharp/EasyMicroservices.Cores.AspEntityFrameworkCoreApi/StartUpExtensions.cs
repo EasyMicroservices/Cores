@@ -319,7 +319,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .Build();
 
-            var useSwagger = config["Authorization:IsUse"];
+            var useSwagger = config["Swagger:IsUse"];
             var doUseSwagger = useSwagger.HasValue() && useSwagger.Equals("true", StringComparison.OrdinalIgnoreCase);
             if (doUseSwagger)
             {
