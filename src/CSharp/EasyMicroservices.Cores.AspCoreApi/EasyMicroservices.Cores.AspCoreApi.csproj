@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
-    <Version>0.0.1.1</Version>
+    <Version>0.0.1.2</Version>
     <Description>asp core servces.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database,services,asp,aspnet</PackageTags>
@@ -14,11 +14,7 @@
     <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.AspCoreApi.xml</DocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.Database\EasyMicroservices.Cores.Database.csproj" />
     <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
@@ -28,6 +24,24 @@
     <PackageReference Include="EasyMicroservices.AuthenticationsMicroservice.Clients" Version="*" />
   </ItemGroup>
 
+  <Choose>
+    <When Condition=" '$(TargetFramework)' == 'netstandard2.1'">
+      <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+        <PackageReference Include="System.Text.Json" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+       <ItemGroup>
+         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+  
   <ItemGroup>
     <Folder Include="Attributes\" />
   </ItemGroup>
