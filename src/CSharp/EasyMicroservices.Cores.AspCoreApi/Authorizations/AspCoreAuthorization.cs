@@ -5,17 +5,14 @@ using EasyMicroservices.Utilities.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using ServicePermissionContract = Authentications.GeneratedServices.ServicePermissionContract;
 namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
@@ -95,12 +92,22 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
             }
         }
 
+        static Endpoint GetEndpoint(HttpContext context)
+        {
+#if (NETSTANDARD)
+            return context.Features.Get<IEndpointFeature>()?.Endpoint;
+#else
+            return context.GetEndpoint();
+#endif
+
+        }
+
         MessageContract<bool> IsAnonymousMethodCalling(HttpContext httpContext)
         {
-            var endpoints = httpContext.GetEndpoint();
+            var endpoints = GetEndpoint(httpContext);
             if (endpoints == null)
                 return true;
-            var controllerActionDescriptor = httpContext.GetEndpoint().Metadata.GetMetadata<ControllerActionDescriptor>();
+            var controllerActionDescriptor = endpoints.Metadata.GetMetadata<ControllerActionDescriptor>();
             if (controllerActionDescriptor == null)
                 return (FailedReasonType.Nothing, "controllerActionDescriptor is null or empty, did you sent correct route to me?");
             if (controllerActionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any() ||
@@ -116,8 +123,9 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
                 return isAnonymousMethodCalling;
             else if (isAnonymousMethodCalling.Result)
                 return true;
-            string controllerName = httpContext.Request.RouteValues["controller"].ToString();
-            string actionName = httpContext.Request.RouteValues["action"].ToString();
+            var actionDescriptor = GetEndpoint(httpContext)?.Metadata?.GetMetadata<ControllerActionDescriptor>();
+            string controllerName = actionDescriptor.ControllerName;
+            string actionName = actionDescriptor.ActionName;
             List<Claim> roleClaims = httpContext.User.FindAll(ClaimTypes.Role).ToList();
             if (roleClaims.Count == 0)
                 return (FailedReasonType.AccessDenied, $"There is no claim role founded! did you forgot to use services.AddAuthentication? or did you set Bearer for authorize? controllerName: {controllerName} actionName: {actionName}");
