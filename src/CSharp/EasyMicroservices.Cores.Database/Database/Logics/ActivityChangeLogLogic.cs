@@ -121,7 +121,7 @@ public class ActivityChangeLogLogic
     /// <param name="entities"></param>
     /// <param name="baseUnitOfWork"></param>
     /// <returns></returns>
-    public static async Task AddBuldAsync<TEntity>(IEnumerable<TEntity> entities, IBaseUnitOfWork baseUnitOfWork)
+    public static async Task AddBulkAsync<TEntity>(IEnumerable<TEntity> entities, IBaseUnitOfWork baseUnitOfWork)
     {
         if (!UseActivityChangeLog || typeof(TEntity) == typeof(ActivityChangeLogEntity))
             return;

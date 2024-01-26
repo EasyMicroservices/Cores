@@ -1019,7 +1019,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 await easyWritableQueryable.SaveChangesAsync();
             }
             var response = result.Select(x => x.Entity).ToList();
-            await ActivityChangeLogLogic.AddBuldAsync(response, _baseUnitOfWork);
+            await ActivityChangeLogLogic.AddBulkAsync(response, _baseUnitOfWork);
             return response;
         }
 
