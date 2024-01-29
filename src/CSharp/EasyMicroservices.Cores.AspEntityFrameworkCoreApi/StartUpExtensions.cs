@@ -87,8 +87,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
             });
             services.AddScoped<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(GetContentAddress(service)?.Address, new HttpClient()));
-            services.AddSingleton<ContentLanguageHelper>();
-            services.AddSingleton<IContentResolver, InternalContentResolver>();
+            services.AddScoped<ContentLanguageHelper>();
+            services.AddScoped<IContentResolver, InternalContentResolver>();
             return services;
         }
 
