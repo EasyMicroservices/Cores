@@ -81,11 +81,12 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             });
             services.AddScoped(service => new UnitOfWork(service).GetMapper());
             services.AddTransient<RelationalCoreContext>(serviceProvider => serviceProvider.GetService<TContext>());
+            services.AddTransient<TContext>(serviceProvider => serviceProvider.GetService<TContext>());
             services.AddExceptionHandler((option) =>
             {
                 option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
             });
-            services.AddSingleton<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(GetContentAddress(service)?.Address, new HttpClient()));
+            services.AddScoped<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(GetContentAddress(service)?.Address, new HttpClient()));
             services.AddSingleton<ContentLanguageHelper>();
             services.AddSingleton<IContentResolver, InternalContentResolver>();
             return services;
