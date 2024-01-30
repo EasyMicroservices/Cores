@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
-    <Version>0.0.1.4</Version>
+    <Version>0.0.1.41</Version>
     <Description>asp core servces.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
     <PackageTags>core,cores,base,database,services,asp,aspnet</PackageTags>
