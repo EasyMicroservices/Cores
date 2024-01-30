@@ -1,9 +1,11 @@
-﻿using EasyMicroservices.ContentsMicroservice.Clients.Helpers;
+﻿using Contents.GeneratedServices;
+using EasyMicroservices.ContentsMicroservice.Clients.Helpers;
 using EasyMicroservices.Cores.AspCoreApi.Authorizations;
 using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Middlewares;
+using EasyMicroservices.Cores.Clients;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
@@ -14,6 +16,7 @@ using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -86,10 +89,27 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             {
                 option.ExceptionHandler = AppAuthorizationMiddleware.ExceptionHandler;
             });
-            services.AddScoped<Contents.GeneratedServices.ContentClient>(service => new Contents.GeneratedServices.ContentClient(GetContentAddress(service)?.Address, new HttpClient()));
+            services.AddScoped<Contents.GeneratedServices.ContentClient>(service => GetContentClient(service));
             services.AddScoped<ContentLanguageHelper>();
             services.AddScoped<IContentResolver, InternalContentResolver>();
             return services;
+        }
+
+        static HttpClient ContentClientCttpClient = new HttpClient();
+        static T SetToken<T>(IServiceProvider serviceProvider, T coreSwaggerClientBase)
+                where T : CoreSwaggerClientBase
+        {
+            var _httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+            if (_httpContextAccessor?.HttpContext != null && _httpContextAccessor.HttpContext.Request.Headers.TryGetValue("Authorization", out var authorizationHeader))
+            {
+                coreSwaggerClientBase.SetBearerToken(authorizationHeader.ToString().Replace("Bearer ", ""));
+            }
+            return coreSwaggerClientBase;
+        }
+
+        static ContentClient GetContentClient(IServiceProvider serviceProvider)
+        {
+            return SetToken(serviceProvider, new Contents.GeneratedServices.ContentClient(GetContentAddress(serviceProvider)?.Address, ContentClientCttpClient));
         }
 
         /// <summary>
@@ -143,7 +163,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         }
 
 
-        static void UseSwaggerUI(IConfiguration config,Func<Action<SwaggerUIOptions>,IApplicationBuilder> swagger)
+        static void UseSwaggerUI(IConfiguration config, Func<Action<SwaggerUIOptions>, IApplicationBuilder> swagger)
         {
             var ui = config.GetSection("Swagger:SwaggerUI").Get<SwaggerUIConfigInfo>();
             swagger(so =>
