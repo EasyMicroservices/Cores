@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -112,7 +113,14 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
                 return (FailedReasonType.Nothing, "controllerActionDescriptor is null or empty, did you sent correct route to me?");
             if (controllerActionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any() ||
                 controllerActionDescriptor.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any())
-                return true;
+                return true; 
+            
+            if (httpContext.Request.Headers.TryGetValue("Authorization", out StringValues authAvalue))
+            {
+                var ownerPat = BaseUnitOfWork.GetFullAccessPersonalAccessToken();
+                if (authAvalue.Any(x => x.Replace("Bearer ", "").Equals(ownerPat)))
+                    return true;
+            }
             return false;
         }
 
