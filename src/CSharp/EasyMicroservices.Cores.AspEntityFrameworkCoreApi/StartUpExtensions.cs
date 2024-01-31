@@ -77,8 +77,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddHttpContextAccessor();
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
             services.AddScoped<IBaseUnitOfWork, UnitOfWork>();
-            services.AddSingleton(service => new WhiteLabelManager(service));
-            services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
+            services.AddTransient(service => new WhiteLabelManager(service));
+            services.AddTransient<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
                 return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
