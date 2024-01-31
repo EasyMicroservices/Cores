@@ -30,8 +30,8 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
             serviceCollection.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             serviceCollection.AddTransient<RelationalCoreContext>(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             serviceCollection.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
-            serviceCollection.AddSingleton(service => new WhiteLabelManager(service));
-            serviceCollection.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
+            serviceCollection.AddTransient(service => new WhiteLabelManager(service));
+            serviceCollection.AddTransient<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
                 return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });
