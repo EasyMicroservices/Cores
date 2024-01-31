@@ -20,8 +20,8 @@ namespace EasyMicroservices.Cores.AspCore.Tests
             app.Services.AddScoped((serviceProvider) => new UnitOfWork(serviceProvider).GetLongContractLogic<UserEntity, UserEntity, UserEntity, UserEntity>());
             app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             app.Services.AddScoped<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
-            app.Services.AddTransient(service => new WhiteLabelManager(service));
-            app.Services.AddTransient<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
+            app.Services.AddSingleton(service => new WhiteLabelManager(service));
+            app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
                 return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
             });

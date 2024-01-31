@@ -19,8 +19,8 @@ public class BaseFixture
         //app.Services.AddTransient<IUnitOfWork>((serviceProvider) => new UnitOfWork(serviceProvider));
         app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
         app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
-        app.Services.AddTransient(service => new WhiteLabelManager(service));
-        app.Services.AddTransient<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
+        app.Services.AddSingleton(service => new WhiteLabelManager(service));
+        app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
         {
             return new DefaultUniqueIdentityManager(provider.GetService<WhiteLabelManager>().CurrentWhiteLabel);
         });
