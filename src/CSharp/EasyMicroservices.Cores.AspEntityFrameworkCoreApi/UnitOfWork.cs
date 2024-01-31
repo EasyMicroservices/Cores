@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+﻿using Authentications.GeneratedServices;
+using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
@@ -15,6 +16,7 @@ using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.Serialization.Interfaces;
 using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
+using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -526,6 +529,30 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                 return Task.FromResult(true);
 
             return auth.HasUnlimitedPermission(ServiceProvider.GetService<IHttpContextAccessor>()?.HttpContext);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string GetFullAccessPersonalAccessToken()
+        {
+            var config = GetConfiguration();
+            var section = config?.GetSection("Authorization");
+            if (section == null)
+                return null;
+            return section.GetValue<string>("FullAccessPAT");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetService<T>()
+        {
+            return ServiceProvider.GetService<T>();
         }
 
         /// <summary>

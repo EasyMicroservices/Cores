@@ -48,6 +48,18 @@ namespace EasyMicroservices.Cores.Interfaces
         /// 
         /// </summary>
         /// <returns></returns>
+        string GetFullAccessPersonalAccessToken();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        T GetService<T>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         Task<string> GetCurrentUserUniqueIdentity(LogicOptions logicOptions = default);
         /// <summary>
         /// 
