@@ -88,13 +88,16 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
                 Console.WriteLine($"WhiteLabelManager Initialize! {microserviceName} {whiteLableRoute}");
                 if (dbContextTypes.IsEmpty())
                     return CurrentWhiteLabel;
-                var unitOfWork = _serviceProvider.GetService<IUnitOfWork>();
-                var ownerPat = unitOfWork.GetFullAccessPersonalAccessToken();
-                if (ownerPat.HasValue())
-                    WhiteLabelHttpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ownerPat);
-                else if (httpContext?.HttpContext != null && httpContext.HttpContext.Request.Headers.TryGetValue("Authorization", out var authorizationHeader))
-                    WhiteLabelHttpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authorizationHeader.ToString().Replace("Bearer ", ""));
-               
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var unitOfWork = scope.ServiceProvider.GetService<IUnitOfWork>();
+                    var ownerPat = unitOfWork.GetFullAccessPersonalAccessToken();
+                    if (ownerPat.HasValue())
+                        WhiteLabelHttpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ownerPat);
+                    else if (httpContext?.HttpContext != null && httpContext.HttpContext.Request.Headers.TryGetValue("Authorization", out var authorizationHeader))
+                        WhiteLabelHttpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authorizationHeader.ToString().Replace("Bearer ", ""));
+                }
+
                 var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, WhiteLabelHttpClient);
                 var whiteLabels = await whiteLabelClient.GetAllAsync().AsCheckedResult(x => x.Result).ConfigureAwait(false);
                 var defaultUniqueIdentity = GetDefaultUniqueIdentity(whiteLabels, null);
