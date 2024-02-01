@@ -168,7 +168,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             var ui = config.GetSection("Swagger:SwaggerUI").Get<SwaggerUIConfigInfo>();
             swagger(so =>
             {
-                if (ui.Endpoints?.Length > 0)
+                if (ui?.Endpoints?.Length > 0)
                 {
                     foreach (var item in ui.Endpoints)
                     {
