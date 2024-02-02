@@ -21,7 +21,7 @@ jobs:
           echo "Started Authentication Service with PID $AUTH_PID"
           cd ..
           while true; do
-              grep -q 'localhost' output.txt && break
+              grep -q 'Now listening on' output.txt && break
               sleep 10
           done
 
@@ -37,7 +37,7 @@ jobs:
           echo "Started WhiteLabel Service with PID $WHITELABEL_PID"
           cd ..
           while true; do
-              grep -q 'localhost' output.txt && break
+              grep -q 'Now listening on' output.txt && break
               sleep 10
           done
 
