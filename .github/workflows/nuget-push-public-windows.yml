@@ -16,7 +16,7 @@ jobs:
         run:  |
           git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj &
+          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj & echo $! > pid.txt ; tail -f /dev/null
           AUTH_PID=$!
           echo "Started Authentication Service with PID $AUTH_PID"
           cd ..
@@ -26,7 +26,7 @@ jobs:
         run: |
           git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
           cd WhiteLabels-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj &
+          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj & echo $! > pid.txt ; tail -f /dev/null
           WHITELABEL_PID=$!
           echo "Started WhiteLabel Service with PID $WHITELABEL_PID"
           cd ..
