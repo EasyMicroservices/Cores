@@ -16,22 +16,32 @@ jobs:
         run:  |
           git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj &
-          sleep 10s
+          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj | tee output.txt &
           AUTH_PID=$!
           echo "Started Authentication Service with PID $AUTH_PID"
           cd ..
+          while true; do
+              grep -q 'localhost' output.txt && break
+              sleep 1
+          done
+
+          echo "Authentication Service started successfully"
         shell: bash
 
       - name: Clone and run WhiteLabel
         run: |
           git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
           cd WhiteLabels-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj &
-          sleep 10s
+          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj | tee output.txt &
           WHITELABEL_PID=$!
           echo "Started WhiteLabel Service with PID $WHITELABEL_PID"
           cd ..
+          while true; do
+              grep -q 'localhost' output.txt && break
+              sleep 1
+          done
+
+          echo "WhiteLabels Service started successfully"
         shell: bash
       - name: Restore dependencies
         run: dotnet restore ./src/CSharp/EasyMicroservices.Cores.sln
