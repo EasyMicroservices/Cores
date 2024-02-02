@@ -16,12 +16,11 @@ jobs:
         run:  |
           git clone https://github.com/EasyMicroservices/Authentications-Microservice.git
           cd Authentications-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj --framework net8.0 | tee >(awk '/Now listening on/ {print;exit}') &
+          dotnet run --project src/CSharp/EasyMicroservices.AuthenticationsMicroservice.WebApi/EasyMicroservices.AuthenticationsMicroservice.WebApi.csproj --framework net8.0 &
           AUTH_PID=$!
           echo "Started Authentication Service with PID $AUTH_PID"
           cd ..
           
-          wait $AUTH_PID
           echo "Authentication Service started successfully"
         shell: bash
 
@@ -29,12 +28,11 @@ jobs:
         run: |
           git clone https://github.com/EasyMicroservices/WhiteLabels-Microservice.git
           cd WhiteLabels-Microservice
-          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj --framework net8.0 | tee >(awk '/Now listening on/ {print;exit}') &
+          dotnet run --project src/CSharp/EasyMicroservices.WhiteLabelsMicroservice.WebApi/EasyMicroservices.WhiteLabelsMicroservice.WebApi.csproj --framework net8.0 &
           WHITELABEL_PID=$!
           echo "Started WhiteLabel Service with PID $WHITELABEL_PID"
           cd ..
           
-          wait $WHITELABEL_PID
           echo "WhiteLabels Service started successfully"
         shell: bash
       - name: Restore dependencies
