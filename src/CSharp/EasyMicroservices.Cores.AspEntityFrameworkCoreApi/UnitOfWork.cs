@@ -1,5 +1,4 @@
-﻿using Authentications.GeneratedServices;
-using EasyMicroservices.Cores.AspCoreApi.Interfaces;
+﻿using EasyMicroservices.Cores.AspCoreApi.Interfaces;
 using EasyMicroservices.Cores.AspCoreApi.Managers;
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Interfaces;
@@ -16,7 +15,6 @@ using EasyMicroservices.Mapper.Interfaces;
 using EasyMicroservices.Mapper.SerializerMapper.Providers;
 using EasyMicroservices.Serialization.Interfaces;
 using EasyMicroservices.Serialization.Newtonsoft.Json.Providers;
-using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,11 +22,8 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 {
@@ -404,7 +399,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             {
                 var whiteLabelManager = serviceProvider.GetService<WhiteLabelManager>();
                 if (!whiteLabelManager.IsInitialized)
-                   return await whiteLabelManager.Initialize(serviceProvider.GetService<IHttpContextAccessor>(), microserviceName, whiteLabelRoute, dbContextTypes);
+                    return await whiteLabelManager.Initialize(serviceProvider.GetService<IHttpContextAccessor>(), microserviceName, whiteLabelRoute, dbContextTypes);
                 return whiteLabelManager.CurrentWhiteLabel;
             };
             return Task.CompletedTask;
@@ -443,10 +438,10 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <returns></returns>
-        public async Task<string> GetCurrentUserUniqueIdentity(LogicOptions logicOptions = default)
+        public virtual async Task<string> GetCurrentUserUniqueIdentity(LogicOptions logicOptions = default)
         {
             await InitializeWhiteLabel();
-            var httpContext =  ServiceProvider.GetService<IHttpContextAccessor>()?.HttpContext;
+            var httpContext = ServiceProvider.GetService<IHttpContextAccessor>()?.HttpContext;
             if (httpContext != null)
             {
                 var uniqueIdentity = httpContext.User.FindFirst(nameof(IUniqueIdentitySchema.UniqueIdentity))?.Value;
