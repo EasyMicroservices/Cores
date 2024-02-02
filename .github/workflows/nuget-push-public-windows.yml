@@ -22,7 +22,7 @@ jobs:
           cd ..
           while true; do
               grep -q 'localhost' output.txt && break
-              sleep 1
+              sleep 10
           done
 
           echo "Authentication Service started successfully"
@@ -38,7 +38,7 @@ jobs:
           cd ..
           while true; do
               grep -q 'localhost' output.txt && break
-              sleep 1
+              sleep 10
           done
 
           echo "WhiteLabels Service started successfully"
