@@ -531,7 +531,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// 
         /// </summary>
         /// <returns></returns>
-        public string GetFullAccessPersonalAccessToken()
+        public virtual string GetFullAccessPersonalAccessToken()
         {
             var config = GetConfiguration();
             var section = config?.GetSection("Authorization");
