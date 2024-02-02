@@ -293,9 +293,25 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
                     corsSettings(options);
                 else
                 {
-                    options.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    IConfiguration config = new ConfigurationBuilder()
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .Build();
+
+                    var anyCors = config.GetSection("Cors:Any")?.Get<List<string>>();
+                    if (anyCors?.Count > 0)
+                    {
+                        options.SetIsOriginAllowed((string origin) =>
+                           anyCors.Any(x => new Uri(origin).Host.Equals(x, StringComparison.OrdinalIgnoreCase)))
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowAnyHeader();
+                    }
+                    else
+                    {
+                        options.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                    }
                 }
             });
             var webApp = await Use(build, useGlobalExceptionHandling, useAuthorization);
