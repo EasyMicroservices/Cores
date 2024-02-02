@@ -109,6 +109,22 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         }
 
         #region ContractLogic
+        LogicOptions? _defaultLogicOptions;
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void SetDefaultLogicOptions(LogicOptions logicOptions)
+        {
+            _defaultLogicOptions = logicOptions;
+        }
+
+        LogicOptions GetLogicOptions(LogicOptions logicOptions)
+        {
+            if (_defaultLogicOptions.HasValue && logicOptions.UniqueIdentityStrategy == DataTypes.UniqueIdentityStrategy.Default)
+                return _defaultLogicOptions.Value;
+            return logicOptions;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -117,7 +133,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongLogic<TEntity>(LogicOptions logicOptions = default)
            where TEntity : class
         {
-            return GetInternalLongContractLogic<TEntity, TEntity, TEntity, TEntity>(logicOptions);
+            return GetInternalLongContractLogic<TEntity, TEntity, TEntity, TEntity>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -128,7 +144,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         /// <exception cref="NotImplementedException"></exception>
         public IContractLogic<TEntity, TEntity, TEntity, TEntity, TEntity> GetLogic<TEntity>(LogicOptions logicOptions = default) where TEntity : class
         {
-            return GetInternalContractLogic<TEntity, TEntity, TEntity, TEntity, TEntity>(logicOptions);
+            return GetInternalContractLogic<TEntity, TEntity, TEntity, TEntity, TEntity>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -141,7 +157,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class
         {
-            return GetInternalLongContractLogic<TEntity, TContract, TContract, TContract>(logicOptions);
+            return GetInternalLongContractLogic<TEntity, TContract, TContract, TContract>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -152,7 +168,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, long> GetLongReadableLogic<TEntity>(LogicOptions logicOptions = default)
            where TEntity : class
         {
-            return GetInternalLongContractLogic<TEntity, TEntity, TEntity, TEntity>(logicOptions);
+            return GetInternalLongContractLogic<TEntity, TEntity, TEntity, TEntity>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -165,7 +181,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class
         {
-            return GetInternalLongContractLogic<TEntity, TContract, TContract, TContract>(logicOptions);
+            return GetInternalLongContractLogic<TEntity, TContract, TContract, TContract>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -177,7 +193,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetLogic<TEntity, TId>(LogicOptions logicOptions = default)
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), this, logicOptions));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), this, GetLogicOptions(logicOptions)));
         }
 
         /// <summary>
@@ -191,7 +207,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), this, logicOptions));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), GetDatabase().GetWritableOf<TEntity>(), this, GetLogicOptions(logicOptions)));
         }
 
 
@@ -204,7 +220,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         public virtual IContractLogic<TEntity, TEntity, TEntity, TEntity, TId> GetReadableLogic<TEntity, TId>(LogicOptions logicOptions = default)
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), this, logicOptions));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TEntity, TEntity, TEntity, TId>(GetDatabase().GetReadableOf<TEntity>(), this, GetLogicOptions(logicOptions)));
         }
 
         /// <summary>
@@ -218,7 +234,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
            where TContract : class
            where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), this, logicOptions));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TContract, TContract, TContract, TId>(GetDatabase().GetReadableOf<TEntity>(), this, GetLogicOptions(logicOptions)));
         }
 
         /// <summary>
@@ -233,7 +249,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             where TContract : class
             where TEntity : class
         {
-            return GetInternalLongContractLogic<TEntity, TContract, TCreateRequestContract, TContract>(logicOptions);
+            return GetInternalLongContractLogic<TEntity, TContract, TCreateRequestContract, TContract>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -249,7 +265,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             where TResponseContract : class
             where TEntity : class
         {
-            return GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(logicOptions);
+            return GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(GetLogicOptions(logicOptions));
         }
 
         /// <summary>
@@ -266,21 +282,21 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             where TResponseContract : class
             where TEntity : class
         {
-            return GetInternalContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(logicOptions);
+            return GetInternalContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(GetLogicOptions(logicOptions));
         }
 
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, long> GetInternalLongContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(LogicOptions logicOptions = default)
           where TResponseContract : class
           where TEntity : class
         {
-            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this, logicOptions));
+            return AddDisposable(new LongIdMappedDatabaseLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this, GetLogicOptions(logicOptions)));
         }
 
         IContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId> GetInternalContractLogic<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(LogicOptions logicOptions = default)
           where TResponseContract : class
           where TEntity : class
         {
-            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this, logicOptions));
+            return AddDisposable(new IdSchemaDatabaseMappedLogicBase<TEntity, TCreateRequestContract, TUpdateRequestContract, TResponseContract, TId>(AddDisposable(GetDatabase().GetReadableOf<TEntity>()), AddDisposable(GetDatabase().GetWritableOf<TEntity>()), this, GetLogicOptions(logicOptions)));
         }
 
         #endregion
@@ -444,6 +460,7 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             var httpContext = ServiceProvider.GetService<IHttpContextAccessor>()?.HttpContext;
             if (httpContext != null)
             {
+                logicOptions = GetLogicOptions(logicOptions);
                 var uniqueIdentity = httpContext.User.FindFirst(nameof(IUniqueIdentitySchema.UniqueIdentity))?.Value;
                 if (uniqueIdentity.HasValue() && logicOptions.UniqueIdentityStrategy != DataTypes.UniqueIdentityStrategy.Default)
                 {
