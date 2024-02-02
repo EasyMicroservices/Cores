@@ -2,7 +2,6 @@
 using EasyMicroservices.Cores.AspEntityFrameworkCoreApi.Interfaces;
 using EasyMicroservices.Cores.Database.Managers;
 using EasyMicroservices.Cores.Models;
-using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -56,14 +55,14 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
             }
         }
 
-        string GetDefaultUniqueIdentity(ICollection<WhiteLabelContract> whiteLables, long? parentId)
+        string GetDefaultUniqueIdentity(ICollection<WhiteLabelContract> whiteLabels, long? parentId)
         {
-            var found = whiteLables.FirstOrDefault(x => x.ParentId == parentId);
+            var found = whiteLabels.FirstOrDefault(x => x.ParentId == parentId);
             if (found == null)
             {
                 return "";
             }
-            return $"{DefaultUniqueIdentityManager.GenerateUniqueIdentity(found.Id)}-{GetDefaultUniqueIdentity(whiteLables, found.Id)}".Trim('-');
+            return $"{DefaultUniqueIdentityManager.GenerateUniqueIdentity(found.Id)}-{GetDefaultUniqueIdentity(whiteLabels, found.Id)}".Trim('-');
         }
 
         static SemaphoreSlim SemaphoreSlim { get; set; } = new SemaphoreSlim(1);
@@ -100,7 +99,12 @@ namespace EasyMicroservices.Cores.AspCoreApi.Managers
 
                 var whiteLabelClient = new WhiteLables.GeneratedServices.WhiteLabelClient(whiteLableRoute, WhiteLabelHttpClient);
                 var whiteLabels = await whiteLabelClient.GetAllAsync().AsCheckedResult(x => x.Result).ConfigureAwait(false);
-                var defaultUniqueIdentity = GetDefaultUniqueIdentity(whiteLabels, null);
+                var findParentBussinessId = whiteLabels.FirstOrDefault(x => x.Name.Equals(microserviceName, StringComparison.OrdinalIgnoreCase))?.Id;
+                string defaultUniqueIdentity;
+                if (findParentBussinessId.HasValue)
+                    defaultUniqueIdentity = $"{DefaultUniqueIdentityManager.GenerateUniqueIdentity(findParentBussinessId.Value)}-{GetDefaultUniqueIdentity(whiteLabels, findParentBussinessId)}".Trim('-');
+                else
+                    defaultUniqueIdentity = GetDefaultUniqueIdentity(whiteLabels, findParentBussinessId);
 
                 var microserviceClient = new WhiteLables.GeneratedServices.MicroserviceClient(whiteLableRoute, WhiteLabelHttpClient);
                 var microservices = await microserviceClient.GetAllAsync().ConfigureAwait(false);
