@@ -23,6 +23,11 @@ namespace EasyMicroservices.Cores.Interfaces
         /// <param name="name"></param>
         /// <returns></returns>
         ServiceAddressInfo GetServiceAddress(string name);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logicOptions"></param>
+        void SetDefaultLogicOptions(LogicOptions logicOptions);
 
         /// <summary>
         /// 

@@ -1,5 +1,4 @@
 ﻿using EasyMicroservices.Cores.DataTypes;
-using System;
 
 namespace EasyMicroservices.Cores.Models;
 /// <summary>
@@ -17,7 +16,23 @@ public struct LogicOptions
     /// <summary>
     /// 
     /// </summary>
-    public UniqueIdentityStrategy UniqueIdentityStrategy { get; set; } = UniqueIdentityStrategy.Default;
+    UniqueIdentityStrategy _UniqueIdentityStrategy = UniqueIdentityStrategy.Default;
+    /// <summary>
+    /// 
+    /// </summary>
+    public UniqueIdentityStrategy UniqueIdentityStrategy
+    {
+        get
+        {
+            if (_UniqueIdentityStrategy == UniqueIdentityStrategy.None)
+                _UniqueIdentityStrategy = UniqueIdentityStrategy.Default;
+            return _UniqueIdentityStrategy;
+        }
+        set
+        {
+            _UniqueIdentityStrategy = value;
+        }
+    }
     /// <summary>
     /// 
     /// </summary>
