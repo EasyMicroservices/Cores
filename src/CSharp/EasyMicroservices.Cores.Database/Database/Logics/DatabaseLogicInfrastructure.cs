@@ -392,6 +392,13 @@ namespace EasyMicroservices.Cores.Database.Logics
             if (query != null)
                 queryable = query(queryable);
             var countQueryable = queryable;
+
+            if (filterRequest.IsDeleted.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
+            {
+                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
+                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
+            }
+
             if (filterRequest.Index.HasValue)
                 queryable = queryable.ConvertToReadable(queryable.Skip((int)filterRequest.Index.Value));
             if (filterRequest.Length.HasValue)
@@ -437,11 +444,6 @@ namespace EasyMicroservices.Cores.Database.Logics
             {
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime <= filterRequest.ToDeletedDateTime));
                 countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as ISoftDeleteSchema).DeletedDateTime <= filterRequest.ToDeletedDateTime));
-            }
-            if (filterRequest.IsDeleted.HasValue && typeof(ISoftDeleteSchema).IsAssignableFrom(typeof(TEntity)))
-            {
-                queryable = queryable.ConvertToReadable(queryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
-                countQueryable = countQueryable.ConvertToReadable(countQueryable.Where(x => (x as ISoftDeleteSchema).IsDeleted == filterRequest.IsDeleted));
             }
             ListMessageContract<TEntity> result = await queryable.ToListAsync(cancellationToken);
             result.TotalCount = await countQueryable.CountAsync(cancellationToken);
