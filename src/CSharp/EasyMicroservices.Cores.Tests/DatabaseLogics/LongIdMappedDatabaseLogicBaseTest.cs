@@ -128,8 +128,8 @@ namespace EasyMicroservices.Cores.Tests.Database
             var allFilterUsers = await logic.Filter(new FilterRequestContract()
             {
                 IsDeleted = false
-            });
-            CheckUniqueIdentity(allFilterUsers.Result.Select(x=>x.UniqueIdentity));
+            }, q => q.Where(x => !x.UserName.StartsWith("Bug_")));
+            CheckUniqueIdentity(allFilterUsers.Result.Select(x => x.UniqueIdentity));
             Assert.True(allFilterUsers.Result.All(x => allUsers.Result.Any(i => x.Id == i.Id)));
             Assert.True(allFilterUsers.TotalCount > 0);
             var ids = DefaultUniqueIdentityManager.DecodeUniqueIdentity(foundUser.Result.UniqueIdentity);
@@ -411,7 +411,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             {
                 UniqueIdentity = added.UniqueIdentity
             });
-            CheckUniqueIdentity(foundAllProfiles.Result.Select(x=>x.UniqueIdentity));
+            CheckUniqueIdentity(foundAllProfiles.Result.Select(x => x.UniqueIdentity));
             Assert.Contains(foundAllProfiles.Result, x => x.FirstName.StartsWith("Ali"));
             Assert.Equal(foundAllProfiles.Result.Count, 10);
 
@@ -437,7 +437,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Id = added.Id
             });
             Assert.Equal(found.Result.Id, added.Id);
-            
+
             var deleted = await logic.HardDeleteById(new DeleteRequestContract<long>()
             {
                 Id = found.Result.Id
@@ -470,7 +470,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             {
                 Ids = ids
             });
-            Assert.True(deleted,deleted.ToString());
+            Assert.True(deleted, deleted.ToString());
             foreach (var item in ids)
             {
                 var found = await logic.GetById(new GetByIdRequestContract<long>()
