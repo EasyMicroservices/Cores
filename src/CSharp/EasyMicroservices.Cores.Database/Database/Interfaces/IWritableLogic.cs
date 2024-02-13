@@ -101,6 +101,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [Obsolete]
         Task<MessageContract<TEntity>> AddEntity(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>

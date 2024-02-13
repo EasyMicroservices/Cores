@@ -149,9 +149,10 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
+        [Obsolete]
         public Task<MessageContract<TEntity>> AddEntity(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return Add<TEntity>(_easyWriteableQueryable, entity, cancellationToken);
+            return Add<TEntity, TEntity>(_easyWriteableQueryable, entity, entity, cancellationToken);
         }
 
         /// <summary>

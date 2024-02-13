@@ -23,11 +23,11 @@ namespace EasyMicroservices.Cores.Interfaces
         /// <param name="name"></param>
         /// <returns></returns>
         ServiceAddressInfo GetServiceAddress(string name);
+        
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="logicOptions"></param>
-        void SetDefaultLogicOptions(LogicOptions logicOptions);
+        LogicOptions? LogicOptions { get; set; }
 
         /// <summary>
         /// 
@@ -60,6 +60,11 @@ namespace EasyMicroservices.Cores.Interfaces
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         T GetService<T>();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IDatabaseWidgetManager GetDatabaseWidgetManager();
 
         /// <summary>
         /// 

@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EasyMicroservices.Cores.Contracts\EasyMicroservices.Cores.Contracts.csproj" />
+    <ProjectReference Include="..\EasyMicroservices.Cores.Infrastructure\EasyMicroservices.Cores.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
