@@ -1,4 +1,5 @@
-﻿using EasyMicroservices.Cores.Database.Interfaces;
+﻿using EasyMicroservices.Cores.Database.Helpers;
+using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
@@ -11,8 +12,10 @@ namespace EasyMicroservices.Cores.Widgets;
 /// </summary>
 /// <typeparam name="TReportEntity"></typeparam>
 /// <typeparam name="TObjectContract"></typeparam>
-public class SimpleReportingEntityWidget<TReportEntity, TObjectContract> : IDatabaseWidget<TObjectContract>
+/// <typeparam name="TEntity"></typeparam>
+public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract> : IDatabaseWidget<TEntity, TObjectContract>
     where TReportEntity : class
+    where TEntity : class
     where TObjectContract : class
 {
     /// <summary>
@@ -29,7 +32,7 @@ public class SimpleReportingEntityWidget<TReportEntity, TObjectContract> : IData
     public bool CanProcess(IBaseUnitOfWork baseUnitOfWork)
     {
         if (baseUnitOfWork.LogicOptions.HasValue)
-           return !baseUnitOfWork.LogicOptions.Value.DoStopReporting;
+            return !baseUnitOfWork.LogicOptions.Value.DoStopReporting;
         return true;
     }
 
@@ -58,18 +61,20 @@ public class SimpleReportingEntityWidget<TReportEntity, TObjectContract> : IData
     /// <param name="databaseWidgetManager"></param>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="contract"></param>
+    /// <param name="entity"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task Process(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TObjectContract contract)
+    public async Task Process(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TObjectContract contract, TEntity entity)
     {
         var reportEntity = await baseUnitOfWork
             .GetMapper()
             .MapAsync<TReportEntity>(contract);
-
-        await baseUnitOfWork.GetLogic<TReportEntity>(new Models.LogicOptions()
+        var logic = baseUnitOfWork.GetLogic<TReportEntity>(new Models.LogicOptions()
         {
             DoStopReporting = true
-        })
+        });
+        DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), entity, reportEntity);
+        await logic
             .Add(reportEntity)
             .AsCheckedResult();
     }

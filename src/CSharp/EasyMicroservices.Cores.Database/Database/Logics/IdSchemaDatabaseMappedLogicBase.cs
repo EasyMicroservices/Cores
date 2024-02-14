@@ -388,5 +388,23 @@ namespace EasyMicroservices.Cores.Database.Logics
                 return (q) => _easyReadableQueryable.ConvertToReadable(query(q));
             return null;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IContext GetReadableContext()
+        {
+            return _easyReadableQueryable.Context;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IContext GetWritableContext()
+        {
+            return _easyWriteableQueryable.Context;
+        }
     }
 }

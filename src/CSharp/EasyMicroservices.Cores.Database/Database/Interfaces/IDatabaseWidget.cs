@@ -5,7 +5,8 @@ namespace EasyMicroservices.Cores.Database.Interfaces;
 /// <summary>
 /// 
 /// </summary>
-public interface IDatabaseWidget<T> : IWidget<T>
+public interface IDatabaseWidget<TEntity, T> : IWidget<T>
+    where TEntity : class
 {
     /// <summary>
     /// 
@@ -17,6 +18,7 @@ public interface IDatabaseWidget<T> : IWidget<T>
     /// <param name="databaseWidgetManager"></param>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="contract"></param>
+    /// <param name="entity"></param>
     /// <returns></returns>
-    Task Process(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, T contract);
+    Task Process(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, T contract, TEntity entity);
 }

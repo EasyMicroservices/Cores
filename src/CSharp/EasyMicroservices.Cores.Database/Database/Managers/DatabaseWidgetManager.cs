@@ -14,17 +14,20 @@ public class DatabaseWidgetManager : WidgetManager, IDatabaseWidgetManager
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="contract"></param>
+    /// <param name="entity"></param>
     /// <returns></returns>
-    public async Task Add<T>(IBaseUnitOfWork baseUnitOfWork, T contract)
+    public async Task Add<T, TEntity>(IBaseUnitOfWork baseUnitOfWork, T contract, TEntity entity)
+        where TEntity : class
     {
         var widgets = GetWidgetsByType(typeof(T));
         foreach (var widget in widgets)
         {
-            if (widget is IDatabaseWidget<T> databaseWidget && databaseWidget.CanProcess(baseUnitOfWork))
+            if (widget is IDatabaseWidget<TEntity, T> databaseWidget && databaseWidget.CanProcess(baseUnitOfWork))
             {
-                await databaseWidget.Process(this, baseUnitOfWork, contract);
+                await databaseWidget.Process(this, baseUnitOfWork, contract, entity);
             }
         }
     }

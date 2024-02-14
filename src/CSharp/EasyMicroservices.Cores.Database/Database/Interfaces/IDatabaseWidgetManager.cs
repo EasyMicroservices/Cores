@@ -1,5 +1,4 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
-using EasyMicroservices.Database.Interfaces;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Interfaces;
@@ -12,8 +11,11 @@ public interface IDatabaseWidgetManager : IWidgetManager
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TEntity"></typeparam>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="contract"></param>
+    /// <param name="entity"></param>
     /// <returns></returns>
-    Task Add<T>(IBaseUnitOfWork baseUnitOfWork, T contract);
+    Task Add<T, TEntity>(IBaseUnitOfWork baseUnitOfWork, T contract, TEntity entity)
+        where TEntity : class;
 }

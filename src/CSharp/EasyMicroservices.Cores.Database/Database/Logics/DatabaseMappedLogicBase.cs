@@ -365,5 +365,23 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             throw new Exception("SoftDeleteBulkByIds is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteBulkByIds method");
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IContext GetReadableContext()
+        {
+            return _easyReadableQueryable.Context;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IContext GetWritableContext()
+        {
+            return _easyWriteableQueryable.Context;
+        }
     }
 }

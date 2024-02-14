@@ -257,5 +257,25 @@ namespace EasyMicroservices.Cores.Database.Logics
         {
             return _easyWriteableQueryable.SaveChangesAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IContext GetReadableContext()
+        {
+            return _easyReadableQueryable.Context;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public IContext GetWritableContext()
+        {
+            return _easyWriteableQueryable.Context;
+        }
     }
 }

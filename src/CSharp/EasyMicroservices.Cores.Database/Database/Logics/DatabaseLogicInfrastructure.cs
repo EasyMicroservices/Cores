@@ -974,7 +974,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 }
             }
             var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
-            await widgetManager.Add(_baseUnitOfWork, contract);
+            await widgetManager.Add(_baseUnitOfWork, contract, result.Entity);
             await ActivityChangeLogLogic.AddAsync(result.Entity, _baseUnitOfWork);
             return result.Entity;
         }

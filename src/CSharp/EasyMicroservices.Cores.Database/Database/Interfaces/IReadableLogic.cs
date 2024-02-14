@@ -1,6 +1,7 @@
 ﻿using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.DataTypes;
 using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,11 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     /// <typeparam name="TId"></typeparam>
     public interface IReadableLogic<TResultSchema, TId>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IContext GetReadableContext();
         /// <summary>
         /// 
         /// </summary>
