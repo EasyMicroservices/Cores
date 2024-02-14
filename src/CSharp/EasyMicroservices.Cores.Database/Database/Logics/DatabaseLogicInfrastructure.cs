@@ -467,7 +467,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entityResult = await Filter(filterRequest, easyReadableQueryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToAnotherListContract<TContract>();
-            var result = (ListMessageContract<TContract>)await MapToListAsync<TContract, TEntity>(entityResult.Result);
+            var result = (ListMessageContract<TContract>)await MapToListAsync<TEntity, TContract>(entityResult.Result);
             result.TotalCount = entityResult.TotalCount;
             return result;
         }
@@ -509,7 +509,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entityResult = await GetAll(easyReadableQueryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToAnotherListContract<TContract>();
-            var result = await MapToListAsync<TContract, TEntity>(entityResult.Result);
+            var result = await MapToListAsync<TEntity, TContract>(entityResult.Result);
             return result;
         }
 
@@ -533,7 +533,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var entityResult = await GetAll(queryable, query, cancellationToken);
             if (!entityResult)
                 return entityResult.ToAnotherListContract<TContract>();
-            var result = await MapToListAsync<TContract, TEntity>(entityResult.Result);
+            var result = await MapToListAsync<TEntity, TContract>(entityResult.Result);
             return result;
         }
 
@@ -703,7 +703,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<MessageContract> UpdateBulk<TEntity, TUpdateContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, UpdateBulkRequestContract<TUpdateContract> request, bool updateOnlyChangedValue, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var entities = await MapToListAsync<TEntity, TUpdateContract>(request.Items);
+            var entities = await MapToListAsync<TUpdateContract, TEntity>(request.Items);
             var result = await InternalUpdateBulk(easyWritableQueryable, entities, updateOnlyChangedValue, false, true, false, cancellationToken);
             return result;
         }
@@ -974,7 +974,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 }
             }
             var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
-            await widgetManager.Add(_baseUnitOfWork, contract, result.Entity);
+            await widgetManager.Add(_baseUnitOfWork, result.Entity, contract);
             await ActivityChangeLogLogic.AddAsync(result.Entity, _baseUnitOfWork);
             return result.Entity;
         }
@@ -983,14 +983,15 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
         /// <param name="easyWritableQueryable"></param>
-        /// <param name="entities"></param>
+        /// <param name="items"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<ListMessageContract<TEntity>> AddBulk<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        internal async Task<ListMessageContract<TEntity>> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Dictionary<TContract,TEntity> items, CancellationToken cancellationToken = default)
             where TEntity : class
         {
-            var result = await easyWritableQueryable.AddBulkAsync(entities, cancellationToken);
+            var result = await easyWritableQueryable.AddBulkAsync(items.Values, cancellationToken);
             var allItems = easyWritableQueryable.Context.GetTrackerEntities().ToArray();
             await CheckUniqueIdentityAccess(allItems).AsCheckedResult();
 
@@ -1025,6 +1026,8 @@ namespace EasyMicroservices.Cores.Database.Logics
                 await easyWritableQueryable.SaveChangesAsync();
             }
             var response = result.Select(x => x.Entity).ToList();
+            var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
+            await widgetManager.AddBulk(_baseUnitOfWork, items);
             await ActivityChangeLogLogic.AddBuldAsync(response, _baseUnitOfWork);
             return response;
         }
@@ -1042,7 +1045,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var entity = await MapAsync<TEntity, TContract>(contract);
-            var result = await Add<TEntity, TContract>(easyWritableQueryable, entity, contract, cancellationToken);
+            var result = await Add(easyWritableQueryable, entity, contract, cancellationToken);
             return result;
         }
 
@@ -1058,8 +1061,8 @@ namespace EasyMicroservices.Cores.Database.Logics
         public async Task<ListMessageContract<TEntity>> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, CreateBulkRequestContract<TContract> request, CancellationToken cancellationToken = default)
            where TEntity : class
         {
-            var entities = await MapToListAsync<TEntity, TContract>(request.Items);
-            var result = await AddBulk(easyWritableQueryable, entities, cancellationToken);
+            var items = await MapToDictionaryAsync<TContract, TEntity>(request.Items);
+            var result = await AddBulk(easyWritableQueryable, items, cancellationToken);
             return result;
         }
 
@@ -1074,11 +1077,27 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TFrom"></typeparam>
         /// <param name="items"></param>
         /// <returns></returns>
-        protected async Task<List<TTo>> MapToListAsync<TTo, TFrom>(IEnumerable<TFrom> items)
+        protected async Task<List<TTo>> MapToListAsync<TFrom,TTo>(IEnumerable<TFrom> items)
         {
             if (typeof(TFrom) == typeof(TTo))
                 return items.Cast<TTo>().ToList();
             var result = await MapperProvider.MapToListAsync<TTo>(items);
+            ValidateMappedResult(ref result);
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TFrom"></typeparam>
+        /// <typeparam name="TTo"></typeparam>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        protected async Task<Dictionary<TFrom,TTo>> MapToDictionaryAsync<TFrom,TTo>(IEnumerable<TFrom> items)
+        {
+            if (typeof(TFrom) == typeof(TTo))
+                return items.Cast<object>().ToDictionary(x => (TFrom)x, x => (TTo)x);
+            var result = await MapperProvider.MapToDictionaryAsync<TFrom, TTo>(items);
             ValidateMappedResult(ref result);
             return result;
         }

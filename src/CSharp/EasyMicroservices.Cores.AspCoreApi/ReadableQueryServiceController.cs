@@ -2,7 +2,6 @@
 using EasyMicroservices.Cores.Contracts.Requests;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
-using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -152,6 +151,51 @@ namespace EasyMicroservices.Cores.AspCoreApi
         protected virtual Func<IQueryable<TEntity>, IQueryable<TEntity>> OnGetAllQuery()
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TResponseContract"></typeparam>
+    /// <typeparam name="TId"></typeparam>
+    public class ReadableQueryServiceController<TEntity, TResponseContract, TId>
+        : ReadableQueryServiceController<TEntity, FilterRequestContract, TResponseContract, TId>
+            where TResponseContract : class
+            where TEntity : class
+    {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="contractReadable"></param>
+        public ReadableQueryServiceController(IContractReadableLogic<TEntity, TResponseContract, TId> contractReadable)
+            : base(contractReadable)
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        /// <param name="contractReadable"></param>
+        public ReadableQueryServiceController(IBaseUnitOfWork unitOfWork, IContractReadableLogic<TEntity, TResponseContract, TId> contractReadable)
+            : base(unitOfWork, contractReadable)
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        public ReadableQueryServiceController(IBaseUnitOfWork unitOfWork)
+            : base(unitOfWork)
+        {
+
         }
     }
 }
