@@ -266,3 +266,50 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
         return null;
     }
 }
+
+
+/// <summary>
+/// 
+/// </summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TResponseContract"></typeparam>
+/// <typeparam name="TLanguageResponseContract"></typeparam>
+/// <typeparam name="TId"></typeparam>
+public class MultilingualReadableQueryServiceController<TEntity, TResponseContract, TLanguageResponseContract, TId>
+    : MultilingualReadableQueryServiceController<TEntity, FilterRequestContract, TResponseContract, TLanguageResponseContract, TId>
+            where TResponseContract : class
+            where TLanguageResponseContract : class
+            where TEntity : class
+{
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="contractReadable"></param>
+    public MultilingualReadableQueryServiceController(IContractReadableLogic<TEntity, TResponseContract, TId> contractReadable)
+        : base(contractReadable)
+    {
+
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="unitOfWork"></param>
+    /// <param name="contractReadable"></param>
+    public MultilingualReadableQueryServiceController(IBaseUnitOfWork unitOfWork, IContractReadableLogic<TEntity, TResponseContract, TId> contractReadable)
+        : base(unitOfWork, contractReadable)
+    {
+
+    }
+    /// <summary>
+    /// 
+    /// 
+    /// </summary>
+    /// <param name="unitOfWork"></param>
+    public MultilingualReadableQueryServiceController(IBaseUnitOfWork unitOfWork)
+        : base(unitOfWork)
+    {
+        ContractLogic = unitOfWork.GetReadableContractLogic<TEntity, TResponseContract, TId>();
+    }
+}

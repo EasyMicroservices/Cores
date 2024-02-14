@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Interfaces;
@@ -17,8 +18,16 @@ public interface IDatabaseWidget<TEntity, T> : IWidget<T>
     /// </summary>
     /// <param name="databaseWidgetManager"></param>
     /// <param name="baseUnitOfWork"></param>
-    /// <param name="contract"></param>
     /// <param name="entity"></param>
+    /// <param name="contract"></param>
     /// <returns></returns>
-    Task Process(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, T contract, TEntity entity);
+    Task AddProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TEntity entity, T contract);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="databaseWidgetManager"></param>
+    /// <param name="baseUnitOfWork"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
+    Task AddBulkProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items);
 }

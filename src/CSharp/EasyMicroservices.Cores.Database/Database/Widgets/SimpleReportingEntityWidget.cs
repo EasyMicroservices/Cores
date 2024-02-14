@@ -3,6 +3,8 @@ using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Widgets;
@@ -60,11 +62,11 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
     /// </summary>
     /// <param name="databaseWidgetManager"></param>
     /// <param name="baseUnitOfWork"></param>
-    /// <param name="contract"></param>
     /// <param name="entity"></param>
+    /// <param name="contract"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task Process(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TObjectContract contract, TEntity entity)
+    public async Task AddProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TEntity entity, TObjectContract contract)
     {
         var reportEntity = await baseUnitOfWork
             .GetMapper()
@@ -76,6 +78,28 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
         DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), entity, reportEntity);
         await logic
             .Add(reportEntity)
+            .AsCheckedResult();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="databaseWidgetManager"></param>
+    /// <param name="baseUnitOfWork"></param>
+    /// <param name="items"></param>
+    /// <returns></returns>
+    public async Task AddBulkProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, Dictionary<TObjectContract, TEntity> items)
+    {
+        var reportEntities = await baseUnitOfWork
+            .GetMapper()
+            .MapToDictionaryAsync<TObjectContract, TReportEntity>(items.Keys);
+        var logic = baseUnitOfWork.GetLogic<TReportEntity>(new Models.LogicOptions()
+        {
+            DoStopReporting = true
+        });
+        DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), reportEntities);
+        await logic
+            .AddBulk(reportEntities.Values.ToList())
             .AsCheckedResult();
     }
 }
