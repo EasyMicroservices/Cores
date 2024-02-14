@@ -11,7 +11,8 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
     /// </summary>
     public class RelationalCoreContext : CoreContext
     {
-        IEntityFrameworkCoreDatabaseBuilder _builder;
+        readonly IEntityFrameworkCoreDatabaseBuilder _builder;
+
         /// <summary>
         /// 
         /// </summary>
@@ -20,6 +21,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         {
             _builder = builder;
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -34,8 +36,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         /// <param name="optionsBuilder"></param>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (_builder != null)
-                _builder.OnConfiguring(optionsBuilder);
+            _builder?.OnConfiguring(optionsBuilder);
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -46,6 +47,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            _builder?.OnWidgetBuilder(modelBuilder);
             new RelationalCoreModelBuilder().OnModelCreating(modelBuilder);
         }
 
@@ -55,6 +57,7 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore
         protected virtual StringBuilder AutoModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            _builder?.OnWidgetBuilder(modelBuilder);
             return new RelationalCoreModelBuilder().AutoModelCreating(modelBuilder);
         }
     }

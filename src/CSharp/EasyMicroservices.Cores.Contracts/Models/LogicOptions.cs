@@ -20,6 +20,10 @@ public struct LogicOptions
     /// <summary>
     /// 
     /// </summary>
+    public bool DoStopReporting { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
     public UniqueIdentityStrategy UniqueIdentityStrategy
     {
         get

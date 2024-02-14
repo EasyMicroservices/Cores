@@ -1,4 +1,5 @@
 ﻿using EasyMicroservices.Cores.Contracts.Requests;
+using EasyMicroservices.Database.Interfaces;
 using EasyMicroservices.ServiceContracts;
 using System;
 using System.Linq.Expressions;
@@ -12,6 +13,11 @@ namespace EasyMicroservices.Cores.Database.Interfaces
     /// </summary>
     public interface IWritableLogic<TRequsetSchema, TResultSchema, TId>
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IContext GetWritableContext();
         /// <summary>
         /// 
         /// </summary>
@@ -101,6 +107,7 @@ namespace EasyMicroservices.Cores.Database.Interfaces
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [Obsolete]
         Task<MessageContract<TEntity>> AddEntity(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>

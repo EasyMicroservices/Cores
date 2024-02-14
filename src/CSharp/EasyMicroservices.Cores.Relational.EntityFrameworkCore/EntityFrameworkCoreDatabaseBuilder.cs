@@ -1,4 +1,7 @@
-﻿using EasyMicroservices.Cores.Models;
+﻿using EasyMicroservices.Cores.Database.Interfaces;
+using EasyMicroservices.Cores.Database.Widgets;
+using EasyMicroservices.Cores.Interfaces;
+using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +19,21 @@ public abstract class EntityFrameworkCoreDatabaseBuilder : IEntityFrameworkCoreD
     /// 
     /// </summary>
     protected readonly IConfiguration Configuration;
+    /// <summary>
+    /// 
+    /// </summary>
+    protected readonly IDatabaseWidgetManager WidgetManager;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="configuration"></param>
+    /// <param name="widgetManager"></param>
+    public EntityFrameworkCoreDatabaseBuilder(IConfiguration configuration, IDatabaseWidgetManager widgetManager)
+    {
+        Configuration = configuration;
+        WidgetManager = widgetManager;
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -49,5 +67,19 @@ public abstract class EntityFrameworkCoreDatabaseBuilder : IEntityFrameworkCoreD
     public virtual List<DatabaseConfig> GetDatabases()
     {
         return Configuration?.GetSection("Databases")?.Get<List<DatabaseConfig>>();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="modelBuilder"></param>
+    public virtual void OnWidgetBuilder(ModelBuilder modelBuilder)
+    {
+        if (WidgetManager is null)
+            return;
+        foreach (var widget in WidgetManager.GetWidgets<DatabaseBuilderWidget<ModelBuilder>>())
+        {
+            widget.OnModelCreating(modelBuilder);
+        }
     }
 }

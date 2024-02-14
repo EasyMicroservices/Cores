@@ -24,6 +24,11 @@ namespace EasyMicroservices.Cores.Tests.Database
         {
             optionsBuilder.UseInMemoryDatabase("Test DB");
         }
+
+        public void OnWidgetBuilder(ModelBuilder modelBuilder)
+        {
+
+        }
     }
 
     public class LongIdMappedDatabaseLogicBaseTest : IClassFixture<ServiceProviderFixture>, IClassFixture<WhiteLabelLaboratoryFixture>

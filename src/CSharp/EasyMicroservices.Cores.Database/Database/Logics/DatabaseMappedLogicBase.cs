@@ -149,9 +149,10 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
+        [Obsolete]
         public Task<MessageContract<TEntity>> AddEntity(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return Add<TEntity>(_easyWriteableQueryable, entity, cancellationToken);
+            return Add<TEntity, TEntity>(_easyWriteableQueryable, entity, entity, cancellationToken);
         }
 
         /// <summary>
@@ -363,6 +364,24 @@ namespace EasyMicroservices.Cores.Database.Logics
         public Task<MessageContract> SoftDeleteBulkByIds(SoftDeleteBulkRequestContract<TResponseContract> deleteRequest, CancellationToken cancellationToken = default)
         {
             throw new Exception("SoftDeleteBulkByIds is not supported in DatabaseMappedLogicBase, you can use IdSchemaDatabaseMappedLogicBase or override this SoftDeleteBulkByIds method");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IContext GetReadableContext()
+        {
+            return _easyReadableQueryable.Context;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IContext GetWritableContext()
+        {
+            return _easyWriteableQueryable.Context;
         }
     }
 }

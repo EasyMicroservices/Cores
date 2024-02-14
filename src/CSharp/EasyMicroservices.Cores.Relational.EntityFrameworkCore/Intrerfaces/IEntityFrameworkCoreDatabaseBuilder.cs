@@ -14,5 +14,10 @@ namespace EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces
         /// </summary>
         /// <param name="optionsBuilder"></param>
         void OnConfiguring(DbContextOptionsBuilder optionsBuilder);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="modelBuilder"></param>
+        void OnWidgetBuilder(ModelBuilder modelBuilder);
     }
 }

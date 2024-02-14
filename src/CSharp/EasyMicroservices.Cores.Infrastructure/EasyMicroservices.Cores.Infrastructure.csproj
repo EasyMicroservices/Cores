@@ -1,21 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net45;net6.0;net8.0</TargetFrameworks>
     <Platforms>AnyCPU;x64;x86</Platforms>
     <Authors>EasyMicroservices</Authors>
     <Version>0.0.1.51</Version>
-    <Description>core of database.</Description>
+    <Description>core of infrastructure.</Description>
     <Copyright>EasyMicroservices@gmail.com</Copyright>
-    <PackageTags>core,cores,base,client,clients</PackageTags>
+    <PackageTags>core,cores,base,infrastructure</PackageTags>
     <PackageProjectUrl>https://github.com/EasyMicroservices/Cores</PackageProjectUrl>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>.\bin\$(Configuration)\$(TargetFramework)\EasyMicroservices.Cores.Clients.xml</DocumentationFile>
+    <RootNamespace>EasyMicroservices.Cores</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="*" />
+    <PackageReference Include="EasyMicroservices.Utilities" Version="0.0.0.13" />
   </ItemGroup>
 
 </Project>

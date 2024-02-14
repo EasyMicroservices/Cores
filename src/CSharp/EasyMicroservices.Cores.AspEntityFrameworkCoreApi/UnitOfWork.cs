@@ -109,13 +109,21 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
         }
 
         #region ContractLogic
+
         LogicOptions? _defaultLogicOptions;
         /// <summary>
         /// 
         /// </summary>
-        public virtual void SetDefaultLogicOptions(LogicOptions logicOptions)
+        public LogicOptions? LogicOptions
         {
-            _defaultLogicOptions = logicOptions;
+            get
+            {
+                return _defaultLogicOptions;
+            }
+            set
+            {
+                _defaultLogicOptions = value;
+            }
         }
 
         LogicOptions GetLogicOptions(LogicOptions logicOptions)
@@ -595,6 +603,15 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             return GetServiceAddresses(GetConfiguration())
                 ?.Where(x => x.Name.HasValue())
                 .FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IDatabaseWidgetManager GetDatabaseWidgetManager()
+        {
+            return GetService<IDatabaseWidgetManager>();
         }
     }
 }

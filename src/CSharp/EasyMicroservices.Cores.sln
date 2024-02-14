@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyMicroservices.Cores.Asp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyMicroservices.Cores.Tests", "EasyMicroservices.Cores.Tests\EasyMicroservices.Cores.Tests.csproj", "{0EA879CC-3350-4B97-8517-DCE7DBD2C3CC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccess-Layer", "DataAccess-Layer", "{B9CFFFCB-64BC-4E3A-982B-C50FEFE6EA9B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure-Layer", "Infrastructure-Layer", "{B9CFFFCB-64BC-4E3A-982B-C50FEFE6EA9B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessLogic-Layer", "BusinessLogic-Layer", "{5F639C59-EF1C-464B-85F1-FE01E4A9F81A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Business-Layer", "Business-Layer", "{5F639C59-EF1C-464B-85F1-FE01E4A9F81A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test-Layer", "Test-Layer", "{C2D086CC-9E2B-4152-B8F7-81E91032C17C}"
 EndProject
@@ -27,7 +27,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyMicroservices.Cores.Asp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyMicroservices.Cores.AspCore.Tests", "EasyMicroservices.Cores.AspCore.Tests\EasyMicroservices.Cores.AspCore.Tests.csproj", "{243E15A6-5AD6-4304-8F91-D12666C59A0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyMicroservices.Cores.Clients", "EasyMicroservices.Cores.Clients\EasyMicroservices.Cores.Clients.csproj", "{1F65B13F-F101-437C-80E7-BA4B54574D5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyMicroservices.Cores.Clients", "EasyMicroservices.Cores.Clients\EasyMicroservices.Cores.Clients.csproj", "{1F65B13F-F101-437C-80E7-BA4B54574D5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyMicroservices.Cores.Infrastructure", "EasyMicroservices.Cores.Infrastructure\EasyMicroservices.Cores.Infrastructure.csproj", "{37928D9D-11FD-40AB-9C4E-42C9B506D386}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -159,6 +161,18 @@ Global
 		{1F65B13F-F101-437C-80E7-BA4B54574D5F}.Release|x64.Build.0 = Release|Any CPU
 		{1F65B13F-F101-437C-80E7-BA4B54574D5F}.Release|x86.ActiveCfg = Release|Any CPU
 		{1F65B13F-F101-437C-80E7-BA4B54574D5F}.Release|x86.Build.0 = Release|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Debug|x64.Build.0 = Debug|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Debug|x86.Build.0 = Debug|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Release|x64.ActiveCfg = Release|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Release|x64.Build.0 = Release|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Release|x86.ActiveCfg = Release|Any CPU
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -174,6 +188,7 @@ Global
 		{2A012C31-966A-427B-B685-DCB95AC299E3} = {5F639C59-EF1C-464B-85F1-FE01E4A9F81A}
 		{243E15A6-5AD6-4304-8F91-D12666C59A0E} = {C2D086CC-9E2B-4152-B8F7-81E91032C17C}
 		{1F65B13F-F101-437C-80E7-BA4B54574D5F} = {B9CFFFCB-64BC-4E3A-982B-C50FEFE6EA9B}
+		{37928D9D-11FD-40AB-9C4E-42C9B506D386} = {B9CFFFCB-64BC-4E3A-982B-C50FEFE6EA9B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0E8382C1-722C-4F92-B66F-0354487C7F02}

@@ -9,10 +9,12 @@ using EasyMicroservices.Cores.Clients;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Database.Widgets;
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
+using EasyMicroservices.Cores.Widgets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -77,6 +79,8 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddHttpContextAccessor();
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
             services.AddScoped<IBaseUnitOfWork, UnitOfWork>();
+            services.AddSingleton<IDatabaseWidgetManager, DatabaseWidgetManager>();
+            services.AddSingleton<IWidgetManager, WidgetManager>();
             services.AddSingleton(service => new WhiteLabelManager(service));
             services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
@@ -369,6 +373,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
             using (var scope = webApplication.Services.CreateAsyncScope())
             {
+                var init = scope.ServiceProvider.GetService<ReportingBuilderWidget>();
+                if (init != null)
+                    init.Build();
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);

@@ -598,7 +598,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                         {
                             if (uniqueIdentityManager.UpdateUniqueIdentity(currentUserUniqueIdentity, easyWritableQueryable.Context, entityEntry.Entity))
                             {
-                                FixUniqueIdentity(easyWritableQueryable.Context,typeof(TEntity), [entityEntry]);
+                                FixUniqueIdentity(easyWritableQueryable.Context, typeof(TEntity), [entityEntry]);
                             }
                         }
                     }
@@ -938,11 +938,13 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
         /// <param name="easyWritableQueryable"></param>
         /// <param name="entity"></param>
+        /// <param name="contract"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<MessageContract<TEntity>> Add<TEntity>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, CancellationToken cancellationToken = default)
+        internal async Task<MessageContract<TEntity>> Add<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, TEntity entity, TContract contract, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddAsync(entity, cancellationToken);
@@ -971,6 +973,8 @@ namespace EasyMicroservices.Cores.Database.Logics
                     await easyWritableQueryable.SaveChangesAsync();
                 }
             }
+            var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
+            await widgetManager.Add(_baseUnitOfWork, contract, result.Entity);
             await ActivityChangeLogLogic.AddAsync(result.Entity, _baseUnitOfWork);
             return result.Entity;
         }
@@ -1038,7 +1042,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             where TEntity : class
         {
             var entity = await MapAsync<TEntity, TContract>(contract);
-            var result = await Add<TEntity>(easyWritableQueryable, entity, cancellationToken);
+            var result = await Add<TEntity, TContract>(easyWritableQueryable, entity, contract, cancellationToken);
             return result;
         }
 
