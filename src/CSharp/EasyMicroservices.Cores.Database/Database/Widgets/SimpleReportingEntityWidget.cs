@@ -70,6 +70,8 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
             DoStopReporting = true
         });
         DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), entity, reportEntity);
+        if (reportEntity is IUniqueIdentitySchema reportUniqueIdentity && entity is IUniqueIdentitySchema entityUniqueIdentity)
+            reportUniqueIdentity.UniqueIdentity = entityUniqueIdentity.UniqueIdentity;
         await logic
             .Add(reportEntity, cancellationToken)
             .AsCheckedResult();
@@ -93,6 +95,13 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
             DoStopReporting = true
         });
         DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), reportEntities);
+        foreach (var item in reportEntities)
+        {
+            DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), item.Key, item.Value);
+            if (item.Key is IUniqueIdentitySchema reportUniqueIdentity && item.Value is IUniqueIdentitySchema entityUniqueIdentity)
+                reportUniqueIdentity.UniqueIdentity = entityUniqueIdentity.UniqueIdentity;
+        }
+
         await logic
             .AddBulk(reportEntities.Values.ToList(), cancellationToken)
             .AsCheckedResult();

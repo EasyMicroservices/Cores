@@ -63,7 +63,9 @@ namespace EasyMicroservices.Cores.AspCoreApi
         public ReadableQueryServiceController(IBaseUnitOfWork unitOfWork)
         {
             ContractLogic = unitOfWork.GetReadableContractLogic<TEntity, TResponseContract, TId>();
+            UnitOfWork = unitOfWork;
         }
+
         /// <summary>
         /// 
         /// </summary>
