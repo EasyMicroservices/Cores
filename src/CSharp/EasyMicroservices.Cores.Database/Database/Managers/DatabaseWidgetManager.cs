@@ -2,7 +2,6 @@
 using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Widgets;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +12,14 @@ namespace EasyMicroservices.Cores.Database.Managers;
 /// </summary>
 public class DatabaseWidgetManager : WidgetManager, IDatabaseWidgetManager
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="widgetBuilder"></param>
+    public DatabaseWidgetManager(IWidgetBuilder widgetBuilder) : base(widgetBuilder)
+    {
+    }
+
     /// <summary>
     /// 
     /// </summary>

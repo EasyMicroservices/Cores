@@ -79,8 +79,9 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
             services.AddHttpContextAccessor();
             services.AddScoped<IUnitOfWork>(service => new UnitOfWork(service));
             services.AddScoped<IBaseUnitOfWork, UnitOfWork>();
+            services.AddSingleton<IWidgetBuilder, EmptyWidgetBuilder>(); 
             services.AddSingleton<IDatabaseWidgetManager, DatabaseWidgetManager>();
-            services.AddSingleton<IWidgetManager, WidgetManager>();
+            services.AddSingleton<IWidgetManager, WidgetManager>(); 
             services.AddSingleton(service => new WhiteLabelManager(service));
             services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
@@ -373,9 +374,6 @@ namespace EasyMicroservices.Cores.AspEntityFrameworkCoreApi
 
             using (var scope = webApplication.Services.CreateAsyncScope())
             {
-                var init = scope.ServiceProvider.GetService<ReportingBuilderWidget>();
-                if (init != null)
-                    init.Build();
                 var dbbuilder = new DatabaseCreator();
                 using var context = scope.ServiceProvider.GetRequiredService<TContext>();
                 dbbuilder.Initialize(context);

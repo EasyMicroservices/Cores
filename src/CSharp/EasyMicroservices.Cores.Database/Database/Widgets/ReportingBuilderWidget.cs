@@ -10,10 +10,6 @@ public abstract class ReportingBuilderWidget : IWidget
     /// <summary>
     /// 
     /// </summary>
-    public abstract void Build();
-    /// <summary>
-    /// 
-    /// </summary>
     /// <returns></returns>
     public Type GetObjectType()
     {

@@ -7,7 +7,13 @@ using System.Linq;
 namespace EasyMicroservices.Cores.Widgets;
 public class WidgetManager : IWidgetManager
 {
+    public WidgetManager(IWidgetBuilder widgetBuilder)
+    {
+        widgetBuilder.Build();
+    }
+
     readonly ConcurrentDictionary<Type, List<IWidget>> Widgets = new ConcurrentDictionary<Type, List<IWidget>>();
+
 
     public void Register(IWidget widget)
     {

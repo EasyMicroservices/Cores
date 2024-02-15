@@ -24,14 +24,6 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
     /// <summary>
     /// 
     /// </summary>
-    public void Build()
-    {
-
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     public bool CanProcess(IBaseUnitOfWork baseUnitOfWork)
     {
         if (baseUnitOfWork.LogicOptions.HasValue)

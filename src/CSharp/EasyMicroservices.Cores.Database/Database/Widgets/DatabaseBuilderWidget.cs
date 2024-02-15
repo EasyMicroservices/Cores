@@ -8,13 +8,6 @@ namespace EasyMicroservices.Cores.Database.Widgets;
 /// </summary>
 public abstract class DatabaseBuilderWidget<TModelBuilder> : IWidget
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public void Build()
-    {
-
-    }
 
     /// <summary>
     /// 
