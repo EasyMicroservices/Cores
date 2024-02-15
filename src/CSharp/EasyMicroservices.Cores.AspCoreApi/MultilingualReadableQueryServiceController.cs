@@ -66,6 +66,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     public MultilingualReadableQueryServiceController(IBaseUnitOfWork unitOfWork)
     {
         ContractLogic = unitOfWork.GetReadableContractLogic<TEntity, TResponseContract, TId>();
+        UnitOfWork = unitOfWork;
     }
 
     async Task<MessageContract<T>> ResolveContentLanguage<T>(MessageContract<T> result, string languageShortName)
