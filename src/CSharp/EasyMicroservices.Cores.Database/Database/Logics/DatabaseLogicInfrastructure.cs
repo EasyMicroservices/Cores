@@ -1028,7 +1028,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             var response = result.Select(x => x.Entity).ToList();
             var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
             await widgetManager.AddBulk(_baseUnitOfWork, items);
-            await ActivityChangeLogLogic.AddBuldAsync(response, _baseUnitOfWork);
+            await ActivityChangeLogLogic.AddBulkAsync(response, _baseUnitOfWork);
             return response;
         }
 
