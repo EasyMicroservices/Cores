@@ -3,6 +3,7 @@ using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Widgets;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Managers;
@@ -20,8 +21,9 @@ public class DatabaseWidgetManager : WidgetManager, IDatabaseWidgetManager
     /// <param name="baseUnitOfWork"></param>
     /// <param name="entity"></param>
     /// <param name="contract"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task Add<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, TEntity entity, T contract)
+    public async Task Add<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, TEntity entity, T contract, CancellationToken cancellationToken = default)
         where TEntity : class
     {
         var widgets = GetWidgetsByType(typeof(T));
@@ -41,8 +43,9 @@ public class DatabaseWidgetManager : WidgetManager, IDatabaseWidgetManager
     /// <typeparam name="T"></typeparam>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="items"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task AddBulk<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items) where TEntity : class
+    public async Task AddBulk<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items, CancellationToken cancellationToken = default) where TEntity : class
     {
         var widgets = GetWidgetsByType(typeof(T));
         foreach (var widget in widgets)

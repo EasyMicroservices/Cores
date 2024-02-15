@@ -5,6 +5,7 @@ using EasyMicroservices.ServiceContracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Widgets;
@@ -64,9 +65,10 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
     /// <param name="baseUnitOfWork"></param>
     /// <param name="entity"></param>
     /// <param name="contract"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task AddProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TEntity entity, TObjectContract contract)
+    public async Task AddProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, TEntity entity, TObjectContract contract, CancellationToken cancellationToken = default)
     {
         var reportEntity = await baseUnitOfWork
             .GetMapper()
@@ -77,7 +79,7 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
         });
         DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), entity, reportEntity);
         await logic
-            .Add(reportEntity)
+            .Add(reportEntity, cancellationToken)
             .AsCheckedResult();
     }
 
@@ -87,8 +89,9 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
     /// <param name="databaseWidgetManager"></param>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="items"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task AddBulkProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, Dictionary<TObjectContract, TEntity> items)
+    public async Task AddBulkProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, Dictionary<TObjectContract, TEntity> items, CancellationToken cancellationToken = default)
     {
         var reportEntities = await baseUnitOfWork
             .GetMapper()
@@ -99,7 +102,7 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
         });
         DatabaseExtensions.SetIdToRecordId(logic.GetReadableContext(), reportEntities);
         await logic
-            .AddBulk(reportEntities.Values.ToList())
+            .AddBulk(reportEntities.Values.ToList(), cancellationToken)
             .AsCheckedResult();
     }
 }
