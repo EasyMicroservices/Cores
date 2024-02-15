@@ -4,10 +4,12 @@ using EasyMicroservices.Cores.AspEntityFrameworkCoreApi;
 using EasyMicroservices.Cores.Database.Interfaces;
 using EasyMicroservices.Cores.Database.Logics;
 using EasyMicroservices.Cores.Database.Managers;
+using EasyMicroservices.Cores.Interfaces;
 using EasyMicroservices.Cores.Models;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
 using EasyMicroservices.Cores.Tests.Fixtures;
+using EasyMicroservices.Cores.Widgets;
 
 namespace EasyMicroservices.Cores.AspCore.Tests.Fixtures;
 
@@ -21,6 +23,7 @@ public class BaseFixture
         app.Services.AddTransient(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
         app.Services.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
         app.Services.AddSingleton(service => new WhiteLabelManager(service));
+        app.Services.AddSingleton<IWidgetBuilder, EmptyWidgetBuilder>(); 
         app.Services.AddSingleton<IDatabaseWidgetManager, DatabaseWidgetManager>();
         app.Services.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
         {

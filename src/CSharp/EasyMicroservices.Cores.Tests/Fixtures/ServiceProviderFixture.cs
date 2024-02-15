@@ -10,6 +10,7 @@ using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Builders;
 using EasyMicroservices.Cores.Relational.EntityFrameworkCore.Intrerfaces;
 using EasyMicroservices.Cores.Tests.Database;
 using EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Contexts;
+using EasyMicroservices.Cores.Widgets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyMicroservices.Cores.Tests.Fixtures
@@ -32,6 +33,7 @@ namespace EasyMicroservices.Cores.Tests.Fixtures
             serviceCollection.AddTransient<RelationalCoreContext>(serviceProvider => new MyTestContext(serviceProvider.GetService<IEntityFrameworkCoreDatabaseBuilder>()));
             serviceCollection.AddTransient<IEntityFrameworkCoreDatabaseBuilder, DatabaseBuilder>();
             serviceCollection.AddSingleton(service => new WhiteLabelManager(service));
+            serviceCollection.AddSingleton<IWidgetBuilder, EmptyWidgetBuilder>(); 
             serviceCollection.AddSingleton<IDatabaseWidgetManager, DatabaseWidgetManager>();
             serviceCollection.AddSingleton<IUniqueIdentityManager, DefaultUniqueIdentityManager>((provider) =>
             {
