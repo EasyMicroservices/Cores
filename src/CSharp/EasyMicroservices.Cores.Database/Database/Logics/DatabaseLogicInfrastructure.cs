@@ -1023,7 +1023,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             {
                 await InternalUpdateBulk(easyWritableQueryable, result.Select(x => x.Entity).ToList(), false, true, true, true, cancellationToken)
                     .AsCheckedResult();
-                await easyWritableQueryable.SaveChangesAsync();
+                await easyWritableQueryable.SaveChangesAsync(cancellationToken);
             }
             var response = result.Select(x => x.Entity).ToList();
             var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();

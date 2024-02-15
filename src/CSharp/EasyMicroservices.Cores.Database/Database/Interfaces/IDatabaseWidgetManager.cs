@@ -1,5 +1,6 @@
 ﻿using EasyMicroservices.Cores.Interfaces;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EasyMicroservices.Cores.Database.Interfaces;
@@ -16,8 +17,9 @@ public interface IDatabaseWidgetManager : IWidgetManager
     /// <param name="baseUnitOfWork"></param>
     /// <param name="entity"></param>
     /// <param name="contract"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task Add<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, TEntity entity, T contract)
+    Task Add<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, TEntity entity, T contract, CancellationToken cancellationToken = default)
         where TEntity : class;
     /// <summary>
     /// 
@@ -26,7 +28,8 @@ public interface IDatabaseWidgetManager : IWidgetManager
     /// <typeparam name="TEntity"></typeparam>
     /// <param name="baseUnitOfWork"></param>
     /// <param name="items"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task AddBulk<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items)
+    Task AddBulk<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items, CancellationToken cancellationToken = default)
         where TEntity : class;
 }
