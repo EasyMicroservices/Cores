@@ -9,7 +9,7 @@ public class WidgetManager : IWidgetManager
 {
     public WidgetManager(IWidgetBuilder widgetBuilder)
     {
-        widgetBuilder.Build();
+        widgetBuilder.Build(this);
     }
 
     readonly ConcurrentDictionary<Type, List<IWidget>> Widgets = new ConcurrentDictionary<Type, List<IWidget>>();

@@ -5,5 +5,5 @@
 /// </summary>
 public interface IWidgetBuilder
 {
-    void Build();
+    void Build(IWidgetManager widgetManager);
 }
