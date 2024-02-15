@@ -3,8 +3,7 @@
 namespace EasyMicroservices.Cores.Widgets;
 public class EmptyWidgetBuilder : IWidgetBuilder
 {
-    public void Build()
+    public void Build(IWidgetManager widgetManager)
     {
-
     }
 }
