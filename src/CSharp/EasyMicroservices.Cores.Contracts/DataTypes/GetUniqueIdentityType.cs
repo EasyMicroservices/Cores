@@ -36,6 +36,10 @@
         /// <summary>
         /// 
         /// </summary>
-        OnlyChilren = 7
+        OnlyChildren = 7,
+        /// <summary>
+        /// 
+        /// </summary>
+        Equals = 8
     }
 }
