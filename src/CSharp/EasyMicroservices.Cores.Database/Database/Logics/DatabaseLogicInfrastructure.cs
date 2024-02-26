@@ -128,11 +128,16 @@ namespace EasyMicroservices.Cores.Database.Logics
                 if (!doEqual)
                     uniqueIdentity += tableUniqueIdentity + "-";
             }
-            else if (type == GetUniqueIdentityType.OnlyChilren)
+            else if (type == GetUniqueIdentityType.OnlyChildren)
             {
                 if (!isEndWithDash)
                     uniqueIdentity += "-";
                 uniqueIdentity += uniqueIdentityManager.GetLastTableUniqueIdentity(uniqueIdentity) + "-";
+            }
+            else if (type == GetUniqueIdentityType.Equals)
+            {
+                doEqual = true;
+                uniqueIdentity = uniqueIdentity.TrimEnd('-');
             }
             if (doEqual)
                 queryable = queryable.ConvertToReadable(queryable.Where(x => (x as IUniqueIdentitySchema).UniqueIdentity.Equals(uniqueIdentity)));
