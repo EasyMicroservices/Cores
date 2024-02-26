@@ -626,7 +626,7 @@ namespace EasyMicroservices.Cores.Tests.Database
             Assert.True(allResult.Result.Any(y => y.Name == parentName));
             CheckUniqueIdentity(allResult.Result.Select(x => x.UniqueIdentity));
 
-            var onlyChildrenResult = await logic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChilren);
+            var onlyChildrenResult = await logic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChildren);
             Assert.True(onlyChildrenResult.HasItems);
             Assert.True(chilren.All(x => onlyChildrenResult.Result.Any(y => y.Name == x)));
             Assert.True(!onlyChildrenResult.Result.Any(y => y.Name == parentName));
@@ -685,7 +685,7 @@ namespace EasyMicroservices.Cores.Tests.Database
                 Assert.True(childUser.IsSuccess);
                 Assert.True(childUser.Result > 0);
             }
-            var onlyChildrenResult = await subjectlogic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChilren);
+            var onlyChildrenResult = await subjectlogic.GetAllByUniqueIdentity(foundUser.Result, type: DataTypes.GetUniqueIdentityType.OnlyChildren);
             Assert.True(onlyChildrenResult.HasItems);
             Assert.True(chilren.All(x => onlyChildrenResult.Result.Any(y => y.Name == "Subcject" + x)));
             Assert.True(!onlyChildrenResult.Result.Any(y => y.Name == "Subcject" + parentName));
