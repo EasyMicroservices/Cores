@@ -153,7 +153,7 @@ public class MultilingualSimpleQueryServiceController<TEntity, TFilterRequestCon
     public virtual async Task<MessageContract> AddBulk(CreateBulkRequestContract<TCreateRequestContract> request, CancellationToken cancellationToken = default)
     {
         var result = await WritableContractLogic.AddBulk(request, cancellationToken);
-        return await AddToContentLanguage(result, request);
+        return await AddToContentLanguage(result, request.Items.Cast<object>().ToArray());
     }
 
     /// <summary>

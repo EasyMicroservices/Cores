@@ -642,6 +642,12 @@ namespace EasyMicroservices.Cores.Database.Logics
                         cancellationToken);
                 }
             }
+
+            if (!doSkipUpdate || !doSkipDelete)
+            {
+                var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
+                await widgetManager.UpdateBulk<TEntity>(_baseUnitOfWork, respone, cancellationToken);
+            }
             return respone;
         }
 
@@ -914,6 +920,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 else
                     return (FailedReasonType.OperationFailed, $"Your entity type {item.GetType().FullName} is not inheritance from ISoftDeleteSchema");
             }
+
             return await InternalUpdateBulk(easyWritableQueryable, getResult.Result, false, true, false, false, cancellationToken);
         }
 
@@ -979,7 +986,7 @@ namespace EasyMicroservices.Cores.Database.Logics
                 }
             }
             var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
-            await widgetManager.Add(_baseUnitOfWork, result.Entity, contract);
+            await widgetManager.Add(_baseUnitOfWork, result.Entity, contract, cancellationToken);
             await ActivityChangeLogLogic.AddAsync(result.Entity, _baseUnitOfWork);
             return result.Entity;
         }
@@ -993,7 +1000,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <param name="items"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal async Task<ListMessageContract<TEntity>> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Dictionary<TContract,TEntity> items, CancellationToken cancellationToken = default)
+        internal async Task<ListMessageContract<TEntity>> AddBulk<TEntity, TContract>(IEasyWritableQueryableAsync<TEntity> easyWritableQueryable, Dictionary<TContract, TEntity> items, CancellationToken cancellationToken = default)
             where TEntity : class
         {
             var result = await easyWritableQueryable.AddBulkAsync(items.Values, cancellationToken);
@@ -1032,7 +1039,7 @@ namespace EasyMicroservices.Cores.Database.Logics
             }
             var response = result.Select(x => x.Entity).ToList();
             var widgetManager = _baseUnitOfWork.GetDatabaseWidgetManager();
-            await widgetManager.AddBulk(_baseUnitOfWork, items);
+            await widgetManager.AddBulk(_baseUnitOfWork, items, cancellationToken);
             await ActivityChangeLogLogic.AddBulkAsync(response, _baseUnitOfWork);
             return response;
         }
@@ -1082,7 +1089,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TFrom"></typeparam>
         /// <param name="items"></param>
         /// <returns></returns>
-        protected async Task<List<TTo>> MapToListAsync<TFrom,TTo>(IEnumerable<TFrom> items)
+        protected async Task<List<TTo>> MapToListAsync<TFrom, TTo>(IEnumerable<TFrom> items)
         {
             if (typeof(TFrom) == typeof(TTo))
                 return items.Cast<TTo>().ToList();
@@ -1098,7 +1105,7 @@ namespace EasyMicroservices.Cores.Database.Logics
         /// <typeparam name="TTo"></typeparam>
         /// <param name="items"></param>
         /// <returns></returns>
-        protected async Task<Dictionary<TFrom,TTo>> MapToDictionaryAsync<TFrom,TTo>(IEnumerable<TFrom> items)
+        protected async Task<Dictionary<TFrom, TTo>> MapToDictionaryAsync<TFrom, TTo>(IEnumerable<TFrom> items)
         {
             if (typeof(TFrom) == typeof(TTo))
                 return items.Cast<object>().ToDictionary(x => (TFrom)x, x => (TTo)x);

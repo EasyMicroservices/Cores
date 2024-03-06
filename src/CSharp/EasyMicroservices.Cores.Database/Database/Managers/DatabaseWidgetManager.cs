@@ -63,4 +63,24 @@ public class DatabaseWidgetManager : WidgetManager, IDatabaseWidgetManager
             }
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <param name="baseUnitOfWork"></param>
+    /// <param name="items"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task UpdateBulk<TEntity>(IBaseUnitOfWork baseUnitOfWork, List<TEntity> items, CancellationToken cancellationToken = default) where TEntity : class
+    {
+        var widgets = GetWidgetsByType(typeof(TEntity));
+        foreach (var widget in widgets)
+        {
+            if (widget is IDatabaseWidget<TEntity> databaseWidget && databaseWidget.CanProcess(baseUnitOfWork))
+            {
+                await databaseWidget.UpdateBulkProcess(this, baseUnitOfWork, items);
+            }
+        }
+    }
 }

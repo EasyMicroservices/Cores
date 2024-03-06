@@ -105,7 +105,10 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
         var contentResolver = UnitOfWork.GetContentResolver();
         var mapper = UnitOfWork.GetMapper();
         var mapped = mapper.MapToList<TLanguageResponseContract>(result.Result);
-        await contentResolver.ResolveContentAllLanguage(mapped);
+        foreach (var item in mapped)
+        {
+            await contentResolver.ResolveContentAllLanguage(item);
+        }
         return mapped;
     }
 
@@ -217,7 +220,7 @@ public class MultilingualReadableQueryServiceController<TEntity, TFilterContract
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPost]
+    [HttpGet]
     public async Task<ListMessageContract<TLanguageResponseContract>> GetAllWithAllLanguage(CancellationToken cancellationToken = default)
     {
         var result = await ContractLogic.GetAll(OnGetAllQuery(), cancellationToken);

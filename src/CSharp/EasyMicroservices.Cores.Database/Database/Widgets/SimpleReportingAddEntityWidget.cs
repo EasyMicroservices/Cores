@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EasyMicroservices.Cores.Widgets;
+namespace EasyMicroservices.Cores.Database.Widgets;
 
 /// <summary>
 /// 
@@ -16,7 +16,7 @@ namespace EasyMicroservices.Cores.Widgets;
 /// <typeparam name="TReportEntity"></typeparam>
 /// <typeparam name="TObjectContract"></typeparam>
 /// <typeparam name="TEntity"></typeparam>
-public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract> : IDatabaseWidget<TEntity, TObjectContract>
+public class SimpleReportingAddEntityWidget<TEntity, TReportEntity, TObjectContract> : SimpleReportingBaseEntityWidget, IDatabaseWidget<TEntity, TObjectContract>
     where TReportEntity : class
     where TEntity : class
     where TObjectContract : class
@@ -24,18 +24,8 @@ public class SimpleReportingEntityWidget<TEntity, TReportEntity, TObjectContract
     /// <summary>
     /// 
     /// </summary>
-    public bool CanProcess(IBaseUnitOfWork baseUnitOfWork)
-    {
-        if (baseUnitOfWork.LogicOptions.HasValue)
-            return !baseUnitOfWork.LogicOptions.Value.DoStopReporting;
-        return true;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <returns></returns>
-    public Type GetObjectType()
+    public override Type GetObjectType()
     {
         return typeof(TObjectContract);
     }

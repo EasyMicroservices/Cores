@@ -34,3 +34,24 @@ public interface IDatabaseWidget<TEntity, T> : IWidget<T>
     /// <returns></returns>
     Task AddBulkProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items, CancellationToken cancellationToken = default);
 }
+
+/// <summary>
+/// 
+/// </summary>
+public interface IDatabaseWidget<TEntity> : IWidget<TEntity>
+    where TEntity : class
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    bool CanProcess(IBaseUnitOfWork baseUnitOfWork);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="databaseWidgetManager"></param>
+    /// <param name="baseUnitOfWork"></param>
+    /// <param name="items"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdateBulkProcess(IDatabaseWidgetManager databaseWidgetManager, IBaseUnitOfWork baseUnitOfWork, List<TEntity> items, CancellationToken cancellationToken = default);
+}

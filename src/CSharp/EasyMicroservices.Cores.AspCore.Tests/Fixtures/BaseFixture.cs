@@ -34,11 +34,21 @@ public class BaseFixture
             await BaseWhiteLabelFixture.Run(whiteLabelPort.Value);
         whiteLabelPort ??= 1041;
         UnitOfWork.ManualServiceAddresses = new List<ServiceAddressInfo>()
-            {
+            {             
                 new ServiceAddressInfo()
                 {
                     Name = "WhiteLabel",
                     Address = $"http://localhost:{whiteLabelPort}"
+                },
+                new ServiceAddressInfo()
+                {
+                    Name = "Authentication",
+                    Address = "http://localhost:1044",
+                },
+                new ServiceAddressInfo()
+                {
+                    Name = "Content",
+                    Address = $"http://localhost:2003"
                 }
             };
         app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);
