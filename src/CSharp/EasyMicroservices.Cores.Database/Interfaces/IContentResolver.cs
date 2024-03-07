@@ -33,4 +33,10 @@ public interface IContentResolver
     /// <param name="contract"></param>
     /// <returns></returns>
     Task ResolveContentAllLanguage(object contract);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="items"></param>
+    /// <returns></returns>
+    Task ResolveContentAllLanguage(IEnumerable items);
 }

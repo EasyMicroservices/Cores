@@ -110,7 +110,7 @@ namespace EasyMicroservices.Cores.AspCoreApi.Authorizations
                 return true;
             var controllerActionDescriptor = endpoints.Metadata.GetMetadata<ControllerActionDescriptor>();
             if (controllerActionDescriptor == null)
-                return (FailedReasonType.Nothing, "controllerActionDescriptor is null or empty, did you sent correct route to me?");
+                return (FailedReasonType.Nothing, $"controllerActionDescriptor is null or empty, did you sent correct route to me? check: {endpoints}");
             if (controllerActionDescriptor.ControllerTypeInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any() ||
                 controllerActionDescriptor.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute)).Any())
                 return true; 

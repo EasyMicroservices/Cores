@@ -32,4 +32,14 @@ public interface IDatabaseWidgetManager : IWidgetManager
     /// <returns></returns>
     Task AddBulk<TEntity, T>(IBaseUnitOfWork baseUnitOfWork, Dictionary<T, TEntity> items, CancellationToken cancellationToken = default)
         where TEntity : class;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <param name="baseUnitOfWork"></param>
+    /// <param name="items"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdateBulk<TEntity>(IBaseUnitOfWork baseUnitOfWork, List<TEntity> items, CancellationToken cancellationToken = default)
+        where TEntity : class;
 }

@@ -33,6 +33,16 @@ namespace EasyMicroservices.Cores.AspCore.Tests
                 {
                     Name = "WhiteLabel",
                     Address = $"http://localhost:6041"
+                },
+                new ServiceAddressInfo()
+                {
+                    Name = "Authentication",
+                    Address = "http://localhost:1044",
+                },
+                new ServiceAddressInfo()
+                {
+                    Name = "Content",
+                    Address = $"http://localhost:2003"
                 }
             };
             app.Services.AddControllers().AddApplicationPart(typeof(UserController).Assembly);

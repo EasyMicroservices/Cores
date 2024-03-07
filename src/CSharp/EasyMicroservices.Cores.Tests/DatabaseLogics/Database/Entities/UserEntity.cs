@@ -6,6 +6,7 @@ namespace EasyMicroservices.Cores.Tests.DatabaseLogics.Database.Entities
     {
         public long Id { get; set; }
         public string UserName { get; set; }
+        public string Name { get; set; }
         public string UniqueIdentity { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeletedDateTime { get; set; }
